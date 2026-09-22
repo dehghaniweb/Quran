@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>قرآن کریم - تست پخش</title>
+<title>قرآن کریم - سوره حمد</title>
 
 <style>
 *{
@@ -204,7 +204,7 @@ header p{
     <h1>📖 قرآن کریم</h1>
 
     <p>
-        سوره مبارکه حمد — نسخه آزمایشی
+        سوره مبارکه حمد
     </p>
 
 </header>
@@ -287,12 +287,10 @@ header p{
 
         <div class="time">
 
-            <!-- زمان فعلی: سمت راست -->
             <span id="currentTime">
                 0:00
             </span>
 
-            <!-- زمان کل: سمت چپ -->
             <span id="duration">
                 0:00
             </span>
@@ -310,28 +308,179 @@ header p{
     </div>
 
 
-    <!-- آیه اول حمد -->
+    <!-- آیه ۱ -->
 
     <div
-        class="ayah active"
+        class="ayah"
         data-ayah="1"
         id="ayah-1"
     >
 
         <div class="arabic">
 
-            <span class="ayah-number">
-                ۱
-            </span>
+            <span class="ayah-number">۱</span>
 
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
 
         </div>
 
-
         <div class="translation">
 
             به نام خداوند بخشنده مهربان
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۲ -->
+
+    <div
+        class="ayah"
+        data-ayah="2"
+        id="ayah-2"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۲</span>
+
+            الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ
+
+        </div>
+
+        <div class="translation">
+
+            ستایش مخصوص خداوند، پروردگار جهانیان است.
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۳ -->
+
+    <div
+        class="ayah"
+        data-ayah="3"
+        id="ayah-3"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۳</span>
+
+            الرَّحْمَٰنِ الرَّحِيمِ
+
+        </div>
+
+        <div class="translation">
+
+            بخشنده مهربان است.
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۴ -->
+
+    <div
+        class="ayah"
+        data-ayah="4"
+        id="ayah-4"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۴</span>
+
+            مَالِكِ يَوْمِ الدِّينِ
+
+        </div>
+
+        <div class="translation">
+
+            مالک روز جزاست.
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۵ -->
+
+    <div
+        class="ayah"
+        data-ayah="5"
+        id="ayah-5"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۵</span>
+
+            إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ
+
+        </div>
+
+        <div class="translation">
+
+            تنها تو را می‌پرستیم و تنها از تو یاری می‌جوییم.
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۶ -->
+
+    <div
+        class="ayah"
+        data-ayah="6"
+        id="ayah-6"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۶</span>
+
+            اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ
+
+        </div>
+
+        <div class="translation">
+
+            ما را به راه راست هدایت کن.
+
+        </div>
+
+    </div>
+
+
+    <!-- آیه ۷ -->
+
+    <div
+        class="ayah"
+        data-ayah="7"
+        id="ayah-7"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">۷</span>
+
+            صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ
+            غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ
+            وَلَا الضَّالِّينَ
+
+        </div>
+
+        <div class="translation">
+
+            راه کسانی که به آنان نعمت داده‌ای؛
+            نه راه کسانی که مورد خشم قرار گرفته‌اند
+            و نه راه گمراهان.
 
         </div>
 
@@ -343,11 +492,11 @@ header p{
 <script>
 
 /* =========================================
-   آدرس فایل صوتی آیه اول
+   تنظیمات
 ========================================= */
 
-const SUPABASE_AUDIO =
-"https://wiulmslaensqnwlcjxtp.supabase.co/storage/v1/object/public/quran-audio/arabic/001001.mp3";
+const SUPABASE_BASE =
+"https://wiulmslaensqnwlcjxtp.supabase.co/storage/v1/object/public/quran-audio/arabic/";
 
 
 /* =========================================
@@ -360,7 +509,7 @@ audio.preload = "metadata";
 
 
 /* =========================================
-   وضعیت برنامه
+   وضعیت
 ========================================= */
 
 let currentAyah = 1;
@@ -371,7 +520,7 @@ let isPlaying = false;
 
 
 /* =========================================
-   عناصر صفحه
+   عناصر
 ========================================= */
 
 const playButton =
@@ -397,7 +546,27 @@ document.getElementById("status");
 
 
 /* =========================================
-   تبدیل ثانیه به دقیقه:ثانیه
+   ساخت نام فایل
+========================================= */
+
+function getAudioUrl(ayahNumber){
+
+    const number =
+        String(ayahNumber)
+        .padStart(3,"0");
+
+    return (
+        SUPABASE_BASE +
+        "001" +
+        number +
+        ".mp3"
+    );
+
+}
+
+
+/* =========================================
+   تبدیل زمان
 ========================================= */
 
 function formatTime(seconds){
@@ -415,6 +584,7 @@ function formatTime(seconds){
         .padStart(2,"0");
 
     return `${minutes}:${secs}`;
+
 }
 
 
@@ -464,17 +634,8 @@ function activateAyah(){
 
 function loadAyah(){
 
-    if(currentAyah !== 1){
-
-        statusElement.textContent =
-            "فعلاً فقط آیه اول برای تست آماده است.";
-
-        return;
-    }
-
-
     audio.src =
-        SUPABASE_AUDIO;
+        getAudioUrl(currentAyah);
 
 
     audio.load();
@@ -496,13 +657,13 @@ function loadAyah(){
 
 
     statusElement.textContent =
-        "آیه آماده پخش است.";
+        `آیه ${currentAyah} آماده پخش است.`;
 
 }
 
 
 /* =========================================
-   پخش صوت
+   پخش
 ========================================= */
 
 async function playAudio(){
@@ -520,7 +681,7 @@ async function playAudio(){
 
 
         statusElement.textContent =
-            "در حال پخش آیه ۱";
+            `در حال پخش آیه ${currentAyah}`;
 
 
         activateAyah();
@@ -557,13 +718,13 @@ function pauseAudio(){
 
 
     statusElement.textContent =
-        "پخش متوقف شد.";
+        `پخش آیه ${currentAyah} متوقف شد.`;
 
 }
 
 
 /* =========================================
-   دکمه پخش
+   پخش / توقف
 ========================================= */
 
 playButton.addEventListener(
@@ -590,7 +751,7 @@ playButton.addEventListener(
 
 
 /* =========================================
-   دکمه قبلی
+   آیه قبلی
 ========================================= */
 
 prevButton.addEventListener(
@@ -612,7 +773,7 @@ prevButton.addEventListener(
         else{
 
             statusElement.textContent =
-                "این اولین آیه است.";
+                "این اولین آیه سوره است.";
 
         }
 
@@ -622,7 +783,7 @@ prevButton.addEventListener(
 
 
 /* =========================================
-   دکمه بعدی
+   آیه بعدی
 ========================================= */
 
 nextButton.addEventListener(
@@ -631,7 +792,7 @@ nextButton.addEventListener(
 
     ()=>{
 
-        if(currentAyah < 1){
+        if(currentAyah < 7){
 
             currentAyah++;
 
@@ -644,7 +805,7 @@ nextButton.addEventListener(
         else{
 
             statusElement.textContent =
-                "فعلاً فقط آیه اول در نسخه تست وجود دارد.";
+                "این آخرین آیه سوره است.";
 
         }
 
@@ -686,7 +847,7 @@ document
 
 
 /* =========================================
-   انتخاب حالت پخش
+   انتخاب حالت
 ========================================= */
 
 document
@@ -731,7 +892,7 @@ document
 
 
 /* =========================================
-   دریافت مدت فایل
+   مدت فایل
 ========================================= */
 
 audio.addEventListener(
@@ -751,7 +912,7 @@ audio.addEventListener(
 
 
 /* =========================================
-   بروزرسانی زمان و نوار پیشرفت
+   پیشرفت
 ========================================= */
 
 audio.addEventListener(
@@ -776,10 +937,6 @@ audio.addEventListener(
             percent + "%";
 
 
-        /*
-         * زمان فعلی در سمت راست
-         */
-
         currentTimeElement.textContent =
             formatTime(
                 audio.currentTime
@@ -791,7 +948,7 @@ audio.addEventListener(
 
 
 /* =========================================
-   پایان فایل
+   پایان آیه
 ========================================= */
 
 audio.addEventListener(
@@ -811,8 +968,27 @@ audio.addEventListener(
             "100%";
 
 
-        statusElement.textContent =
-            "آیه به پایان رسید.";
+        /*
+         * اگر آیه آخر نیست،
+         * آیه بعدی خودکار پخش شود.
+         */
+
+        if(currentAyah < 7){
+
+            currentAyah++;
+
+            loadAyah();
+
+            playAudio();
+
+        }
+
+        else{
+
+            statusElement.textContent =
+                "سوره حمد به پایان رسید.";
+
+        }
 
     }
 
@@ -820,7 +996,7 @@ audio.addEventListener(
 
 
 /* =========================================
-   شروع اولیه
+   شروع
 ========================================= */
 
 loadAyah();
