@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>قرآن کریم - تست پخش</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    margin:0;
+    font-family:Tahoma,Arial,sans-serif;
+    background:#f4f7f4;
+    color:#173c2c;
+}
+
+header{
+    background:#0b4b35;
+    color:white;
+    padding:20px 16px;
+    text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+
+header h1{
+    margin:0 0 8px;
+    font-size:22px;
+}
+
+header p{
+    margin:0;
+    opacity:.85;
+    font-size:13px;
+}
+
+.container{
+    width:min(850px,calc(100% - 24px));
+    margin:18px auto 40px;
+}
+
+.player{
+    background:white;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+    margin-bottom:18px;
+}
+
+.mode-title{
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.modes{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.mode{
+    border:1px solid #d6e3dc;
+    background:#f7faf8;
+    color:#24533f;
+    border-radius:12px;
+    padding:11px 5px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:12px;
+}
+
+.mode.active{
+    background:#0b4b35;
+    color:white;
+    border-color:#0b4b35;
+}
+
+.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    margin:18px 0;
+}
+
+.control{
+    border:0;
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:#e9f2ed;
+    color:#0b4b35;
+    font-size:20px;
+    cursor:pointer;
+}
+
+.play{
+    width:62px;
+    height:62px;
+    background:#0b4b35;
+    color:white;
+    font-size:25px;
+}
+
+.progress{
+    width:100%;
+    height:7px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#e1e9e4;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:#27845a;
+    transition:width .1s linear;
+}
+
+.time{
+    display:flex;
+    justify-content:space-between;
+    direction:rtl;
+    font-size:11px;
+    color:#718278;
+    margin-top:7px;
+}
+
+.ayah{
+    background:white;
+    border-radius:18px;
+    padding:25px 20px;
+    margin-bottom:14px;
+    border:2px solid transparent;
+    box-shadow:0 4px 15px rgba(0,0,0,.06);
+    cursor:pointer;
+    transition:.25s;
+}
+
+.ayah.active{
+    border-color:#27845a;
+    background:#eef8f2;
+    box-shadow:0 5px 22px rgba(39,132,90,.18);
+}
+
+.ayah-number{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:#0b4b35;
+    color:white;
+    font-size:13px;
+    margin-left:8px;
+}
+
+.arabic{
+    font-family:"Amiri","Traditional Arabic",serif;
+    font-size:29px;
+    line-height:2.2;
+    text-align:right;
+}
+
+.translation{
+    margin-top:15px;
+    padding-top:13px;
+    border-top:1px solid #dfe8e2;
+    color:#65766d;
+    font-size:14px;
+    line-height:2;
+}
+
+.status{
+    text-align:center;
+    font-size:12px;
+    color:#718278;
+    margin-top:12px;
+}
+
+@media(max-width:600px){
+
+    .modes{
+        grid-template-columns:1fr;
+    }
+
+    .arabic{
+        font-size:25px;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>📖 قرآن کریم</h1>
+
+    <p>
+        سوره مبارکه حمد — نسخه آزمایشی
+    </p>
+
+</header>
+
+
+<div class="container">
+
+    <div class="player">
+
+        <div class="mode-title">
+            حالت پخش
+        </div>
+
+
+        <div class="modes">
+
+            <button
+                class="mode active"
+                data-mode="arabic"
+            >
+                🔊 فقط قرائت
+            </button>
+
+
+            <button
+                class="mode"
+                data-mode="persian"
+            >
+                🇮🇷 فقط ترجمه
+            </button>
+
+
+            <button
+                class="mode"
+                data-mode="both"
+            >
+                🔊🇮🇷 قرائت + ترجمه
+            </button>
+
+        </div>
+
+
+        <div class="controls">
+
+            <button
+                class="control"
+                id="prev"
+            >
+                ⏮
+            </button>
+
+
+            <button
+                class="control play"
+                id="play"
+            >
+                ▶
+            </button>
+
+
+            <button
+                class="control"
+                id="next"
+            >
+                ⏭
+            </button>
+
+        </div>
+
+
+        <div class="progress">
+
+            <div
+                class="progress-bar"
+                id="progressBar"
+            ></div>
+
+        </div>
+
+
+        <div class="time">
+
+            <!-- زمان فعلی: سمت راست -->
+            <span id="currentTime">
+                0:00
+            </span>
+
+            <!-- زمان کل: سمت چپ -->
+            <span id="duration">
+                0:00
+            </span>
+
+        </div>
+
+
+        <div
+            class="status"
+            id="status"
+        >
+            آماده پخش
+        </div>
+
+    </div>
+
+
+    <!-- آیه اول حمد -->
+
+    <div
+        class="ayah active"
+        data-ayah="1"
+        id="ayah-1"
+    >
+
+        <div class="arabic">
+
+            <span class="ayah-number">
+                ۱
+            </span>
+
+            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+
+        </div>
+
+
+        <div class="translation">
+
+            به نام خداوند بخشنده مهربان
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   آدرس فایل صوتی آیه اول
+========================================= */
+
+const SUPABASE_AUDIO =
+"https://wiulmslaensqnwlcjxtp.supabase.co/storage/v1/object/public/quran-audio/arabic/001001.mp3";
+
+
+/* =========================================
+   Audio
+========================================= */
+
+const audio = new Audio();
+
+audio.preload = "metadata";
+
+
+/* =========================================
+   وضعیت برنامه
+========================================= */
+
+let currentAyah = 1;
+
+let currentMode = "arabic";
+
+let isPlaying = false;
+
+
+/* =========================================
+   عناصر صفحه
+========================================= */
+
+const playButton =
+document.getElementById("play");
+
+const prevButton =
+document.getElementById("prev");
+
+const nextButton =
+document.getElementById("next");
+
+const progressBar =
+document.getElementById("progressBar");
+
+const currentTimeElement =
+document.getElementById("currentTime");
+
+const durationElement =
+document.getElementById("duration");
+
+const statusElement =
+document.getElementById("status");
+
+
+/* =========================================
+   تبدیل ثانیه به دقیقه:ثانیه
+========================================= */
+
+function formatTime(seconds){
+
+    if(!Number.isFinite(seconds)){
+        return "0:00";
+    }
+
+    const minutes =
+        Math.floor(seconds / 60);
+
+    const secs =
+        Math.floor(seconds % 60)
+        .toString()
+        .padStart(2,"0");
+
+    return `${minutes}:${secs}`;
+}
+
+
+/* =========================================
+   فعال کردن آیه
+========================================= */
+
+function activateAyah(){
+
+    document
+        .querySelectorAll(".ayah")
+        .forEach(el=>{
+
+            el.classList.remove("active");
+
+        });
+
+
+    const ayah =
+        document.getElementById(
+            `ayah-${currentAyah}`
+        );
+
+
+    if(!ayah){
+        return;
+    }
+
+
+    ayah.classList.add("active");
+
+
+    ayah.scrollIntoView({
+
+        behavior:"smooth",
+
+        block:"center"
+
+    });
+
+}
+
+
+/* =========================================
+   بارگذاری آیه
+========================================= */
+
+function loadAyah(){
+
+    if(currentAyah !== 1){
+
+        statusElement.textContent =
+            "فعلاً فقط آیه اول برای تست آماده است.";
+
+        return;
+    }
+
+
+    audio.src =
+        SUPABASE_AUDIO;
+
+
+    audio.load();
+
+
+    activateAyah();
+
+
+    progressBar.style.width =
+        "0%";
+
+
+    currentTimeElement.textContent =
+        "0:00";
+
+
+    durationElement.textContent =
+        "0:00";
+
+
+    statusElement.textContent =
+        "آیه آماده پخش است.";
+
+}
+
+
+/* =========================================
+   پخش صوت
+========================================= */
+
+async function playAudio(){
+
+    try{
+
+        await audio.play();
+
+
+        isPlaying = true;
+
+
+        playButton.textContent =
+            "⏸";
+
+
+        statusElement.textContent =
+            "در حال پخش آیه ۱";
+
+
+        activateAyah();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+
+        statusElement.textContent =
+            "پخش فایل صوتی انجام نشد.";
+
+    }
+
+}
+
+
+/* =========================================
+   توقف
+========================================= */
+
+function pauseAudio(){
+
+    audio.pause();
+
+
+    isPlaying = false;
+
+
+    playButton.textContent =
+        "▶";
+
+
+    statusElement.textContent =
+        "پخش متوقف شد.";
+
+}
+
+
+/* =========================================
+   دکمه پخش
+========================================= */
+
+playButton.addEventListener(
+
+    "click",
+
+    ()=>{
+
+        if(isPlaying){
+
+            pauseAudio();
+
+        }
+
+        else{
+
+            playAudio();
+
+        }
+
+    }
+
+);
+
+
+/* =========================================
+   دکمه قبلی
+========================================= */
+
+prevButton.addEventListener(
+
+    "click",
+
+    ()=>{
+
+        if(currentAyah > 1){
+
+            currentAyah--;
+
+            loadAyah();
+
+            playAudio();
+
+        }
+
+        else{
+
+            statusElement.textContent =
+                "این اولین آیه است.";
+
+        }
+
+    }
+
+);
+
+
+/* =========================================
+   دکمه بعدی
+========================================= */
+
+nextButton.addEventListener(
+
+    "click",
+
+    ()=>{
+
+        if(currentAyah < 1){
+
+            currentAyah++;
+
+            loadAyah();
+
+            playAudio();
+
+        }
+
+        else{
+
+            statusElement.textContent =
+                "فعلاً فقط آیه اول در نسخه تست وجود دارد.";
+
+        }
+
+    }
+
+);
+
+
+/* =========================================
+   کلیک روی آیه
+========================================= */
+
+document
+    .querySelectorAll(".ayah")
+    .forEach(ayah=>{
+
+        ayah.addEventListener(
+
+            "click",
+
+            ()=>{
+
+                currentAyah =
+                    Number(
+                        ayah.dataset.ayah
+                    );
+
+
+                loadAyah();
+
+
+                playAudio();
+
+            }
+
+        );
+
+    });
+
+
+/* =========================================
+   انتخاب حالت پخش
+========================================= */
+
+document
+    .querySelectorAll(".mode")
+    .forEach(button=>{
+
+        button.addEventListener(
+
+            "click",
+
+            ()=>{
+
+                document
+                    .querySelectorAll(".mode")
+                    .forEach(btn=>{
+
+                        btn.classList.remove(
+                            "active"
+                        );
+
+                    });
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                currentMode =
+                    button.dataset.mode;
+
+
+                statusElement.textContent =
+                    "حالت پخش انتخاب شد: " +
+                    button.textContent.trim();
+
+            }
+
+        );
+
+    });
+
+
+/* =========================================
+   دریافت مدت فایل
+========================================= */
+
+audio.addEventListener(
+
+    "loadedmetadata",
+
+    ()=>{
+
+        durationElement.textContent =
+            formatTime(
+                audio.duration
+            );
+
+    }
+
+);
+
+
+/* =========================================
+   بروزرسانی زمان و نوار پیشرفت
+========================================= */
+
+audio.addEventListener(
+
+    "timeupdate",
+
+    ()=>{
+
+        if(!audio.duration){
+            return;
+        }
+
+
+        const percent =
+            (
+                audio.currentTime /
+                audio.duration
+            ) * 100;
+
+
+        progressBar.style.width =
+            percent + "%";
+
+
+        /*
+         * زمان فعلی در سمت راست
+         */
+
+        currentTimeElement.textContent =
+            formatTime(
+                audio.currentTime
+            );
+
+    }
+
+);
+
+
+/* =========================================
+   پایان فایل
+========================================= */
+
+audio.addEventListener(
+
+    "ended",
+
+    ()=>{
+
+        isPlaying = false;
+
+
+        playButton.textContent =
+            "▶";
+
+
+        progressBar.style.width =
+            "100%";
+
+
+        statusElement.textContent =
+            "آیه به پایان رسید.";
+
+    }
+
+);
+
+
+/* =========================================
+   شروع اولیه
+========================================= */
+
+loadAyah();
+
+</script>
+
+</body>
+</html>
