@@ -134,6 +134,8 @@ button{
 
     background:white;
 
+    display:none;
+
     border-radius:14px;
 
     overflow:hidden;
@@ -146,6 +148,10 @@ button{
         0 4px 14px rgba(0,0,0,.12);
 
     scrollbar-width:thin;
+}
+
+.surah-list.open{
+    display:block;
 }
 
 .surah-item{
@@ -201,13 +207,15 @@ button{
 .surah-item-name{
     flex:1;
 
-    text-align:right;
+    text-align:left;
 
     font-size:14px;
 
     font-weight:bold;
 
     color:#173c2c;
+
+    order:2;
 }
 
 .surah-item.active
@@ -255,234 +263,62 @@ button{
 
 
 /* =========================================================
-   AYAH / PAGE JUMP
+   PAGE JUMP
 ========================================================= */
 
 .ayah-jump{
     background:white;
-
-    margin:
-        12px;
-
+    margin:12px;
     padding:14px;
-
     border-radius:16px;
-
-    box-shadow:
-        0 3px 12px rgba(0,0,0,.07);
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
 }
-
-.ayah-jump-title{
-    color:#0b4b35;
-
-    font-size:14px;
-
-    font-weight:bold;
-
-    margin-bottom:10px;
-
-    text-align:right;
-}
-
-.ayah-jump-row{
-    display:flex;
-
-    gap:8px;
-
-    align-items:center;
-}
-
-.ayah-number-input{
-    flex:1;
-
-    min-width:0;
-
-    border:
-        1px solid
-        #d6e3dc;
-
-    outline:none;
-
-    background:#f8fbf9;
-
-    color:#173c2c;
-
-    border-radius:11px;
-
-    padding:
-        11px
-        12px;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-    text-align:center;
-
-    direction:ltr;
-
-    transition:
-        border .2s,
-        background .2s;
-}
-
-.ayah-number-input:focus{
-    border-color:#27845a;
-
-    background:white;
-}
-
-.go-ayah{
-    border:none;
-
-    border-radius:11px;
-
-    background:#176c49;
-
-    color:white;
-
-    padding:
-        11px
-        15px;
-
-    font-size:13px;
-
-    font-weight:bold;
-
-    white-space:nowrap;
-
-    box-shadow:
-        0 3px 8px rgba(23,108,73,.18);
-}
-
-.go-ayah:active{
-    transform:scale(.98);
-}
-
-
-/* =========================================================
-   PAGE JUMP
-========================================================= */
 
 .page-jump-row{
     display:flex;
-
-    gap:8px;
-
+    gap:12px;
     align-items:center;
+    width:100%;
+}
 
-    margin-top:9px;
+.page-jump-title{
+    flex:1;
+    min-width:0;
+    color:#0b4b35;
+    font-size:14px;
+    font-weight:bold;
+    text-align:right;
 }
 
 .page-number-input{
-    flex:1;
-
+    width:145px;
+    flex:0 0 145px;
     min-width:0;
-
-    border:
-        1px solid
-        #d6e3dc;
-
+    border:1px solid #d6e3dc;
     outline:none;
-
     background:#f8fbf9;
-
     color:#173c2c;
-
     border-radius:11px;
-
-    padding:
-        11px
-        12px;
-
+    padding:11px 12px;
     font-size:16px;
-
     font-weight:bold;
-
     text-align:center;
-
     direction:ltr;
-
-    transition:
-        border .2s,
-        background .2s;
+    transition:border .2s, background .2s;
 }
 
 .page-number-input:focus{
     border-color:#27845a;
-
     background:white;
 }
 
-.go-page{
-    border:none;
-
-    border-radius:11px;
-
-    background:#0b4b35;
-
-    color:white;
-
-    padding:
-        11px
-        15px;
-
-    font-size:13px;
-
-    font-weight:bold;
-
-    white-space:nowrap;
-
-    box-shadow:
-        0 3px 8px rgba(11,75,53,.18);
-}
-
-.go-page:active{
-    transform:scale(.98);
-}
-
-.ayah-jump-hint{
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    gap:8px;
-
-    margin-top:8px;
-
-    color:#71877d;
-
-    font-size:12px;
-}
-
-.page-badge{
-    background:#edf7f1;
-
-    color:#176c49;
-
-    border-radius:8px;
-
-    padding:
-        5px
-        8px;
-
-    font-weight:bold;
-
-    white-space:nowrap;
-}
-
 .jump-error{
-    color:#b34b4b;
-
+    color:#b23b3b;
     font-size:12px;
-
-    margin-top:7px;
-
-    min-height:18px;
+    text-align:right;
+    margin-top:6px;
+    min-height:0;
 }
-
 
 /* =========================================================
    SURAH INFO
@@ -707,6 +543,40 @@ button{
 
 
 /* =========================================================
+   BOOKMARK
+========================================================= */
+
+.bookmark-button{
+    margin-top:9px;
+    border:none;
+    background:#edf7f1;
+    color:#176c49;
+    border-radius:10px;
+    padding:7px 12px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.bookmark-button:active{
+    transform:scale(.98);
+}
+
+.reminder-badge{
+    display:inline-block;
+    margin-top:8px;
+    padding:4px 8px;
+    border-radius:8px;
+    background:#fff4d6;
+    color:#8a6500;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.ayah.reminded{
+    border-color:#d5ad43;
+}
+
+/* =========================================================
    STICKY PLAYER
 ========================================================= */
 
@@ -732,6 +602,39 @@ button{
 }
 
 
+.player-drag-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:20px;
+    margin:-6px 0 2px;
+    padding:0;
+    border:none;
+    background:transparent;
+    cursor:grab;
+}
+
+.player-drag-handle span{
+    display:block;
+    width:44px;
+    height:5px;
+    border-radius:20px;
+    background:#cbd9d2;
+}
+
+.player-sticky{
+    transition:transform .22s ease;
+}
+
+.player-sticky.collapsed{
+    transform:translateY(calc(100vh - 58px));
+}
+
+.player-sticky.collapsed .player{
+    box-shadow:0 2px 10px rgba(0,0,0,.10);
+}
+
 /* =========================================================
    PLAYER
 ========================================================= */
@@ -745,24 +648,6 @@ button{
 
     box-shadow:
         0 4px 16px rgba(0,0,0,.13);
-}
-
-.player-drag-handle{
-    width:54px;
-    height:5px;
-    border-radius:99px;
-    background:#cfdcd5;
-    margin:0 auto 9px;
-    cursor:grab;
-    touch-action:none;
-}
-
-.player-sticky{
-    transition:transform .25s ease;
-}
-
-.player-sticky.collapsed{
-    transform:translateY(calc(100% - 18px));
 }
 
 .player-status{
@@ -1031,44 +916,8 @@ button{
         transform .15s;
 }
 
-.ayah{
-    position:relative;
-}
-
 .ayah:active{
     transform:scale(.995);
-}
-
-.reading-reminder-marker{
-    position:absolute;
-    top:10px;
-    left:10px;
-    width:34px;
-    height:34px;
-    border:none;
-    border-radius:50%;
-    background:#fff7d6;
-    box-shadow:0 2px 8px rgba(0,0,0,.10);
-    cursor:pointer;
-    font-size:17px;
-    z-index:2;
-}
-
-.reading-reminder-button{
-    width:100%;
-    border:none;
-    border-radius:12px;
-    padding:8px 10px;
-    margin-bottom:9px;
-    background:#f4f8f5;
-    color:#176c49;
-    font-family:inherit;
-    font-size:12px;
-    cursor:pointer;
-}
-
-.reading-reminder-button:active{
-    transform:scale(.99);
 }
 
 .ayah.active{
@@ -1252,13 +1101,12 @@ button{
     }
 
     .page-jump-row{
-        gap:6px;
+        gap:8px;
     }
 
-    .go-ayah,
-    .go-page{
-        padding-left:12px;
-        padding-right:12px;
+    .page-number-input{
+        width:120px;
+        flex-basis:120px;
     }
 
     .arabic{
@@ -1392,34 +1240,11 @@ button{
 
 <section class="ayah-jump">
 
-    <div class="ayah-jump-title">
-        🎯 رفتن مستقیم
-    </div>
+    <div class="page-jump-row single-page-jump">
 
-
-    <div class="ayah-jump-row">
-
-        <input
-            id="ayahNumberInput"
-            class="ayah-number-input"
-            type="number"
-            inputmode="numeric"
-            min="1"
-            placeholder="شماره آیه"
-        >
-
-        <button
-            id="goAyah"
-            class="go-ayah"
-            type="button"
-        >
-            ▶ رفتن به آیه
-        </button>
-
-    </div>
-
-
-    <div class="page-jump-row">
+        <div class="page-jump-title">
+            📄 رفتن به صفحه نسخه عثمان طه
+        </div>
 
         <input
             id="pageNumberInput"
@@ -1428,41 +1253,13 @@ button{
             inputmode="numeric"
             min="1"
             max="604"
-            placeholder="شماره صفحه عثمان طه"
+            placeholder="شماره صفحه"
+            aria-label="شماره صفحه عثمان طه"
         >
-
-        <button
-            id="goPage"
-            class="go-page"
-            type="button"
-        >
-            📄 رفتن به صفحه
-        </button>
 
     </div>
 
-
-    <div class="ayah-jump-hint">
-
-        <span id="ayahCountHint">
-            ابتدا یک سوره انتخاب کنید.
-        </span>
-
-        <span
-            id="jumpPageBadge"
-            class="page-badge"
-            style="display:none;"
-        >
-            صفحه —
-        </span>
-
-    </div>
-
-
-    <div
-        id="jumpError"
-        class="jump-error"
-    ></div>
+    <div id="jumpError" class="jump-error" aria-live="polite"></div>
 
 </section>
 
@@ -1546,6 +1343,14 @@ button{
         📄 صفحه —
     </div>
 
+    <button
+        id="bookmarkButton"
+        class="bookmark-button"
+        type="button"
+    >
+        🔖 علامت‌گذاری اینجا
+    </button>
+
 </section>
 
 
@@ -1583,15 +1388,19 @@ button{
      STICKY PLAYER
 ====================================================== -->
 
-<div class="player-sticky">
+<div class="player-sticky" id="playerSticky">
 
     <section class="player">
 
-        <div
+        <button
             class="player-drag-handle"
             id="playerDragHandle"
-            title="برای جمع کردن پخش‌کننده به پایین بکشید"
-        ></div>
+            type="button"
+            aria-label="جمع کردن پخش‌کننده"
+            title="کشیدن به پایین برای جمع کردن"
+        >
+            <span></span>
+        </button>
 
         <div
             class="player-status"
@@ -1788,12 +1597,13 @@ let isAutoAdvancing = false;
 
 let centerScrollTimer = null;
 
-// شناسه نسل پخش؛ برای جلوگیری از ادامه یافتن رویداد قدیمی پس از تغییر سوره
-let playbackSessionId = 0;
+const BOOKMARK_KEY = "quran_last_position_v1";
+let lastBookmarkSave = 0;
 
-const READING_REMINDER_KEY = "quranReadingReminder";
-let longPressTimer = null;
-let longPressTriggered = false;
+const REMINDERS_KEY = "quran_ayah_reminders_v1";
+let loadRequestId = 0;
+let audioSessionId = 0;
+
 
 
 /* =========================================================
@@ -1850,11 +1660,6 @@ const ayahContainer =
         "ayahContainer"
     );
 
-const ayahNumberInput =
-    document.getElementById(
-        "ayahNumberInput"
-    );
-
 const pageNumberInput =
     document.getElementById(
         "pageNumberInput"
@@ -1865,24 +1670,24 @@ const ayahCountHint =
         "ayahCountHint"
     );
 
-const jumpPageBadge =
-    document.getElementById(
-        "jumpPageBadge"
-    );
-
 const jumpError =
     document.getElementById(
         "jumpError"
     );
 
-const goAyahButton =
+const bookmarkButton =
     document.getElementById(
-        "goAyah"
+        "bookmarkButton"
     );
 
-const goPageButton =
+const playerSticky =
     document.getElementById(
-        "goPage"
+        "playerSticky"
+    );
+
+const playerDragHandle =
+    document.getElementById(
+        "playerDragHandle"
     );
 
 const audio =
@@ -1935,45 +1740,6 @@ const playerStatus =
         "playerStatus"
     );
 
-const playerSticky =
-    document.querySelector(".player-sticky");
-
-const playerDragHandle =
-    document.getElementById("playerDragHandle");
-
-const readingReminderButton =
-    document.getElementById(
-        "readingReminderButton"
-    );
-
-
-let playerDragStartY = null;
-
-playerDragHandle.addEventListener("pointerdown", event => {
-    playerDragStartY = event.clientY;
-    playerDragHandle.setPointerCapture(event.pointerId);
-});
-
-playerDragHandle.addEventListener("pointerup", event => {
-    if(playerDragStartY === null){
-        return;
-    }
-
-    const delta = event.clientY - playerDragStartY;
-    playerDragStartY = null;
-
-    if(delta > 25){
-        playerSticky.classList.add("collapsed");
-    }
-    else if(delta < -25){
-        playerSticky.classList.remove("collapsed");
-    }
-});
-
-playerDragHandle.addEventListener("dblclick", () => {
-    playerSticky.classList.toggle("collapsed");
-});
-
 
 /* =========================================================
    PLAY BUTTON STATE
@@ -1996,6 +1762,76 @@ function setPlayButtonState(
 
 }
 
+
+/* =========================================================
+   BOOKMARK / LAST READING POSITION
+========================================================= */
+
+function getSavedBookmark(){
+    try{
+        const raw = localStorage.getItem(BOOKMARK_KEY);
+        if(!raw) return null;
+        const data = JSON.parse(raw);
+        if(!data || !data.surah || !data.ayah) return null;
+        return data;
+    }catch(error){
+        return null;
+    }
+}
+
+function updateBookmarkButton(){
+    const saved = getSavedBookmark();
+    if(!saved){
+        bookmarkButton.textContent = "🔖 علامت‌گذاری اینجا";
+        return;
+    }
+    bookmarkButton.textContent =
+        `🔖 ادامه از سوره ${faNumber(saved.surah)}، آیه ${faNumber(saved.ayah)}`;
+}
+
+function saveReadingPosition(force = false){
+    if(!currentSurah || !currentAyah) return;
+
+    const now = Date.now();
+    if(!force && now - lastBookmarkSave < 3000) return;
+
+    lastBookmarkSave = now;
+
+    const data = {
+        surah: Number(currentSurah),
+        ayah: Number(currentAyah),
+        time: isBismillahAudio ? 0 : Number(audio.currentTime || 0),
+        updatedAt: now
+    };
+
+    try{
+        localStorage.setItem(BOOKMARK_KEY, JSON.stringify(data));
+        updateBookmarkButton();
+    }catch(error){
+        console.warn("Bookmark save failed", error);
+    }
+}
+
+async function restoreBookmark(){
+    const saved = getSavedBookmark();
+    if(!saved) return;
+
+    const ok = await loadSurahAndAyah(
+        Number(saved.surah),
+        Number(saved.ayah),
+        false
+    );
+
+    if(ok && Number.isFinite(Number(saved.time)) && Number(saved.time) > 0){
+        const setTime = () => {
+            if(Number.isFinite(audio.duration) && audio.duration > Number(saved.time)){
+                audio.currentTime = Number(saved.time);
+            }
+        };
+        if(audio.readyState >= 1) setTime();
+        else audio.addEventListener("loadedmetadata", setTime, {once:true});
+    }
+}
 
 /* =========================================================
    PERSIAN NUMBERS
@@ -2297,7 +2133,7 @@ async function loadSurahs(){
 
 
         renderSurahList();
-
+        surahList.classList.remove("open");
 
         await loadAyahs();
 
@@ -2401,6 +2237,9 @@ function renderSurahList(
 
     surahList.innerHTML = "";
 
+    if(normalized || document.activeElement === surahSearch){
+        surahList.classList.add("open");
+    }
 
     if(!filtered.length){
 
@@ -2448,14 +2287,14 @@ function renderSurahList(
 
             button.innerHTML =
                 `
-                <span class="surah-item-name">
-                    ${getSurahName(surah)}
-                </span>
-
                 <span class="surah-item-number">
                     ${faNumber(
                         surah.number
                     )}
+                </span>
+
+                <span class="surah-item-name">
+                    ${getSurahName(surah)}
                 </span>
                 `;
 
@@ -2560,8 +2399,6 @@ async function selectSurah(
     value
 ){
 
-    playbackSessionId++;
-
     if(
         !value ||
         value < 1 ||
@@ -2638,6 +2475,7 @@ async function selectSurah(
     surahSearch.value =
         "";
 
+    surahList.classList.remove("open");
 
     renderSurahList();
 
@@ -2666,8 +2504,6 @@ async function loadSurahAndAyah(
 
     }
 
-
-    playbackSessionId++;
 
     pauseAudio();
 
@@ -2701,15 +2537,10 @@ async function loadSurahAndAyah(
     renderSurahList();
 
 
-    await loadAyahs();
+    const loaded = await loadAyahs();
 
-
-    if(
-        !ayahData.length
-    ){
-
+    if(!loaded || !ayahData.length){
         return false;
-
     }
 
 
@@ -2761,9 +2592,6 @@ async function loadSurahAndAyah(
         false;
 
 
-    ayahNumberInput.value =
-        currentAyah;
-
 
     if(target){
 
@@ -2801,178 +2629,74 @@ async function loadSurahAndAyah(
 
 
 /* =========================================================
-   UPDATE AYAH INPUT
-========================================================= */
-
-function updateAyahInputInfo(){
-
-    const surah =
-        surahData.find(
-            item =>
-                Number(item.number) ===
-                Number(currentSurah)
-        );
-
-
-    const total =
-        ayahData.length ||
-        Number(
-            surah?.ayah_count || 0
-        );
-
-
-    ayahNumberInput.min =
-        "1";
-
-    ayahNumberInput.max =
-        String(total);
-
-
-    ayahCountHint.textContent =
-        total
-            ? `آیه‌ای از ${faNumber(total)} آیه`
-            : "شماره آیه را وارد کنید.";
-
-}
-
-
-/* =========================================================
    LOAD AYAHS
 ========================================================= */
 
 async function loadAyahs(){
 
-    if(isLoading){
-
-        return;
-
-    }
-
-
+    const requestId = ++loadRequestId;
     isLoading = true;
 
-
     try{
-
-        ayahContainer.innerHTML =
-            `
+        ayahContainer.innerHTML = `
             <div class="loading">
                 در حال دریافت آیات سوره...
             </div>
-            `;
+        `;
 
-
-        const response =
-            await fetch(
-                `${WORKER_URL}/ayahs?surah=${encodeURIComponent(
-                    currentSurah
-                )}`
-            );
-
+        const response = await fetch(
+            `${WORKER_URL}/ayahs?surah=${encodeURIComponent(currentSurah)}`
+        );
 
         if(!response.ok){
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
+            throw new Error(`HTTP ${response.status}`);
         }
 
+        const result = await response.json();
 
-        const result =
-            await response.json();
-
-
-        if(
-            !result.ok ||
-            !Array.isArray(
-                result.ayahs
-            )
-        ){
-
-            throw new Error(
-                "آیات از Worker دریافت نشد."
-            );
-
+        if(requestId !== loadRequestId){
+            return false;
         }
 
-
-        ayahData =
-            result.ayahs;
-
-
-        currentAyah =
-            1;
-
-
-        if(
-            Number(currentSurah) === 1 ||
-            Number(currentSurah) === 9
-        ){
-
-            bismillahPlayedForCurrentAyah =
-                true;
-
-        }
-        else{
-
-            bismillahPlayedForCurrentAyah =
-                false;
-
+        if(!result.ok || !Array.isArray(result.ayahs)){
+            throw new Error("آیات از Worker دریافت نشد.");
         }
 
+        ayahData = result.ayahs;
+        currentAyah = 1;
 
-        isBismillahAudio =
-            false;
+        bismillahPlayedForCurrentAyah =
+            Number(currentSurah) === 1 || Number(currentSurah) === 9;
 
-
+        isBismillahAudio = false;
         clearNextAudio();
 
-
         renderAyahs();
-
         updateSurahInfo();
-
         updateSurahNavigation();
-
-        updateAyahInputInfo();
-
-
-        ayahNumberInput.value =
-            "";
-
-
         hideJumpPage();
-
-
         loadAyah();
 
+        return true;
     }
     catch(error){
-
-        console.error(error);
-
-
-        ayahContainer.innerHTML =
-            `
-            <div class="error">
-
-                دریافت آیات با خطا مواجه شد.
-
-                <br>
-
-                ${error.message || ""}
-
-            </div>
+        if(requestId === loadRequestId){
+            console.error(error);
+            ayahContainer.innerHTML = `
+                <div class="error">
+                    دریافت آیات با خطا مواجه شد.
+                    <br>
+                    ${error.message || ""}
+                </div>
             `;
-
+        }
+        return false;
     }
     finally{
-
-        isLoading = false;
-
+        if(requestId === loadRequestId){
+            isLoading = false;
+        }
     }
-
 }
 
 
@@ -2980,261 +2704,144 @@ async function loadAyahs(){
    EXTRACT BISMILLAH
 ========================================================= */
 
-function simplifyArabicForBismillah(value){
-
-    return String(value || "")
-        .normalize("NFD")
-        .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
-        .replace(/ـ/g, "")
-        .replace(/[ٱأإآ]/g, "ا")
-        .trim();
-
-}
-
-
 function extractBismillah(text){
 
     if(!text){
-
-        return {
-            bismillah:"",
-            remaining:""
-        };
-
+        return {bismillah:"", remaining:""};
     }
 
+    const normalized = String(text)
+        .normalize("NFC")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .trim();
 
-    const normalized =
-        String(text)
-            .normalize("NFC")
-            .trim();
+    const marks = "[\\u064B-\\u065F\\u0670]*";
+    const pattern = new RegExp(
+        "^\\s*ب" + marks + "\\s*س" + marks + "\\s*م" + marks +
+        "\\s*ا?ل" + marks + "ل" + marks + "ه" + marks +
+        "\\s*ا?ل" + marks + "ر" + marks + "ح" + marks + "م" + marks + "ن" + marks +
+        "\\s*ا?ل" + marks + "ر" + marks + "ح" + marks + "ي" + marks + "م" + marks,
+        "u"
+    );
 
+    const match = normalized.match(pattern);
 
-    const tokens =
-        normalized.split(/\s+/);
-
-
-    if(tokens.length < 4){
-
-        return {
-            bismillah:"",
-            remaining:normalized
-        };
-
+    if(match){
+        const bismillah = match[0].trim();
+        const remaining = normalized.slice(match[0].length).trim();
+        return {bismillah, remaining};
     }
 
+    const plainPattern = /^بسم\s*الله\s*الرحمن\s*الرحیم/u;
+    const plainMatch = normalized.match(plainPattern);
 
-    const expected = [
-        "بسم",
-        "الله",
-        "الرحمن",
-        "الرحيم"
-    ];
-
-
-    const firstFour =
-        tokens.slice(0, 4).map(
-            simplifyArabicForBismillah
-        );
-
-
-    const matches =
-        expected.every(
-            (word, index) =>
-                firstFour[index] === word
-        );
-
-
-    if(!matches){
-
-        return {
-            bismillah:"",
-            remaining:normalized
-        };
-
+    if(plainMatch){
+        const bismillah = plainMatch[0].trim();
+        const remaining = normalized.slice(plainMatch[0].length).trim();
+        return {bismillah, remaining};
     }
 
-
-    const bismillah =
-        tokens.slice(0, 4).join(" ");
-
-
-    const remaining =
-        tokens.slice(4).join(" ").trim();
-
-
-    return {
-        bismillah,
-        remaining
-    };
-
+    return {bismillah:"", remaining:normalized};
 }
 
 
 /* =========================================================
-   READING REMINDER / LONG PRESS
+   AYAH REMINDERS
 ========================================================= */
 
-function getReadingReminder(){
-
+function getReminders(){
     try{
-        const raw = localStorage.getItem(READING_REMINDER_KEY);
-        return raw ? JSON.parse(raw) : null;
+        const raw = localStorage.getItem(REMINDERS_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+    }catch(error){
+        return [];
     }
-    catch(error){
-        console.error(error);
-        return null;
-    }
-
 }
 
-
-function saveReadingReminder(ayah){
-
-    const reminder = {
-        surah: Number(currentSurah),
-        ayah: Number(ayah.ayah_number),
-        page: Number(ayah.page || 0),
-        time: (
-            Number(currentAyah) === Number(ayah.ayah_number) &&
-            Number.isFinite(audio.currentTime)
-        ) ? Number(audio.currentTime) : 0,
-        savedAt: Date.now()
-    };
-
-    localStorage.setItem(
-        READING_REMINDER_KEY,
-        JSON.stringify(reminder)
-    );
-
-    return reminder;
-
+function reminderKey(surah, ayah){
+    return `${Number(surah)}:${Number(ayah)}`;
 }
 
+function isAyahReminded(surah, ayah){
+    const key = reminderKey(surah, ayah);
+    return getReminders().some(item => item.key === key);
+}
 
-function addReadingReminderMarker(div, ayah){
+function toggleAyahReminder(surah, ayah){
+    const reminders = getReminders();
+    const key = reminderKey(surah, ayah);
+    const index = reminders.findIndex(item => item.key === key);
 
-    const reminder = getReadingReminder();
-
-    if(!reminder){
-        return;
+    if(index >= 0){
+        reminders.splice(index, 1);
+        localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
+        return false;
     }
 
-    if(
-        Number(reminder.surah) !== Number(currentSurah) ||
-        Number(reminder.ayah) !== Number(ayah.ayah_number)
-    ){
-        return;
-    }
-
-    const marker = document.createElement("button");
-    marker.type = "button";
-    marker.className = "reading-reminder-marker";
-    marker.title = "یادآوری مطالعه؛ برای برگشتن به اینجا لمس کنید";
-    marker.setAttribute("aria-label", "یادآوری مطالعه");
-    marker.textContent = "🔖";
-
-    marker.addEventListener("click", async event => {
-        event.stopPropagation();
-        await restoreReadingReminder();
+    reminders.push({
+        key,
+        surah:Number(surah),
+        ayah:Number(ayah),
+        createdAt:Date.now()
     });
-
-    div.appendChild(marker);
-
+    localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
+    return true;
 }
 
+function updateAyahReminderVisual(div, surah, ayah){
+    const old = div.querySelector(".reminder-badge");
+    if(old) old.remove();
 
-async function restoreReadingReminder(){
+    const reminded = isAyahReminded(surah, ayah);
+    div.classList.toggle("reminded", reminded);
 
-    const reminder = getReadingReminder();
-
-    if(!reminder){
-        playerStatus.textContent = "هنوز یادآوری مطالعه‌ای ثبت نشده است.";
-        return;
+    if(reminded){
+        const badge = document.createElement("div");
+        badge.className = "reminder-badge";
+        badge.textContent = "🔔 یادآوری ثبت شده";
+        div.appendChild(badge);
     }
-
-    const ok = await loadSurahAndAyah(
-        Number(reminder.surah),
-        Number(reminder.ayah),
-        false
-    );
-
-    if(!ok){
-        playerStatus.textContent = "یادآوری پیدا نشد.";
-        return;
-    }
-
-    const seekToSavedPosition = () => {
-
-        if(
-            Number.isFinite(audio.duration) &&
-            audio.duration > 0
-        ){
-            audio.currentTime = Math.min(
-                Math.max(0, Number(reminder.time) || 0),
-                Math.max(0, audio.duration - 0.05)
-            );
-        }
-
-        updateProgressUI();
-        highlightCurrentAyah();
-
-        playerStatus.textContent =
-            `یادآوری: سوره ${faNumber(reminder.surah)}، آیه ${faNumber(reminder.ayah)}`;
-    };
-
-    if(audio.readyState >= 1){
-        seekToSavedPosition();
-    }
-    else{
-        audio.addEventListener(
-            "loadedmetadata",
-            seekToSavedPosition,
-            {once:true}
-        );
-    }
-
 }
 
-
-function setupAyahLongPress(div, ayah){
+function setupAyahLongPress(div, ayahNumber){
+    let timer = null;
+    let longPressed = false;
 
     const start = event => {
-
-        if(event.pointerType === "mouse" && event.button !== 0){
-            return;
-        }
-
-        longPressTriggered = false;
-        clearTimeout(longPressTimer);
-
-        longPressTimer = setTimeout(() => {
-
-            longPressTriggered = true;
-
-            const reminder = saveReadingReminder(ayah);
-            renderAyahs();
-            highlightCurrentAyah();
-
-            playerStatus.textContent =
-                `🔖 یادآوری آیه ${faNumber(reminder.ayah)} ثبت شد`;
-
+        if(event.pointerType === "mouse" && event.button !== 0) return;
+        longPressed = false;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            longPressed = true;
+            const added = toggleAyahReminder(currentSurah, ayahNumber);
+            updateAyahReminderVisual(div, currentSurah, ayahNumber);
+            playerStatus.textContent = added
+                ? `🔔 یادآوری برای آیه ${faNumber(ayahNumber)} ثبت شد`
+                : `🔕 یادآوری آیه ${faNumber(ayahNumber)} حذف شد`;
+            if(navigator.vibrate) navigator.vibrate(35);
         }, 650);
-
     };
 
     const cancel = () => {
-        clearTimeout(longPressTimer);
+        clearTimeout(timer);
+        timer = null;
     };
 
     div.addEventListener("pointerdown", start);
     div.addEventListener("pointerup", cancel);
     div.addEventListener("pointercancel", cancel);
     div.addEventListener("pointerleave", cancel);
-    div.addEventListener("pointermove", cancel);
+    div.addEventListener("contextmenu", event => event.preventDefault());
 
+    div.addEventListener("click", event => {
+        if(longPressed){
+            event.preventDefault();
+            event.stopPropagation();
+            longPressed = false;
+        }
+    }, true);
 }
-
 
 /* =========================================================
    RENDER AYAHS
@@ -3367,18 +2974,21 @@ function renderAyahs(){
                 html;
 
 
-            addReadingReminderMarker(div, ayah);
-            setupAyahLongPress(div, ayah);
+            updateAyahReminderVisual(
+                div,
+                currentSurah,
+                ayah.ayah_number
+            );
+
+            setupAyahLongPress(
+                div,
+                Number(ayah.ayah_number)
+            );
 
 
             div.addEventListener(
                 "click",
                 () => {
-
-                    if(longPressTriggered){
-                        longPressTriggered = false;
-                        return;
-                    }
 
                     currentAyah =
                         Number(
@@ -3406,10 +3016,6 @@ function renderAyahs(){
 
                     isBismillahAudio =
                         false;
-
-
-                    ayahNumberInput.value =
-                        currentAyah;
 
 
                     showJumpPage(
@@ -3535,29 +3141,18 @@ function showJumpPage(page){
         page === undefined ||
         page === ""
     ){
-
         hideJumpPage();
-
         return;
-
     }
 
-
-    jumpPageBadge.style.display =
-        "inline-block";
-
-
-    jumpPageBadge.textContent =
+    surahPage.style.display = "inline-block";
+    surahPage.textContent =
         `📄 صفحه ${faNumber(page)}`;
-
 }
 
 
 function hideJumpPage(){
-
-    jumpPageBadge.style.display =
-        "none";
-
+    surahPage.style.display = "none";
 }
 
 
@@ -3693,152 +3288,6 @@ function highlightCurrentAyah(){
 
 
 /* =========================================================
-   GO TO AYAH
-========================================================= */
-
-async function goToAyah(){
-
-    clearJumpError();
-
-
-    const requested =
-        Number(
-            ayahNumberInput.value
-        );
-
-
-    const total =
-        ayahData.length;
-
-
-    if(
-        !Number.isInteger(requested) ||
-        requested < 1
-    ){
-
-        jumpError.textContent =
-            "لطفاً شماره آیه را وارد کنید.";
-
-        return;
-
-    }
-
-
-    if(
-        total &&
-        requested > total
-    ){
-
-        jumpError.textContent =
-            `این سوره فقط ${faNumber(total)} آیه دارد.`;
-
-        return;
-
-    }
-
-
-    goAyahButton.disabled =
-        true;
-
-
-    goAyahButton.textContent =
-        "در حال یافتن...";
-
-
-    try{
-
-        const target =
-            ayahData.find(
-                item =>
-                    Number(
-                        item.ayah_number
-                    ) === requested
-            );
-
-
-        if(!target){
-
-            throw new Error(
-                "این آیه پیدا نشد."
-            );
-
-        }
-
-
-        currentAyah =
-            Number(
-                target.ayah_number
-            );
-
-
-        if(
-            currentAyah === 1 &&
-            Number(currentSurah) !== 1 &&
-            Number(currentSurah) !== 9
-        ){
-
-            bismillahPlayedForCurrentAyah =
-                false;
-
-        }
-        else{
-
-            bismillahPlayedForCurrentAyah =
-                true;
-
-        }
-
-
-        isBismillahAudio =
-            false;
-
-
-        ayahNumberInput.value =
-            currentAyah;
-
-
-        showJumpPage(
-            target.page
-        );
-
-
-        updateSurahInfo();
-
-
-        loadAyah();
-
-
-        playerStatus.textContent =
-            `آیه ${faNumber(
-                currentAyah
-            )} آماده پخش است`;
-
-    }
-    catch(error){
-
-        console.error(error);
-
-
-        jumpError.textContent =
-            error.message ||
-            "خطا در پیدا کردن آیه.";
-
-    }
-    finally{
-
-        goAyahButton.disabled =
-            false;
-
-
-        goAyahButton.textContent =
-            "▶ رفتن به آیه";
-
-    }
-
-}
-
-
-/* =========================================================
    GO TO PAGE
 ========================================================= */
 
@@ -3867,12 +3316,7 @@ async function goToPage(){
     }
 
 
-    goPageButton.disabled =
-        true;
-
-
-    goPageButton.textContent =
-        "در حال یافتن...";
+    pageNumberInput.disabled = true;
 
 
     try{
@@ -3959,12 +3403,7 @@ async function goToPage(){
     }
     finally{
 
-        goPageButton.disabled =
-            false;
-
-
-        goPageButton.textContent =
-            "📄 رفتن به صفحه";
+        pageNumberInput.disabled = false;
 
     }
 
@@ -3976,6 +3415,8 @@ async function goToPage(){
 ========================================================= */
 
 function loadAyah(){
+
+    audioSessionId++;
 
     if(!ayahData.length){
 
@@ -4065,6 +3506,8 @@ function loadAyah(){
 
 async function playBismillah(){
 
+    const session = audioSessionId;
+
     try{
 
         isBismillahAudio =
@@ -4125,6 +3568,11 @@ async function playBismillah(){
 
         await audio.play();
 
+        if(session !== audioSessionId){
+            audio.pause();
+            return;
+        }
+
     }
     catch(error){
 
@@ -4151,6 +3599,8 @@ async function playBismillah(){
 ========================================================= */
 
 async function playAudio(){
+
+    const session = audioSessionId;
 
     try{
 
@@ -4200,6 +3650,11 @@ async function playAudio(){
 
         await audio.play();
 
+        if(session !== audioSessionId){
+            audio.pause();
+            return;
+        }
+
 
         setPlayButtonState(true);
 
@@ -4235,6 +3690,7 @@ async function playAudio(){
 
 function pauseAudio(){
 
+    saveReadingPosition(true);
     audio.pause();
 
 
@@ -4325,10 +3781,6 @@ startSurahButton.addEventListener(
             "0%";
 
 
-        ayahNumberInput.value =
-            1;
-
-
         const first =
             ayahData[0];
 
@@ -4408,14 +3860,6 @@ playButton.addEventListener(
 );
 
 
-readingReminderButton.addEventListener(
-    "click",
-    async () => {
-        await restoreReadingReminder();
-    }
-);
-
-
 /* =========================================================
    PREVIOUS AYAH
 ========================================================= */
@@ -4456,10 +3900,6 @@ prevButton.addEventListener(
 
             isBismillahAudio =
                 false;
-
-
-            ayahNumberInput.value =
-                currentAyah;
 
 
             const target =
@@ -4530,10 +3970,6 @@ nextButton.addEventListener(
 
             isBismillahAudio =
                 false;
-
-
-            ayahNumberInput.value =
-                currentAyah;
 
 
             const target =
@@ -4700,7 +4136,7 @@ audio.addEventListener(
     "ended",
     async () => {
 
-        const endedSessionId = playbackSessionId;
+        saveReadingPosition(true);
 
         /*
             =================================================
@@ -4709,10 +4145,6 @@ audio.addEventListener(
         */
 
         if(isBismillahAudio){
-
-            if(endedSessionId !== playbackSessionId){
-                return;
-            }
 
             isBismillahAudio =
                 false;
@@ -4723,10 +4155,6 @@ audio.addEventListener(
 
 
             currentAyah =
-                1;
-
-
-            ayahNumberInput.value =
                 1;
 
 
@@ -4788,10 +4216,6 @@ audio.addEventListener(
             =================================================
         */
 
-        if(endedSessionId !== playbackSessionId){
-            return;
-        }
-
         if(
             currentAyah <
             ayahData.length
@@ -4811,10 +4235,6 @@ audio.addEventListener(
 
             isBismillahAudio =
                 false;
-
-
-            ayahNumberInput.value =
-                currentAyah;
 
 
             highlightCurrentAyah();
@@ -4997,25 +4417,6 @@ audio.addEventListener(
 );
 
 
-function updateProgressUI(){
-
-    const current = Number(audio.currentTime || 0);
-    const duration = Number(audio.duration || 0);
-
-    currentTimeElement.textContent =
-        formatTime(current);
-
-    if(Number.isFinite(duration) && duration > 0){
-        const percent = Math.max(
-            0,
-            Math.min(100, (current / duration) * 100)
-        );
-        progress.style.width = `${percent}%`;
-    }
-
-}
-
-
 /* =========================================================
    TIME UPDATE
 ========================================================= */
@@ -5035,6 +4436,8 @@ audio.addEventListener(
         currentTimeElement.textContent =
             formatTime(current);
 
+
+        saveReadingPosition(false);
 
         if(duration > 0){
 
@@ -5127,16 +4530,38 @@ progressWrap.addEventListener(
 ========================================================= */
 
 surahSearch.addEventListener(
-    "input",
+    "focus",
     () => {
-
-        renderSurahList(
-            surahSearch.value
-        );
-
+        surahList.classList.add("open");
+        renderSurahList(surahSearch.value);
     }
 );
 
+surahSearch.addEventListener(
+    "click",
+    () => {
+        surahList.classList.add("open");
+        renderSurahList(surahSearch.value);
+    }
+);
+
+surahSearch.addEventListener(
+    "input",
+    () => {
+        surahList.classList.add("open");
+        renderSurahList(surahSearch.value);
+    }
+);
+
+
+document.addEventListener(
+    "click",
+    event => {
+        if(!event.target.closest(".surah-search")){
+            surahList.classList.remove("open");
+        }
+    }
+);
 
 /* =========================================================
    SEARCH ENTER
@@ -5226,52 +4651,11 @@ surahSearch.addEventListener(
                 )
             );
 
-        }
-
-    }
-);
-
-
-/* =========================================================
-   GO AYAH
-========================================================= */
-
-goAyahButton.addEventListener(
-    "click",
-    goToAyah
-);
-
-
-/* =========================================================
-   ENTER AYAH
-========================================================= */
-
-ayahNumberInput.addEventListener(
-    "keydown",
-    event => {
-
-        if(
-            event.key ===
-            "Enter"
-        ){
-
-            event.preventDefault();
-
-            goToAyah();
+            surahList.classList.remove("open");
 
         }
 
     }
-);
-
-
-/* =========================================================
-   GO PAGE
-========================================================= */
-
-goPageButton.addEventListener(
-    "click",
-    goToPage
 );
 
 
@@ -5282,21 +4666,70 @@ goPageButton.addEventListener(
 pageNumberInput.addEventListener(
     "keydown",
     event => {
-
-        if(
-            event.key ===
-            "Enter"
-        ){
-
+        if(event.key === "Enter"){
             event.preventDefault();
-
             goToPage();
-
         }
-
     }
 );
 
+
+let playerTouchStartY = null;
+let playerTouchDragging = false;
+let playerDidDrag = false;
+
+playerDragHandle.addEventListener("pointerdown", event => {
+    playerTouchStartY = event.clientY;
+    playerTouchDragging = true;
+    playerDidDrag = false;
+    playerDragHandle.setPointerCapture?.(event.pointerId);
+});
+
+playerDragHandle.addEventListener("pointermove", event => {
+    if(!playerTouchDragging || playerTouchStartY === null) return;
+    const delta = event.clientY - playerTouchStartY;
+    if(delta > 45){
+        playerSticky.classList.add("collapsed");
+        playerDidDrag = true;
+    }else if(delta < -35){
+        playerSticky.classList.remove("collapsed");
+        playerDidDrag = true;
+    }
+});
+
+playerDragHandle.addEventListener("pointerup", () => {
+    playerTouchDragging = false;
+    playerTouchStartY = null;
+});
+
+playerDragHandle.addEventListener("click", () => {
+    if(playerDidDrag){
+        playerDidDrag = false;
+        return;
+    }
+    playerSticky.classList.toggle("collapsed");
+});
+
+bookmarkButton.addEventListener(
+    "click",
+    async () => {
+        const saved = getSavedBookmark();
+        const samePosition = saved &&
+            Number(saved.surah) === Number(currentSurah) &&
+            Number(saved.ayah) === Number(currentAyah);
+
+        if(saved && samePosition){
+            await restoreBookmark();
+            playerStatus.textContent =
+                `بازگشت به سوره ${faNumber(saved.surah)}، آیه ${faNumber(saved.ayah)}`;
+        }
+        else{
+            saveReadingPosition(true);
+            playerStatus.textContent =
+                `اینجا علامت‌گذاری شد: آیه ${faNumber(currentAyah)}`;
+        }
+    }
+);
 
 /* =========================================================
    MODES
@@ -5436,6 +4869,7 @@ document.addEventListener(
 
 setPlayButtonState(false);
 
+updateBookmarkButton();
 loadSurahs();
 
 </script>
