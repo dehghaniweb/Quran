@@ -36,8 +36,14 @@ body{
     direction:rtl;
 }
 
-button{
+button,
+input,
+select{
     font-family:inherit;
+}
+
+button{
+    cursor:pointer;
 }
 
 .app{
@@ -76,6 +82,63 @@ button{
     margin-bottom:12px;
 }
 
+
+/* =========================
+   SURAH SEARCH
+========================= */
+
+.surah-search{
+    position:relative;
+    margin-bottom:8px;
+}
+
+.surah-search-input{
+    width:100%;
+
+    border:none;
+    outline:none;
+
+    background:white;
+    color:#173c2c;
+
+    border-radius:12px;
+
+    padding:
+        11px
+        42px
+        11px
+        12px;
+
+    font-size:14px;
+    font-weight:bold;
+
+    direction:rtl;
+}
+
+.surah-search-input::placeholder{
+    color:#91a29a;
+}
+
+.search-icon{
+    position:absolute;
+
+    right:13px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    font-size:18px;
+
+    color:#176c49;
+
+    pointer-events:none;
+}
+
+
+/* =========================
+   SURAH SELECT
+========================= */
+
 .surah-selector{
     display:flex;
     gap:8px;
@@ -100,6 +163,156 @@ button{
 
     font-size:15px;
     font-weight:bold;
+}
+
+
+/* =========================
+   AYAH JUMP PANEL
+========================= */
+
+.ayah-jump{
+    background:white;
+
+    margin:
+        12px
+        12px
+        0;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.07);
+}
+
+.ayah-jump-title{
+    color:#0b4b35;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    text-align:right;
+}
+
+.ayah-jump-row{
+    display:flex;
+
+    gap:8px;
+
+    align-items:center;
+}
+
+.ayah-number-input{
+    flex:1;
+
+    min-width:0;
+
+    border:
+        1px solid
+        #d6e3dc;
+
+    outline:none;
+
+    background:#f8fbf9;
+
+    color:#173c2c;
+
+    border-radius:11px;
+
+    padding:
+        11px
+        12px;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    direction:ltr;
+
+    transition:
+        border .2s,
+        background .2s;
+}
+
+.ayah-number-input:focus{
+    border-color:#27845a;
+
+    background:white;
+}
+
+.go-ayah{
+    border:none;
+
+    border-radius:11px;
+
+    background:#176c49;
+
+    color:white;
+
+    padding:
+        11px
+        15px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+
+    box-shadow:
+        0 3px 8px rgba(23,108,73,.18);
+}
+
+.go-ayah:active{
+    transform:scale(.98);
+}
+
+.ayah-jump-hint{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin-top:8px;
+
+    color:#71877d;
+
+    font-size:12px;
+}
+
+.page-badge{
+    background:#edf7f1;
+
+    color:#176c49;
+
+    border-radius:8px;
+
+    padding:
+        5px
+        8px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+}
+
+.jump-error{
+    color:#b34b4b;
+
+    font-size:12px;
+
+    margin-top:7px;
+
+    min-height:18px;
 }
 
 
@@ -132,6 +345,26 @@ button{
 .surah-meta{
     color:#648073;
     font-size:13px;
+}
+
+.surah-page{
+    display:inline-block;
+
+    margin-top:8px;
+
+    background:#edf7f1;
+
+    color:#176c49;
+
+    padding:
+        5px
+        10px;
+
+    border-radius:9px;
+
+    font-size:12px;
+
+    font-weight:bold;
 }
 
 
@@ -661,6 +894,15 @@ button{
         font-size:23px;
     }
 
+    .ayah-jump-row{
+        gap:6px;
+    }
+
+    .go-ayah{
+        padding-left:12px;
+        padding-right:12px;
+    }
+
 }
 
 </style>
@@ -680,6 +922,28 @@ button{
             📖 قرآن کریم
         </div>
 
+
+        <!-- جستجوی سوره -->
+
+        <div class="surah-search">
+
+            <span class="search-icon">
+                🔎
+            </span>
+
+            <input
+                id="surahSearch"
+                class="surah-search-input"
+                type="search"
+                autocomplete="off"
+                placeholder="جستجوی نام سوره..."
+            >
+
+        </div>
+
+
+        <!-- انتخاب سوره -->
+
         <div class="surah-selector">
 
             <select id="surahSelect">
@@ -693,6 +957,59 @@ button{
         </div>
 
     </header>
+
+
+    <!-- انتخاب آیه -->
+
+    <section class="ayah-jump">
+
+        <div class="ayah-jump-title">
+            🎯 رفتن مستقیم به آیه
+        </div>
+
+        <div class="ayah-jump-row">
+
+            <input
+                id="ayahNumberInput"
+                class="ayah-number-input"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                placeholder="شماره آیه"
+            >
+
+            <button
+                id="goAyah"
+                class="go-ayah"
+                type="button"
+            >
+                ▶ رفتن به آیه
+            </button>
+
+        </div>
+
+        <div class="ayah-jump-hint">
+
+            <span id="ayahCountHint">
+                ابتدا یک سوره انتخاب کنید.
+            </span>
+
+            <span
+                id="jumpPageBadge"
+                class="page-badge"
+                style="display:none;"
+            >
+                صفحه —
+            </span>
+
+        </div>
+
+        <div
+            id="jumpError"
+            class="jump-error"
+        ></div>
+
+    </section>
 
 
     <!-- SURAH INFO -->
@@ -711,6 +1028,14 @@ button{
             id="surahInfo"
         >
             در حال آماده‌سازی...
+        </div>
+
+        <div
+            id="surahPage"
+            class="surah-page"
+            style="display:none;"
+        >
+            📄 صفحه —
         </div>
 
     </section>
@@ -756,8 +1081,6 @@ button{
         </div>
 
 
-        <!-- شروع سوره -->
-
         <button
             class="start-surah"
             id="startSurah"
@@ -793,17 +1116,8 @@ button{
         </div>
 
 
-        <!--
-            RTL:
-            راست = قبلی
-            وسط = پخش
-            چپ = بعدی
-        -->
-
         <div class="controls">
 
-
-            <!-- آیه قبلی -->
 
             <div class="control-box">
 
@@ -823,8 +1137,6 @@ button{
             </div>
 
 
-            <!-- پخش -->
-
             <div class="control-box">
 
                 <button
@@ -842,8 +1154,6 @@ button{
 
             </div>
 
-
-            <!-- آیه بعدی -->
 
             <div class="control-box">
 
@@ -884,8 +1194,6 @@ button{
 </div>
 
 
-<!-- AUDIO -->
-
 <audio
     id="audio"
     preload="metadata"
@@ -925,17 +1233,8 @@ let currentMode = "arabic";
 
 let isLoading = false;
 
-
-/*
-    مشخص می‌کند بسم‌الله آیه اول
-    پخش شده یا نه.
-*/
 let bismillahPlayedForCurrentAyah = false;
 
-
-/*
-    مشخص می‌کند فایل فعلی بسم‌الله است یا آیه.
-*/
 let isBismillahAudio = false;
 
 
@@ -946,14 +1245,35 @@ let isBismillahAudio = false;
 const surahSelect =
     document.getElementById("surahSelect");
 
+const surahSearch =
+    document.getElementById("surahSearch");
+
 const surahName =
     document.getElementById("surahName");
 
 const surahInfo =
     document.getElementById("surahInfo");
 
+const surahPage =
+    document.getElementById("surahPage");
+
 const ayahContainer =
     document.getElementById("ayahContainer");
+
+const ayahNumberInput =
+    document.getElementById("ayahNumberInput");
+
+const ayahCountHint =
+    document.getElementById("ayahCountHint");
+
+const jumpPageBadge =
+    document.getElementById("jumpPageBadge");
+
+const jumpError =
+    document.getElementById("jumpError");
+
+const goAyahButton =
+    document.getElementById("goAyah");
 
 const audio =
     document.getElementById("audio");
@@ -1077,6 +1397,28 @@ function getSurahName(surah){
 
 
 /* =========================================================
+   NORMALIZE SEARCH TEXT
+========================================================= */
+
+function normalizeSearchText(text){
+
+    return String(text || "")
+        .trim()
+        .toLowerCase()
+        .replace(/ي/g,"ی")
+        .replace(/ى/g,"ی")
+        .replace(/ك/g,"ک")
+        .replace(/ة/g,"ه")
+        .replace(/ۀ/g,"ه")
+        .replace(/أ/g,"ا")
+        .replace(/إ/g,"ا")
+        .replace(/ٱ/g,"ا")
+        .replace(/َ|ً|ُ|ٌ|ِ|ٍ|ْ|ّ|ـ/g,"");
+
+}
+
+
+/* =========================================================
    AUDIO URL
 ========================================================= */
 
@@ -1090,31 +1432,6 @@ function getBismillahAudioUrl(){
 }
 
 
-/*
-    فایل‌های صوتی:
-
-    حمد:
-        001001 = بسم‌الله
-        001002 = آیه 1
-        001003 = آیه 2
-        ...
-
-    بقره:
-        002001 = آیه 1
-        002002 = آیه 2
-        ...
-
-    توبه:
-        009001 = آیه 1
-        009002 = آیه 2
-        ...
-
-    سایر سوره‌ها:
-        شماره فایل = شماره آیه
-
-    بنابراین فقط حمد +1 دارد.
-*/
-
 function getAudioUrl(
     surahId,
     ayahNumber
@@ -1124,10 +1441,8 @@ function getAudioUrl(
         String(surahId)
         .padStart(3,"0");
 
-
     let fileNumber =
         Number(ayahNumber);
-
 
     if(
         Number(surahId) === 1
@@ -1138,11 +1453,9 @@ function getAudioUrl(
 
     }
 
-
     const ayah =
         String(fileNumber)
         .padStart(3,"0");
-
 
     return (
         SUPABASE_BASE +
@@ -1169,10 +1482,7 @@ async function loadSurahs(){
 
         const response =
             await fetch(
-                `${WORKER_URL}/surahs`,
-                {
-                    method:"GET"
-                }
+                `${WORKER_URL}/surahs`
             );
 
         if(!response.ok){
@@ -1234,15 +1544,85 @@ async function loadSurahs(){
    RENDER SURAH LIST
 ========================================================= */
 
-function renderSurahList(){
+function renderSurahList(
+    filterText = ""
+){
+
+    const normalized =
+        normalizeSearchText(
+            filterText
+        );
 
     surahSelect.innerHTML = "";
 
-    surahData.forEach(
+
+    const filtered =
+        surahData.filter(
+            surah => {
+
+                if(!normalized){
+                    return true;
+                }
+
+                const number =
+                    String(
+                        surah.number
+                    );
+
+                const nameFa =
+                    normalizeSearchText(
+                        surah.name_fa
+                    );
+
+                const nameAr =
+                    normalizeSearchText(
+                        surah.name_ar
+                    );
+
+                const nameEn =
+                    normalizeSearchText(
+                        surah.name_en
+                    );
+
+                return (
+                    number.includes(normalized) ||
+                    nameFa.includes(normalized) ||
+                    nameAr.includes(normalized) ||
+                    nameEn.includes(normalized)
+                );
+
+            }
+        );
+
+
+    if(!filtered.length){
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value = "";
+
+        option.textContent =
+            "سوره‌ای پیدا نشد";
+
+        surahSelect.appendChild(
+            option
+        );
+
+        return;
+
+    }
+
+
+    filtered.forEach(
         surah => {
 
             const option =
-                document.createElement("option");
+                document.createElement(
+                    "option"
+                );
 
             option.value =
                 surah.number;
@@ -1255,7 +1635,8 @@ function renderSurahList(){
                 Number(currentSurah)
             ){
 
-                option.selected = true;
+                option.selected =
+                    true;
 
             }
 
@@ -1265,6 +1646,42 @@ function renderSurahList(){
 
         }
     );
+
+}
+
+
+/* =========================================================
+   UPDATE AYAH INPUT INFO
+========================================================= */
+
+function updateAyahInputInfo(){
+
+    const surah =
+        surahData.find(
+            item =>
+                Number(item.number) ===
+                Number(currentSurah)
+        );
+
+
+    const total =
+        ayahData.length ||
+        Number(
+            surah?.ayah_count || 0
+        );
+
+
+    ayahNumberInput.min =
+        "1";
+
+    ayahNumberInput.max =
+        String(total);
+
+
+    ayahCountHint.textContent =
+        total
+            ? `آیه‌ای از ${faNumber(total)} آیه`
+            : "شماره آیه را وارد کنید.";
 
 }
 
@@ -1292,10 +1709,7 @@ async function loadAyahs(){
 
         const response =
             await fetch(
-                `${WORKER_URL}/ayahs?surah=${encodeURIComponent(currentSurah)}`,
-                {
-                    method:"GET"
-                }
+                `${WORKER_URL}/ayahs?surah=${encodeURIComponent(currentSurah)}`
             );
 
         if(!response.ok){
@@ -1325,13 +1739,21 @@ async function loadAyahs(){
 
         currentAyah = 1;
 
-        bismillahPlayedForCurrentAyah = false;
+        bismillahPlayedForCurrentAyah =
+            false;
 
-        isBismillahAudio = false;
+        isBismillahAudio =
+            false;
 
         renderAyahs();
 
         updateSurahInfo();
+
+        updateAyahInputInfo();
+
+        ayahNumberInput.value = "";
+
+        hideJumpPage();
 
         loadAyah();
 
@@ -1449,7 +1871,9 @@ function renderAyahs(){
         ayah => {
 
             const div =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
             div.className =
                 "ayah";
@@ -1557,12 +1981,6 @@ function renderAyahs(){
                         );
 
 
-                    /*
-                        آیه اول:
-                        همه سوره‌ها به جز توبه
-                        ابتدا بسم‌الله دارند.
-                    */
-
                     if(
                         currentAyah === 1 &&
                         Number(currentSurah) !== 9
@@ -1579,6 +1997,12 @@ function renderAyahs(){
 
                     }
 
+
+                    ayahNumberInput.value =
+                        currentAyah;
+
+
+                    clearJumpError();
 
                     updateSurahInfo();
 
@@ -1643,6 +2067,295 @@ function updateSurahInfo(){
     surahInfo.textContent =
         `آیه ${faNumber(currentAyah)} از ${faNumber(total)}`;
 
+
+    const current =
+        ayahData.find(
+            item =>
+                Number(item.ayah_number) ===
+                Number(currentAyah)
+        );
+
+
+    if(
+        current &&
+        current.page
+    ){
+
+        surahPage.style.display =
+            "inline-block";
+
+        surahPage.textContent =
+            `📄 صفحه ${faNumber(current.page)}`;
+
+    }
+    else{
+
+        surahPage.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   SHOW PAGE BADGE
+========================================================= */
+
+function showJumpPage(page){
+
+    if(
+        page === null ||
+        page === undefined ||
+        page === ""
+    ){
+
+        hideJumpPage();
+
+        return;
+
+    }
+
+
+    jumpPageBadge.style.display =
+        "inline-block";
+
+    jumpPageBadge.textContent =
+        `📄 صفحه ${faNumber(page)}`;
+
+}
+
+
+/* =========================================================
+   HIDE PAGE BADGE
+========================================================= */
+
+function hideJumpPage(){
+
+    jumpPageBadge.style.display =
+        "none";
+
+}
+
+
+/* =========================================================
+   JUMP ERROR
+========================================================= */
+
+function clearJumpError(){
+
+    jumpError.textContent =
+        "";
+
+}
+
+
+/* =========================================================
+   GO TO AYAH
+========================================================= */
+
+async function goToAyah(){
+
+    clearJumpError();
+
+
+    const requested =
+        Number(
+            ayahNumberInput.value
+        );
+
+
+    const total =
+        ayahData.length;
+
+
+    if(
+        !Number.isInteger(requested) ||
+        requested < 1
+    ){
+
+        jumpError.textContent =
+            "لطفاً شماره آیه را وارد کنید.";
+
+        return;
+
+    }
+
+
+    if(
+        total &&
+        requested > total
+    ){
+
+        jumpError.textContent =
+            `این سوره فقط ${faNumber(total)} آیه دارد.`;
+
+        return;
+
+    }
+
+
+    goAyahButton.disabled =
+        true;
+
+    goAyahButton.textContent =
+        "در حال یافتن...";
+
+
+    try{
+
+        /*
+            ابتدا از API دقیق آیه استفاده می‌کنیم.
+            بنابراین page نیز از دیتابیس گرفته می‌شود.
+        */
+
+        const response =
+            await fetch(
+                `${WORKER_URL}/ayah?surah=${encodeURIComponent(currentSurah)}&ayah=${encodeURIComponent(requested)}`
+            );
+
+
+        if(!response.ok){
+
+            if(response.status === 404){
+
+                throw new Error(
+                    "این آیه پیدا نشد."
+                );
+
+            }
+
+            throw new Error(
+                `خطا در دریافت آیه (${response.status})`
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if(
+            !result.ok ||
+            !result.ayah
+        ){
+
+            throw new Error(
+                "اطلاعات آیه دریافت نشد."
+            );
+
+        }
+
+
+        const target =
+            result.ayah;
+
+
+        currentAyah =
+            Number(
+                target.ayah_number
+            );
+
+
+        /*
+            آیه اول:
+            توبه بسم‌الله ندارد.
+        */
+
+        if(
+            currentAyah === 1 &&
+            Number(currentSurah) !== 9
+        ){
+
+            bismillahPlayedForCurrentAyah =
+                false;
+
+        }
+        else{
+
+            bismillahPlayedForCurrentAyah =
+                true;
+
+        }
+
+
+        isBismillahAudio =
+            false;
+
+
+        /*
+            اگر داده آیه از قبل در صفحه موجود باشد،
+            فقط همان آیه را فعال می‌کنیم.
+        */
+
+        ayahNumberInput.value =
+            currentAyah;
+
+
+        showJumpPage(
+            target.page
+        );
+
+
+        updateSurahInfo();
+
+        loadAyah();
+
+        highlightCurrentAyah();
+
+
+        /*
+            وضعیت پخش آماده است.
+            کاربر با دکمه پخش تصمیم می‌گیرد.
+        */
+
+        playerStatus.textContent =
+            `آیه ${faNumber(currentAyah)} آماده پخش است`;
+
+
+        const targetElement =
+            document.getElementById(
+                `ayah-${currentAyah}`
+            );
+
+
+        if(targetElement){
+
+            setTimeout(
+                () => {
+
+                    targetElement.scrollIntoView({
+                        behavior:"smooth",
+                        block:"center"
+                    });
+
+                },
+                100
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        jumpError.textContent =
+            error.message ||
+            "خطا در پیدا کردن آیه.";
+
+    }
+    finally{
+
+        goAyahButton.disabled =
+            false;
+
+        goAyahButton.textContent =
+            "▶ رفتن به آیه";
+
+    }
+
 }
 
 
@@ -1677,7 +2390,8 @@ function loadAyah(){
         );
 
 
-    isBismillahAudio = false;
+    isBismillahAudio =
+        false;
 
 
     audio.src =
@@ -1700,14 +2414,6 @@ function loadAyah(){
         `آیه ${faNumber(currentAyah)}`;
 
 
-    /*
-        بسیار مهم:
-
-        هر بار که یک آیه واقعی
-        در audio قرار می‌گیرد،
-        نشانگر همان آیه را فعال کن.
-    */
-
     highlightCurrentAyah();
 
     updateSurahInfo();
@@ -1723,7 +2429,8 @@ async function playBismillah(){
 
     try{
 
-        isBismillahAudio = true;
+        isBismillahAudio =
+            true;
 
 
         audio.src =
@@ -1746,6 +2453,14 @@ async function playBismillah(){
             "در حال پخش بسم‌الله";
 
 
+        /*
+            نکته مهم:
+            هایلایت همچنان روی آیه اول می‌ماند.
+        */
+
+        highlightCurrentAyah();
+
+
         await audio.play();
 
 
@@ -1760,7 +2475,8 @@ async function playBismillah(){
 
         console.error(error);
 
-        isBismillahAudio = false;
+        isBismillahAudio =
+            false;
 
         playerStatus.textContent =
             "برای پخش، دوباره دکمه پخش را لمس کنید.";
@@ -1778,11 +2494,6 @@ async function playAudio(){
 
     try{
 
-        /*
-            اگر بسم‌الله در حال پخش است،
-            فقط ادامه بده.
-        */
-
         if(
             isBismillahAudio
         ){
@@ -1799,13 +2510,6 @@ async function playAudio(){
 
         }
 
-
-        /*
-            آیه اول:
-
-            همه سوره‌ها به جز توبه
-            ابتدا بسم‌الله دارند.
-        */
 
         if(
             Number(currentAyah) === 1 &&
@@ -1897,17 +2601,9 @@ startSurahButton.addEventListener(
         }
 
 
-        /*
-            همیشه از آیه اول شروع کن.
-        */
+        currentAyah =
+            1;
 
-        currentAyah = 1;
-
-
-        /*
-            توبه بسم‌الله ندارد.
-            سایر سوره‌ها دارند.
-        */
 
         if(
             Number(currentSurah) === 9
@@ -1931,7 +2627,9 @@ startSurahButton.addEventListener(
 
         audio.pause();
 
-        audio.removeAttribute("src");
+        audio.removeAttribute(
+            "src"
+        );
 
         audio.load();
 
@@ -1945,6 +2643,12 @@ startSurahButton.addEventListener(
         progress.style.width =
             "0%";
 
+
+        ayahNumberInput.value =
+            1;
+
+
+        hideJumpPage();
 
         loadAyah();
 
@@ -2040,6 +2744,11 @@ prevButton.addEventListener(
             }
 
 
+            ayahNumberInput.value =
+                currentAyah;
+
+            clearJumpError();
+
             loadAyah();
 
             playAudio();
@@ -2080,6 +2789,11 @@ nextButton.addEventListener(
                 true;
 
 
+            ayahNumberInput.value =
+                currentAyah;
+
+            clearJumpError();
+
             loadAyah();
 
             playAudio();
@@ -2105,14 +2819,10 @@ audio.addEventListener(
     () => {
 
         /*
-            اگر بسم‌الله تمام شد،
-            هنوز در آیه اول هستیم.
+            بسم‌الله تمام شد.
 
-            پس:
-            currentAyah = 1
-
-            و بعد صدای واقعی آیه اول
-            پخش می‌شود.
+            هنوز آیه اول هستیم.
+            پس آیه اول باید فعال بماند.
         */
 
         if(isBismillahAudio){
@@ -2123,13 +2833,11 @@ audio.addEventListener(
             bismillahPlayedForCurrentAyah =
                 true;
 
+            currentAyah =
+                1;
 
-            /*
-                مخصوصاً برای حمد بسیار مهم است:
-                نشانگر همچنان باید روی آیه ۱ باشد.
-            */
-
-            currentAyah = 1;
+            ayahNumberInput.value =
+                1;
 
             loadAyah();
 
@@ -2141,11 +2849,6 @@ audio.addEventListener(
 
         }
 
-
-        /*
-            آیه واقعی تمام شد:
-            برو آیه بعدی.
-        */
 
         playButton.textContent =
             "▶";
@@ -2163,6 +2866,10 @@ audio.addEventListener(
 
             bismillahPlayedForCurrentAyah =
                 true;
+
+
+            ayahNumberInput.value =
+                currentAyah;
 
             loadAyah();
 
@@ -2414,7 +3121,208 @@ surahSelect.addEventListener(
             1;
 
 
+        clearJumpError();
+
         await loadAyahs();
+
+    }
+);
+
+
+/* =========================================================
+   SURAH SEARCH
+========================================================= */
+
+surahSearch.addEventListener(
+    "input",
+    () => {
+
+        renderSurahList(
+            surahSearch.value
+        );
+
+
+        /*
+            اگر فقط یک نتیجه باقی مانده،
+            همان را انتخاب کن.
+        */
+
+        const normalized =
+            normalizeSearchText(
+                surahSearch.value
+            );
+
+
+        if(!normalized){
+            return;
+        }
+
+
+        const matches =
+            surahData.filter(
+                surah => {
+
+                    const number =
+                        String(
+                            surah.number
+                        );
+
+                    const nameFa =
+                        normalizeSearchText(
+                            surah.name_fa
+                        );
+
+                    const nameAr =
+                        normalizeSearchText(
+                            surah.name_ar
+                        );
+
+                    const nameEn =
+                        normalizeSearchText(
+                            surah.name_en
+                        );
+
+                    return (
+                        number.includes(normalized) ||
+                        nameFa.includes(normalized) ||
+                        nameAr.includes(normalized) ||
+                        nameEn.includes(normalized)
+                    );
+
+                }
+            );
+
+
+        if(matches.length === 1){
+
+            surahSelect.value =
+                String(
+                    matches[0].number
+                );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SEARCH ENTER
+========================================================= */
+
+surahSearch.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key !==
+            "Enter"
+        ){
+
+            return;
+
+        }
+
+
+        const normalized =
+            normalizeSearchText(
+                surahSearch.value
+            );
+
+
+        if(!normalized){
+            return;
+        }
+
+
+        const matches =
+            surahData.filter(
+                surah => {
+
+                    const number =
+                        String(
+                            surah.number
+                        );
+
+                    const nameFa =
+                        normalizeSearchText(
+                            surah.name_fa
+                        );
+
+                    const nameAr =
+                        normalizeSearchText(
+                            surah.name_ar
+                        );
+
+                    const nameEn =
+                        normalizeSearchText(
+                            surah.name_en
+                        );
+
+                    return (
+                        number === normalized ||
+                        nameFa === normalized ||
+                        nameAr === normalized ||
+                        nameEn === normalized ||
+                        nameFa.includes(normalized) ||
+                        nameAr.includes(normalized) ||
+                        nameEn.includes(normalized)
+                    );
+
+                }
+            );
+
+
+        if(matches.length){
+
+            const selected =
+                matches[0];
+
+
+            surahSelect.value =
+                String(
+                    selected.number
+                );
+
+
+            surahSelect.dispatchEvent(
+                new Event("change")
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   GO AYAH BUTTON
+========================================================= */
+
+goAyahButton.addEventListener(
+    "click",
+    goToAyah
+);
+
+
+/* =========================================================
+   ENTER IN AYAH INPUT
+========================================================= */
+
+ayahNumberInput.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key ===
+            "Enter"
+        ){
+
+            event.preventDefault();
+
+            goToAyah();
+
+        }
 
     }
 );
@@ -2497,6 +3405,21 @@ document.addEventListener(
     "keydown",
     event => {
 
+        /*
+            اگر کاربر داخل input تایپ می‌کند،
+            کلیدهای جهت‌دار پخش را کنترل نکنند.
+        */
+
+        if(
+            event.target.tagName ===
+            "INPUT"
+        ){
+
+            return;
+
+        }
+
+
         if(
             event.code ===
             "Space"
@@ -2550,4 +3473,4 @@ loadSurahs();
 </script>
 
 </body>
-    </html>
+</html>
