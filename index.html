@@ -1,11 +1,17 @@
-<!DOCTYPE html><html lang="fa" dir="rtl"><head>
-<meta charset="UTF-8"><meta
-name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
 
-«»
+<meta charset="UTF-8">
 
-<title>قرآن کریم</title><style>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+<title>قرآن کریم</title>
+
+<style>
 
 *{
     box-sizing:border-box;
@@ -65,13 +71,6 @@ button{
 
     position:relative;
     z-index:100;
-}
-
-.header-title{
-    text-align:center;
-    font-size:22px;
-    font-weight:bold;
-    margin-bottom:12px;
 }
 
 
@@ -256,7 +255,7 @@ button{
 
 
 /* =========================================================
-   AYAH JUMP
+   AYAH / PAGE JUMP
 ========================================================= */
 
 .ayah-jump{
@@ -360,6 +359,88 @@ button{
     transform:scale(.98);
 }
 
+
+/* =========================================================
+   PAGE JUMP
+========================================================= */
+
+.page-jump-row{
+    display:flex;
+
+    gap:8px;
+
+    align-items:center;
+
+    margin-top:9px;
+}
+
+.page-number-input{
+    flex:1;
+
+    min-width:0;
+
+    border:
+        1px solid
+        #d6e3dc;
+
+    outline:none;
+
+    background:#f8fbf9;
+
+    color:#173c2c;
+
+    border-radius:11px;
+
+    padding:
+        11px
+        12px;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    direction:ltr;
+
+    transition:
+        border .2s,
+        background .2s;
+}
+
+.page-number-input:focus{
+    border-color:#27845a;
+
+    background:white;
+}
+
+.go-page{
+    border:none;
+
+    border-radius:11px;
+
+    background:#0b4b35;
+
+    color:white;
+
+    padding:
+        11px
+        15px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+
+    box-shadow:
+        0 3px 8px rgba(11,75,53,.18);
+}
+
+.go-page:active{
+    transform:scale(.98);
+}
+
 .ayah-jump-hint{
     display:flex;
 
@@ -422,6 +503,69 @@ button{
     text-align:center;
 }
 
+
+/* =========================================================
+   SURAH NAVIGATION
+========================================================= */
+
+.surah-nav{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:8px;
+
+    margin-bottom:6px;
+}
+
+.surah-nav-btn{
+    width:42px;
+    height:42px;
+
+    flex:0 0 42px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#edf7f1;
+
+    color:#176c49;
+
+    font-size:25px;
+
+    font-weight:bold;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    transition:
+        transform .15s,
+        background .15s;
+}
+
+.surah-nav-btn:active{
+    transform:scale(.92);
+}
+
+.surah-nav-btn:disabled{
+    opacity:.35;
+    cursor:default;
+}
+
+.surah-title-wrap{
+    flex:1;
+
+    min-width:0;
+
+    text-align:center;
+}
+
 .surah-name{
     color:#0b4b35;
 
@@ -432,10 +576,50 @@ button{
     margin-bottom:5px;
 }
 
+.surah-neighbors{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#81938b;
+
+    font-size:10px;
+
+    line-height:1.5;
+
+    min-height:18px;
+}
+
+.surah-neighbor{
+    flex:1;
+
+    min-width:0;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+}
+
+.surah-neighbor.prev{
+    text-align:right;
+}
+
+.surah-neighbor.next{
+    text-align:left;
+}
+
 .surah-meta{
     color:#648073;
 
     font-size:13px;
+
+    margin-top:5px;
 }
 
 .surah-page{
@@ -995,10 +1179,6 @@ button{
 
 @media(max-width:600px){
 
-    .header-title{
-        font-size:20px;
-    }
-
     .surah-list{
         max-height:220px;
     }
@@ -1017,7 +1197,12 @@ button{
         gap:6px;
     }
 
-    .go-ayah{
+    .page-jump-row{
+        gap:6px;
+    }
+
+    .go-ayah,
+    .go-page{
         padding-left:12px;
         padding-right:12px;
     }
@@ -1052,6 +1237,12 @@ button{
 
     .bismillah{
         font-size:23px;
+    }
+
+    .surah-nav-btn{
+        width:40px;
+        height:40px;
+        flex-basis:40px;
     }
 
 }
@@ -1096,16 +1287,19 @@ button{
 
 }
 
-</style></head><body><div class="app"><!-- =====================================================
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+
+<!-- =====================================================
      HEADER
 ====================================================== -->
 
 <header class="header">
-
-    <div class="header-title">
-        📖 قرآن کریم
-    </div>
-
 
     <div class="surah-search">
 
@@ -1124,11 +1318,6 @@ button{
     </div>
 
 
-    <!--
-        لیست واقعی و وبی سوره‌ها
-        نام سوره سمت راست است.
-    -->
-
     <div
         id="surahList"
         class="surah-list"
@@ -1144,14 +1333,15 @@ button{
 
 
 <!-- =====================================================
-     AYAH JUMP
+     AYAH / PAGE JUMP
 ====================================================== -->
 
 <section class="ayah-jump">
 
     <div class="ayah-jump-title">
-        🎯 رفتن مستقیم به آیه
+        🎯 رفتن مستقیم
     </div>
+
 
     <div class="ayah-jump-row">
 
@@ -1174,6 +1364,30 @@ button{
 
     </div>
 
+
+    <div class="page-jump-row">
+
+        <input
+            id="pageNumberInput"
+            class="page-number-input"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            max="604"
+            placeholder="شماره صفحه عثمان طه"
+        >
+
+        <button
+            id="goPage"
+            class="go-page"
+            type="button"
+        >
+            📄 رفتن به صفحه
+        </button>
+
+    </div>
+
+
     <div class="ayah-jump-hint">
 
         <span id="ayahCountHint">
@@ -1190,6 +1404,7 @@ button{
 
     </div>
 
+
     <div
         id="jumpError"
         class="jump-error"
@@ -1204,12 +1419,62 @@ button{
 
 <section class="surah-info">
 
-    <div
-        class="surah-name"
-        id="surahName"
-    >
-        قرآن کریم
+    <div class="surah-nav">
+
+        <button
+            id="prevSurah"
+            class="surah-nav-btn"
+            type="button"
+            title="سوره قبل"
+            aria-label="سوره قبل"
+        >
+            →
+        </button>
+
+
+        <div class="surah-title-wrap">
+
+            <div
+                class="surah-name"
+                id="surahName"
+            >
+                قرآن کریم
+            </div>
+
+
+            <div class="surah-neighbors">
+
+                <span
+                    id="prevSurahName"
+                    class="surah-neighbor prev"
+                >
+                    سوره قبل
+                </span>
+
+                <span
+                    id="nextSurahName"
+                    class="surah-neighbor next"
+                >
+                    سوره بعد
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            id="nextSurah"
+            class="surah-nav-btn"
+            type="button"
+            title="سوره بعد"
+            aria-label="سوره بعد"
+        >
+            ←
+        </button>
+
     </div>
+
 
     <div
         class="surah-meta"
@@ -1217,6 +1482,7 @@ button{
     >
         در حال آماده‌سازی...
     </div>
+
 
     <div
         id="surahPage"
@@ -1397,18 +1663,25 @@ button{
 <footer class="footer">
 
     این برنامه کاملاً رایگان و بدون تبلیغات، برای آسایش شما ارائه شده است.
+
     <br>
+
     (علی دهقانی)
 
 </footer>
 
-</div><!-- =========================================================
-     MAIN AUDIO
-========================================================= --><audio
-id="audio"
-preload="auto"
+</div>
 
-«</audio>»
+
+<!-- =====================================================
+     MAIN AUDIO
+====================================================== -->
+
+<audio
+    id="audio"
+    preload="auto"
+></audio>
+
 
 <script>
 
@@ -1443,32 +1716,17 @@ let currentMode = "arabic";
 
 let isLoading = false;
 
-
-/*
-    در سوره‌های عادی:
-
-    false = بسم‌الله هنوز برای آیه اول پخش نشده.
-
-    در سوره ۱ (حمد):
-
-    این متغیر استفاده نمی‌شود،
-    چون فایل 001001 خودش آیه اول حمد است.
-*/
-
 let bismillahPlayedForCurrentAyah = false;
 
 let isBismillahAudio = false;
-
-
-/*
-    صوت بعدی برای کم کردن مکث بین آیات.
-*/
 
 let nextAudio = null;
 
 let nextAudioUrl = "";
 
 let isAutoAdvancing = false;
+
+let centerScrollTimer = null;
 
 
 /* =========================================================
@@ -1488,6 +1746,26 @@ const surahList =
 const surahName =
     document.getElementById(
         "surahName"
+    );
+
+const prevSurahButton =
+    document.getElementById(
+        "prevSurah"
+    );
+
+const nextSurahButton =
+    document.getElementById(
+        "nextSurah"
+    );
+
+const prevSurahName =
+    document.getElementById(
+        "prevSurahName"
+    );
+
+const nextSurahName =
+    document.getElementById(
+        "nextSurahName"
     );
 
 const surahInfo =
@@ -1510,6 +1788,11 @@ const ayahNumberInput =
         "ayahNumberInput"
     );
 
+const pageNumberInput =
+    document.getElementById(
+        "pageNumberInput"
+    );
+
 const ayahCountHint =
     document.getElementById(
         "ayahCountHint"
@@ -1528,6 +1811,11 @@ const jumpError =
 const goAyahButton =
     document.getElementById(
         "goAyah"
+    );
+
+const goPageButton =
+    document.getElementById(
+        "goPage"
     );
 
 const audio =
@@ -1579,6 +1867,28 @@ const playerStatus =
     document.getElementById(
         "playerStatus"
     );
+
+
+/* =========================================================
+   PLAY BUTTON STATE
+========================================================= */
+
+function setPlayButtonState(
+    playing
+){
+
+    playButton.textContent =
+        playing ? "⏸" : "▶";
+
+    playButton.title =
+        playing ? "توقف" : "پخش";
+
+    playButton.setAttribute(
+        "aria-label",
+        playing ? "توقف" : "پخش"
+    );
+
+}
 
 
 /* =========================================================
@@ -1721,25 +2031,6 @@ function getBismillahAudioUrl(){
 }
 
 
-/*
-    نکته بسیار مهم:
-
-    برای سوره حمد:
-
-        001001 = آیه اول حمد
-
-    بنابراین دیگر +1 نمی‌کنیم.
-
-    برای همه سوره‌ها نیز:
-
-        ayah 1 = 001
-        ayah 2 = 002
-        ...
-
-    این باعث می‌شود نشانگر آیه و صوت دقیقاً
-    روی یک شماره حرکت کنند.
-*/
-
 function getAudioUrl(
     surahId,
     ayahNumber
@@ -1765,7 +2056,7 @@ function getAudioUrl(
 
 
 /* =========================================================
-   PRELOAD NEXT AUDIO
+   PRELOAD
 ========================================================= */
 
 function clearNextAudio(){
@@ -1792,13 +2083,6 @@ function clearNextAudio(){
 }
 
 
-/*
-    صوت آیه بعدی را از قبل آماده می‌کنیم.
-
-    این کار باعث می‌شود هنگام پایان آیه فعلی،
-    مرورگر مجبور نباشد تازه دانلود آیه بعد را شروع کند.
-*/
-
 function preloadNextAyah(){
 
     clearNextAudio();
@@ -1808,11 +2092,6 @@ function preloadNextAyah(){
         return;
     }
 
-
-    /*
-        بسم‌الله سوره‌های عادی:
-        بعد از بسم‌الله، آیه ۱ می‌آید.
-    */
 
     let nextAyah =
         Number(currentAyah) + 1;
@@ -1853,67 +2132,7 @@ function preloadNextAyah(){
     nextAudio.src =
         nextAudioUrl;
 
-    /*
-        آغاز بارگذاری
-    */
     nextAudio.load();
-
-}
-
-
-/* =========================================================
-   USE PRELOADED AUDIO
-========================================================= */
-
-function usePreloadedAudio(
-    expectedUrl
-){
-
-    if(
-        !nextAudio ||
-        nextAudioUrl !== expectedUrl
-    ){
-
-        return false;
-
-    }
-
-
-    /*
-        اگر مرورگر حداقل داده قابل پخش
-        داشته باشد، صوت آماده است.
-    */
-
-    if(
-        nextAudio.readyState <
-        HTMLMediaElement.HAVE_CURRENT_DATA
-    ){
-
-        return false;
-
-    }
-
-
-    audio.src =
-        expectedUrl;
-
-    audio.load();
-
-
-    /*
-        از همان فایل preload شده
-        استفاده می‌کنیم.
-    */
-
-    /*
-        توجه:
-        مرورگرها مالکیت buffer را بین دو
-        HTMLAudioElement تضمین نمی‌کنند؛
-        بنابراین در صورت نیاز fallback
-        معمولی انجام می‌شود.
-    */
-
-    return true;
 
 }
 
@@ -2010,7 +2229,7 @@ async function loadSurahs(){
 
 
 /* =========================================================
-   RENDER SURAH WEB LIST
+   RENDER SURAH LIST
 ========================================================= */
 
 function renderSurahList(
@@ -2038,7 +2257,6 @@ function renderSurahList(
                     String(
                         surah.number
                     );
-
 
                 const nameFa =
                     normalizeSearchText(
@@ -2104,7 +2322,6 @@ function renderSurahList(
             button.type =
                 "button";
 
-
             button.className =
                 "surah-item";
 
@@ -2162,6 +2379,74 @@ function renderSurahList(
 
 
 /* =========================================================
+   SURAH NAVIGATION
+========================================================= */
+
+function updateSurahNavigation(){
+
+    const currentNumber =
+        Number(currentSurah);
+
+
+    const previous =
+        surahData.find(
+            item =>
+                Number(item.number) ===
+                currentNumber - 1
+        );
+
+
+    const next =
+        surahData.find(
+            item =>
+                Number(item.number) ===
+                currentNumber + 1
+        );
+
+
+    if(previous){
+
+        prevSurahName.textContent =
+            `قبل: ${getSurahName(previous)}`;
+
+        prevSurahButton.disabled =
+            false;
+
+    }
+    else{
+
+        prevSurahName.textContent =
+            "سوره قبل";
+
+        prevSurahButton.disabled =
+            true;
+
+    }
+
+
+    if(next){
+
+        nextSurahName.textContent =
+            `بعد: ${getSurahName(next)}`;
+
+        nextSurahButton.disabled =
+            false;
+
+    }
+    else{
+
+        nextSurahName.textContent =
+            "سوره بعد";
+
+        nextSurahButton.disabled =
+            true;
+
+    }
+
+}
+
+
+/* =========================================================
    SELECT SURAH
 ========================================================= */
 
@@ -2189,6 +2474,8 @@ async function selectSurah(
         renderSurahList(
             surahSearch.value
         );
+
+        updateSurahNavigation();
 
         return;
 
@@ -2253,6 +2540,157 @@ async function selectSurah(
 
 
 /* =========================================================
+   LOAD SURAH + SPECIFIC AYAH
+========================================================= */
+
+async function loadSurahAndAyah(
+    surahNumber,
+    ayahNumber = 1,
+    autoPlay = false
+){
+
+    if(
+        surahNumber < 1 ||
+        surahNumber > 114
+    ){
+
+        return false;
+
+    }
+
+
+    pauseAudio();
+
+
+    clearNextAudio();
+
+
+    audio.removeAttribute(
+        "src"
+    );
+
+    audio.load();
+
+
+    currentSurah =
+        Number(surahNumber);
+
+
+    currentAyah =
+        1;
+
+
+    isBismillahAudio =
+        false;
+
+
+    bismillahPlayedForCurrentAyah =
+        false;
+
+
+    renderSurahList();
+
+
+    await loadAyahs();
+
+
+    if(
+        !ayahData.length
+    ){
+
+        return false;
+
+    }
+
+
+    const target =
+        ayahData.find(
+            item =>
+                Number(
+                    item.ayah_number
+                ) ===
+                Number(ayahNumber)
+        );
+
+
+    if(!target){
+
+        currentAyah =
+            1;
+
+    }
+    else{
+
+        currentAyah =
+            Number(
+                target.ayah_number
+            );
+
+    }
+
+
+    if(
+        currentAyah === 1 &&
+        Number(currentSurah) !== 1 &&
+        Number(currentSurah) !== 9
+    ){
+
+        bismillahPlayedForCurrentAyah =
+            false;
+
+    }
+    else{
+
+        bismillahPlayedForCurrentAyah =
+            true;
+
+    }
+
+
+    isBismillahAudio =
+        false;
+
+
+    ayahNumberInput.value =
+        currentAyah;
+
+
+    if(target){
+
+        showJumpPage(
+            target.page
+        );
+
+    }
+    else{
+
+        hideJumpPage();
+
+    }
+
+
+    renderAyahs();
+
+    updateSurahInfo();
+
+    updateSurahNavigation();
+
+    loadAyah();
+
+
+    if(autoPlay){
+
+        await playAudio();
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
    UPDATE AYAH INPUT
 ========================================================= */
 
@@ -2275,7 +2713,6 @@ function updateAyahInputInfo(){
 
     ayahNumberInput.min =
         "1";
-
 
     ayahNumberInput.max =
         String(total);
@@ -2358,20 +2795,8 @@ async function loadAyahs(){
             1;
 
 
-        /*
-            حمد بسم‌الله جدا ندارد.
-            خود فایل 001001 آیه اول است.
-        */
-
         if(
-            Number(currentSurah) === 1
-        ){
-
-            bismillahPlayedForCurrentAyah =
-                true;
-
-        }
-        else if(
+            Number(currentSurah) === 1 ||
             Number(currentSurah) === 9
         ){
 
@@ -2398,6 +2823,8 @@ async function loadAyahs(){
 
         updateSurahInfo();
 
+        updateSurahNavigation();
+
         updateAyahInputInfo();
 
 
@@ -2409,7 +2836,6 @@ async function loadAyahs(){
 
 
         loadAyah();
-
 
     }
     catch(error){
@@ -2449,30 +2875,18 @@ function extractBismillah(text){
     if(!text){
 
         return {
-
             bismillah:"",
             remaining:""
-
         };
 
     }
 
 
-    let normalized =
-        text.normalize("NFC")
-        .trim();
+    const normalized =
+        text
+            .normalize("NFC")
+            .trim();
 
-
-    /*
-        فقط خود بسم‌الله را از ابتدای آیه
-        جدا می‌کنیم.
-
-        هر چیزی بعد از آن، مثل:
-
-            الم
-
-        دست‌نخورده باقی می‌ماند.
-    */
 
     const patterns = [
 
@@ -2500,23 +2914,20 @@ function extractBismillah(text){
         if(match){
 
             const bismillah =
-                match[0];
+                match[0].trim();
 
 
             const remaining =
                 normalized
                     .slice(
-                        bismillah.length
+                        match[0].length
                     )
                     .trim();
 
 
             return {
-
                 bismillah,
-
                 remaining
-
             };
 
         }
@@ -2525,12 +2936,8 @@ function extractBismillah(text){
 
 
     return {
-
         bismillah:"",
-
-        remaining:
-            normalized
-
+        remaining:normalized
     };
 
 }
@@ -2575,18 +2982,17 @@ function renderAyahs(){
 
             /*
                 حمد:
-
                 بسم‌الله خودش آیه اول است.
-                پس آن را جدا نمی‌کنیم.
 
                 توبه:
-
                 بسم‌الله ندارد.
 
                 سایر سوره‌ها:
-
                 فقط خود بسم‌الله جدا می‌شود.
-                باقی متن، مثل «الم»، در آیه می‌ماند.
+
+                بنابراین در سوره بقره:
+                «الم» داخل متن آیه اول باقی می‌ماند
+                و هرگز داخل کادر بسم‌الله قرار نمی‌گیرد.
             */
 
             if(
@@ -2678,14 +3084,6 @@ function renderAyahs(){
                         );
 
 
-                    /*
-                        حمد و توبه:
-                        بسم‌الله جداگانه ندارند.
-
-                        سایر سوره‌ها:
-                        آیه اول ابتدا بسم‌الله دارد.
-                    */
-
                     if(
                         currentAyah === 1 &&
                         Number(currentSurah) !== 1 &&
@@ -2710,6 +3108,11 @@ function renderAyahs(){
 
                     ayahNumberInput.value =
                         currentAyah;
+
+
+                    showJumpPage(
+                        ayah.page
+                    );
 
 
                     clearJumpError();
@@ -2813,6 +3216,9 @@ function updateSurahInfo(){
 
     }
 
+
+    updateSurahNavigation();
+
 }
 
 
@@ -2861,6 +3267,125 @@ function clearJumpError(){
 
     jumpError.textContent =
         "";
+
+}
+
+
+/* =========================================================
+   CENTER ACTIVE AYAH
+========================================================= */
+
+function scrollCurrentAyahToCenter(){
+
+    clearTimeout(
+        centerScrollTimer
+    );
+
+
+    centerScrollTimer =
+        setTimeout(
+            () => {
+
+                const current =
+                    document.querySelector(
+                        ".ayah.active"
+                    );
+
+
+                if(!current){
+
+                    return;
+
+                }
+
+
+                const rect =
+                    current.getBoundingClientRect();
+
+
+                const header =
+                    document.querySelector(
+                        ".header"
+                    );
+
+
+                const headerHeight =
+                    header
+                        ? header.getBoundingClientRect().height
+                        : 0;
+
+
+                const target =
+                    window.scrollY +
+                    rect.top -
+                    (
+                        window.innerHeight / 2
+                    ) +
+                    (
+                        rect.height / 2
+                    ) -
+                    (
+                        headerHeight / 2
+                    );
+
+
+                window.scrollTo({
+
+                    top:
+                        Math.max(
+                            0,
+                            target
+                        ),
+
+                    behavior:
+                        "smooth"
+
+                });
+
+            },
+            80
+        );
+
+}
+
+
+/* =========================================================
+   HIGHLIGHT
+========================================================= */
+
+function highlightCurrentAyah(){
+
+    document
+        .querySelectorAll(
+            ".ayah"
+        )
+        .forEach(
+            element => {
+
+                element.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const current =
+        document.getElementById(
+            `ayah-${currentAyah}`
+        );
+
+
+    if(current){
+
+        current.classList.add(
+            "active"
+        );
+
+
+        scrollCurrentAyahToCenter();
+
+    }
 
 }
 
@@ -2920,11 +3445,6 @@ async function goToAyah(){
 
     try{
 
-        /*
-            از داده موجود در صفحه استفاده می‌کنیم.
-            بنابراین نیازی به endpoint جدید نیست.
-        */
-
         const target =
             ayahData.find(
                 item =>
@@ -2948,17 +3468,6 @@ async function goToAyah(){
                 target.ayah_number
             );
 
-
-        /*
-            حمد:
-            آیه اول همان فایل 001001 است.
-
-            توبه:
-            بسم‌الله ندارد.
-
-            سایر سوره‌ها:
-            آیه اول بسم‌الله جداگانه دارد.
-        */
 
         if(
             currentAyah === 1 &&
@@ -2997,36 +3506,10 @@ async function goToAyah(){
         loadAyah();
 
 
-        highlightCurrentAyah();
-
-
         playerStatus.textContent =
             `آیه ${faNumber(
                 currentAyah
             )} آماده پخش است`;
-
-
-        const targetElement =
-            document.getElementById(
-                `ayah-${currentAyah}`
-            );
-
-
-        if(targetElement){
-
-            setTimeout(
-                () => {
-
-                    targetElement.scrollIntoView({
-                        behavior:"smooth",
-                        block:"center"
-                    });
-
-                },
-                100
-            );
-
-        }
 
     }
     catch(error){
@@ -3047,6 +3530,139 @@ async function goToAyah(){
 
         goAyahButton.textContent =
             "▶ رفتن به آیه";
+
+    }
+
+}
+
+
+/* =========================================================
+   GO TO PAGE
+========================================================= */
+
+async function goToPage(){
+
+    clearJumpError();
+
+
+    const requested =
+        Number(
+            pageNumberInput.value
+        );
+
+
+    if(
+        !Number.isInteger(requested) ||
+        requested < 1 ||
+        requested > 604
+    ){
+
+        jumpError.textContent =
+            "شماره صفحه باید بین ۱ تا ۶۰۴ باشد.";
+
+        return;
+
+    }
+
+
+    goPageButton.disabled =
+        true;
+
+
+    goPageButton.textContent =
+        "در حال یافتن...";
+
+
+    try{
+
+        const response =
+            await fetch(
+                `${WORKER_URL}/page?page=${requested}`
+            );
+
+
+        if(!response.ok){
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if(
+            !result.ok ||
+            !result.first_ayah
+        ){
+
+            throw new Error(
+                "این صفحه پیدا نشد."
+            );
+
+        }
+
+
+        const first =
+            result.first_ayah;
+
+
+        const targetSurah =
+            Number(
+                first.surah_id
+            );
+
+
+        const targetAyah =
+            Number(
+                first.ayah_number
+            );
+
+
+        pageNumberInput.value =
+            requested;
+
+
+        await loadSurahAndAyah(
+            targetSurah,
+            targetAyah,
+            false
+        );
+
+
+        showJumpPage(
+            requested
+        );
+
+
+        playerStatus.textContent =
+            `صفحه ${faNumber(requested)} آماده پخش است`;
+
+
+        highlightCurrentAyah();
+
+    }
+    catch(error){
+
+        console.error(error);
+
+
+        jumpError.textContent =
+            error.message ||
+            "خطا در پیدا کردن صفحه.";
+
+    }
+    finally{
+
+        goPageButton.disabled =
+            false;
+
+
+        goPageButton.textContent =
+            "📄 رفتن به صفحه";
 
     }
 
@@ -3129,10 +3745,6 @@ function loadAyah(){
     updateSurahInfo();
 
 
-    /*
-        بلافاصله صوت بعدی را آماده کن.
-    */
-
     setTimeout(
         () => {
 
@@ -3150,13 +3762,6 @@ function loadAyah(){
 ========================================================= */
 
 async function playBismillah(){
-
-    /*
-        این تابع فقط برای سوره‌های عادی
-        و آیه اول استفاده می‌شود.
-
-        حمد وارد این مسیر نمی‌شود.
-    */
 
     try{
 
@@ -3194,11 +3799,6 @@ async function playBismillah(){
         highlightCurrentAyah();
 
 
-        /*
-            همزمان آیه اول را برای بعد از
-            بسم‌الله preload می‌کنیم.
-        */
-
         nextAudio =
             new Audio();
 
@@ -3223,14 +3823,6 @@ async function playBismillah(){
 
         await audio.play();
 
-
-        playButton.textContent =
-            "⏸";
-
-
-        playButton.title =
-            "توقف";
-
     }
     catch(error){
 
@@ -3239,6 +3831,9 @@ async function playBismillah(){
 
         isBismillahAudio =
             false;
+
+
+        setPlayButtonState(false);
 
 
         playerStatus.textContent =
@@ -3257,13 +3852,6 @@ async function playAudio(){
 
     try{
 
-        /*
-            حمد:
-
-            آیه اول = 001001
-            بنابراین هیچ بسم‌الله جداگانه‌ای پخش نمی‌شود.
-        */
-
         if(
             Number(currentSurah) === 1
         ){
@@ -3280,24 +3868,12 @@ async function playAudio(){
 
             await audio.play();
 
-
-            playButton.textContent =
-                "⏸";
-
-
-            playButton.title =
-                "توقف";
-
+            setPlayButtonState(true);
 
             return;
 
         }
 
-
-        /*
-            فقط سوره‌های عادی آیه اول:
-            ابتدا بسم‌الله.
-        */
 
         if(
             Number(currentAyah) === 1 &&
@@ -3323,12 +3899,7 @@ async function playAudio(){
         await audio.play();
 
 
-        playButton.textContent =
-            "⏸";
-
-
-        playButton.title =
-            "توقف";
+        setPlayButtonState(true);
 
 
         playerStatus.textContent =
@@ -3343,6 +3914,9 @@ async function playAudio(){
     catch(error){
 
         console.error(error);
+
+
+        setPlayButtonState(false);
 
 
         playerStatus.textContent =
@@ -3362,22 +3936,7 @@ function pauseAudio(){
     audio.pause();
 
 
-    if(nextAudio){
-
-        /*
-            preload را متوقف نمی‌کنیم
-            تا فایل بعدی آماده بماند.
-        */
-
-    }
-
-
-    playButton.textContent =
-        "▶";
-
-
-    playButton.title =
-        "پخش";
+    setPlayButtonState(false);
 
 
     if(isBismillahAudio){
@@ -3416,13 +3975,6 @@ startSurahButton.addEventListener(
         currentAyah =
             1;
 
-
-        /*
-            حمد و توبه بسم‌الله جداگانه ندارند.
-
-            سایر سوره‌ها:
-            بسم‌الله ابتدا پخش می‌شود.
-        */
 
         if(
             Number(currentSurah) === 1 ||
@@ -3475,7 +4027,22 @@ startSurahButton.addEventListener(
             1;
 
 
-        hideJumpPage();
+        const first =
+            ayahData[0];
+
+
+        if(first){
+
+            showJumpPage(
+                first.page
+            );
+
+        }
+        else{
+
+            hideJumpPage();
+
+        }
 
 
         loadAyah();
@@ -3522,11 +4089,11 @@ startSurahButton.addEventListener(
 
 playButton.addEventListener(
     "click",
-    () => {
+    async () => {
 
         if(audio.paused){
 
-            playAudio();
+            await playAudio();
 
         }
         else{
@@ -3540,7 +4107,7 @@ playButton.addEventListener(
 
 
 /* =========================================================
-   PREVIOUS
+   PREVIOUS AYAH
 ========================================================= */
 
 prevButton.addEventListener(
@@ -3585,6 +4152,25 @@ prevButton.addEventListener(
                 currentAyah;
 
 
+            const target =
+                ayahData.find(
+                    item =>
+                        Number(
+                            item.ayah_number
+                        ) ===
+                        Number(currentAyah)
+                );
+
+
+            if(target){
+
+                showJumpPage(
+                    target.page
+                );
+
+            }
+
+
             clearJumpError();
 
 
@@ -3596,11 +4182,6 @@ prevButton.addEventListener(
         }
         else{
 
-            /*
-                اگر حمد آیه اول است،
-                دیگر بسم‌الله جداگانه نداریم.
-            */
-
             playerStatus.textContent =
                 "این اولین آیه سوره است.";
 
@@ -3611,12 +4192,12 @@ prevButton.addEventListener(
 
 
 /* =========================================================
-   NEXT
+   NEXT AYAH
 ========================================================= */
 
 nextButton.addEventListener(
     "click",
-    () => {
+    async () => {
 
         if(!ayahData.length){
 
@@ -3645,21 +4226,157 @@ nextButton.addEventListener(
                 currentAyah;
 
 
+            const target =
+                ayahData.find(
+                    item =>
+                        Number(
+                            item.ayah_number
+                        ) ===
+                        Number(currentAyah)
+                );
+
+
+            if(target){
+
+                showJumpPage(
+                    target.page
+                );
+
+            }
+
+
             clearJumpError();
 
 
             loadAyah();
 
 
-            playAudio();
+            await playAudio();
 
         }
         else{
 
-            playerStatus.textContent =
-                "این آخرین آیه سوره است.";
+            /*
+                دکمه آیه بعدی در انتهای سوره،
+                وارد سوره بعد می‌شود.
+            */
+
+            if(
+                Number(currentSurah) <
+                114
+            ){
+
+                await loadSurahAndAyah(
+                    Number(currentSurah) + 1,
+                    1,
+                    true
+                );
+
+            }
+            else{
+
+                playerStatus.textContent =
+                    "قرآن کریم به پایان رسید.";
+
+                setPlayButtonState(false);
+
+            }
 
         }
+
+    }
+);
+
+
+/* =========================================================
+   PREVIOUS / NEXT SURAH BUTTONS
+========================================================= */
+
+prevSurahButton.addEventListener(
+    "click",
+    async () => {
+
+        if(
+            Number(currentSurah) <= 1
+        ){
+
+            return;
+
+        }
+
+
+        await loadSurahAndAyah(
+            Number(currentSurah) - 1,
+            1,
+            false
+        );
+
+    }
+);
+
+
+nextSurahButton.addEventListener(
+    "click",
+    async () => {
+
+        if(
+            Number(currentSurah) >= 114
+        ){
+
+            return;
+
+        }
+
+
+        await loadSurahAndAyah(
+            Number(currentSurah) + 1,
+            1,
+            false
+        );
+
+    }
+);
+
+
+/* =========================================================
+   AUDIO PLAY / PAUSE EVENTS
+========================================================= */
+
+audio.addEventListener(
+    "play",
+    () => {
+
+        setPlayButtonState(true);
+
+    }
+);
+
+
+audio.addEventListener(
+    "pause",
+    () => {
+
+        /*
+            هنگام پایان طبیعی نیز pause ممکن است
+            قبل از ended رخ دهد؛ وضعیت نهایی در ended
+            دوباره تنظیم می‌شود.
+        */
+
+        if(!audio.ended){
+
+            setPlayButtonState(false);
+
+        }
+
+    }
+);
+
+
+audio.addEventListener(
+    "ended",
+    () => {
+
+        setPlayButtonState(false);
 
     }
 );
@@ -3697,10 +4414,6 @@ audio.addEventListener(
                 1;
 
 
-            /*
-                آیه اول از قبل preload شده.
-            */
-
             const firstAyahUrl =
                 getAudioUrl(
                     currentSurah,
@@ -3708,27 +4421,8 @@ audio.addEventListener(
                 );
 
 
-            if(
-                nextAudio &&
-                nextAudioUrl ===
-                firstAyahUrl
-            ){
-
-                /*
-                    برای حفظ کنترل فعلی،
-                    src را روی همان فایل می‌گذاریم.
-                */
-
-                audio.src =
-                    firstAyahUrl;
-
-            }
-            else{
-
-                audio.src =
-                    firstAyahUrl;
-
-            }
+            audio.src =
+                firstAyahUrl;
 
 
             audio.preload =
@@ -3747,21 +4441,19 @@ audio.addEventListener(
 
                 await audio.play();
 
+                setPlayButtonState(true);
+
                 playerStatus.textContent =
                     `در حال پخش آیه ${faNumber(
                         currentAyah
                     )}`;
 
-                playButton.textContent =
-                    "⏸";
-
-                playButton.title =
-                    "توقف";
-
             }
             catch(error){
 
                 console.error(error);
+
+                setPlayButtonState(false);
 
             }
 
@@ -3779,14 +4471,6 @@ audio.addEventListener(
             آیه فعلی تمام شد
             =================================================
         */
-
-        playButton.textContent =
-            "▶";
-
-
-        playButton.title =
-            "پخش";
-
 
         if(
             currentAyah <
@@ -3813,16 +4497,29 @@ audio.addEventListener(
                 currentAyah;
 
 
-            /*
-                اول نشانگر را عوض می‌کنیم.
-                بنابراین لحظه شروع آیه بعد،
-                کارت همان آیه فعال است.
-            */
-
             highlightCurrentAyah();
 
 
             updateSurahInfo();
+
+
+            const currentNextAyah =
+                ayahData.find(
+                    item =>
+                        Number(
+                            item.ayah_number
+                        ) ===
+                        Number(currentAyah)
+                );
+
+
+            if(currentNextAyah){
+
+                showJumpPage(
+                    currentNextAyah.page
+                );
+
+            }
 
 
             const nextUrl =
@@ -3832,42 +4529,15 @@ audio.addEventListener(
                 );
 
 
-            /*
-                اگر صوت بعدی قبلاً preload شده،
-                از همان مسیر استفاده می‌کنیم.
-            */
+            audio.src =
+                nextUrl;
 
-            if(
-                nextAudio &&
-                nextAudioUrl === nextUrl
-            ){
 
-                /*
-                    فایل آماده شده است.
-                    src را عوض می‌کنیم و بلافاصله
-                    پخش را شروع می‌کنیم.
-                */
+            audio.preload =
+                "auto";
 
-                audio.src =
-                    nextUrl;
 
-                audio.preload =
-                    "auto";
-
-                audio.load();
-
-            }
-            else{
-
-                audio.src =
-                    nextUrl;
-
-                audio.preload =
-                    "auto";
-
-                audio.load();
-
-            }
+            audio.load();
 
 
             currentTimeElement.textContent =
@@ -3896,10 +4566,15 @@ audio.addEventListener(
 
                 await audio.play();
 
+                setPlayButtonState(true);
+
             }
             catch(error){
 
                 console.error(error);
+
+
+                setPlayButtonState(false);
 
 
                 playerStatus.textContent =
@@ -3916,19 +4591,60 @@ audio.addEventListener(
             }
 
 
-            /*
-                آیه بعدی را همین حالا preload کن.
-            */
-
             preloadNextAyah();
 
         }
         else{
 
-            playerStatus.textContent =
-                "سوره به پایان رسید.";
+            /*
+                =================================================
+                پایان سوره
+                =================================================
 
-            clearNextAudio();
+                اگر سوره ۱۱۴ نیست،
+                بلافاصله سوره بعدی را بارگذاری و پخش می‌کنیم.
+            */
+
+            if(
+                Number(currentSurah) <
+                114
+            ){
+
+                const nextSurah =
+                    Number(currentSurah) + 1;
+
+
+                try{
+
+                    await loadSurahAndAyah(
+                        nextSurah,
+                        1,
+                        true
+                    );
+
+                }
+                catch(error){
+
+                    console.error(error);
+
+                    setPlayButtonState(false);
+
+                    playerStatus.textContent =
+                        "خطا در رفتن به سوره بعد.";
+
+                }
+
+            }
+            else{
+
+                setPlayButtonState(false);
+
+                playerStatus.textContent =
+                    "قرآن کریم به پایان رسید.";
+
+                clearNextAudio();
+
+            }
 
         }
 
@@ -4000,11 +4716,6 @@ audio.addEventListener(
                 )}%`;
 
 
-            /*
-                اگر به حدود ۲ ثانیه پایانی رسیدیم،
-                مطمئن شو آیه بعد آماده است.
-            */
-
             if(
                 duration - current <
                 2
@@ -4070,44 +4781,6 @@ progressWrap.addEventListener(
 
     }
 );
-
-
-/* =========================================================
-   HIGHLIGHT
-========================================================= */
-
-function highlightCurrentAyah(){
-
-    document
-        .querySelectorAll(
-            ".ayah"
-        )
-        .forEach(
-            element => {
-
-                element.classList.remove(
-                    "active"
-                );
-
-            }
-        );
-
-
-    const current =
-        document.getElementById(
-            `ayah-${currentAyah}`
-        );
-
-
-    if(current){
-
-        current.classList.add(
-            "active"
-        );
-
-    }
-
-}
 
 
 /* =========================================================
@@ -4254,6 +4927,39 @@ ayahNumberInput.addEventListener(
 
 
 /* =========================================================
+   GO PAGE
+========================================================= */
+
+goPageButton.addEventListener(
+    "click",
+    goToPage
+);
+
+
+/* =========================================================
+   ENTER PAGE
+========================================================= */
+
+pageNumberInput.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key ===
+            "Enter"
+        ){
+
+            event.preventDefault();
+
+            goToPage();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
    MODES
 ========================================================= */
 
@@ -4389,7 +5095,11 @@ document.addEventListener(
    START
 ========================================================= */
 
+setPlayButtonState(false);
+
 loadSurahs();
 
-</script></body>
-</html>
+</script>
+
+</body>
+    </html>
