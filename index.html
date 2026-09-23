@@ -1,10 +1,18 @@
-<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta
-name="viewport"
-content="width=device-width,initial-scale=1.0"
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
 
-«»
+<head>
 
-<title>قرآن کریم</title><style>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1.0"
+>
+
+<title>قرآن کریم</title>
+
+<style>
 
 *{
     box-sizing:border-box;
@@ -360,7 +368,17 @@ header p{
 
 }
 
-</style></head><body><header><h1 id="pageTitle">
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1 id="pageTitle">
     📖 قرآن کریم
 </h1>
 
@@ -368,7 +386,13 @@ header p{
     فهرست سوره‌ها
 </p>
 
-</header><div class="container"><!-- ============================
+</header>
+
+
+<div class="container">
+
+
+<!-- ============================
      فهرست سوره‌ها
 ============================= -->
 
@@ -537,15 +561,38 @@ header p{
 
 </section>
 
-</div><script>
+
+</div>
+
+
+<script>
 
 
 /* =========================================
    تنظیمات
 ========================================= */
 
+
+/*
+   آدرس Cloudflare Worker
+
+   هیچ کلید Supabase در این فایل وجود ندارد.
+*/
+
+const WORKER_URL =
+"https://quran-importer.dehghaniweb.workers.dev";
+
+
+/*
+   آدرس عمومی فایل‌های صوتی
+
+   این Bucket عمومی است و برای پخش MP3
+   نیازی به API Key ندارد.
+*/
+
 const SUPABASE_URL =
 "https://wiulmslaensqnwlcjxtp.supabase.co";
+
 
 const SUPABASE_BASE =
 SUPABASE_URL +
@@ -653,11 +700,44 @@ function faNumber(value){
 
 function getSurahName(surah){
 
-    if(surah.name){
+    /*
+       نام فارسی را ترجیح می‌دهیم.
+       اگر موجود نبود نام عربی استفاده می‌شود.
+    */
+
+    if(
+        surah &&
+        surah.name_fa
+    ){
+        return surah.name_fa;
+    }
+
+
+    if(
+        surah &&
+        surah.name_ar
+    ){
+        return surah.name_ar;
+    }
+
+
+    if(
+        surah &&
+        surah.name
+    ){
         return surah.name;
     }
 
-    return `سوره ${surah.number}`;
+
+    if(
+        surah &&
+        surah.number
+    ){
+        return `سوره ${faNumber(surah.number)}`;
+    }
+
+
+    return "سوره";
 
 }
 
@@ -675,9 +755,11 @@ function getAudioUrl(
         String(surahId)
         .padStart(3,"0");
 
+
     const ayah =
         String(ayahNumber)
         .padStart(3,"0");
+
 
     return (
         SUPABASE_BASE +
@@ -697,13 +779,16 @@ function formatTime(seconds){
         return "0:00";
     }
 
+
     const minutes =
         Math.floor(seconds / 60);
+
 
     const secs =
         Math.floor(seconds % 60)
         .toString()
         .padStart(2,"0");
+
 
     return `${minutes}:${secs}`;
 
@@ -711,33 +796,53 @@ function formatTime(seconds){
 
 
 /* =========================================
-   دریافت سوره‌ها
+   دریافت سوره‌ها از Worker
 ========================================= */
 
 async function loadSurahs(){
 
     try{
 
+        statusElement.textContent =
+            "در حال دریافت فهرست سوره‌ها...";
+
+
         const response =
             await fetch(
-                SUPABASE_URL +
-                "/rest/v1/surahs" +
-                "?select=*" +
-                "&order=number.asc"
+                `${WORKER_URL}/surahs`,
+                {
+                    method:"GET"
+                }
             );
 
 
         if(!response.ok){
 
             throw new Error(
-                await response.text()
+                `خطای Worker: ${response.status}`
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if(
+            !result.ok ||
+            !Array.isArray(result.surahs)
+        ){
+
+            throw new Error(
+                "اطلاعات سوره‌ها از Worker دریافت نشد."
             );
 
         }
 
 
         surahData =
-            await response.json();
+            result.surahs;
 
 
         renderSurahList();
@@ -746,7 +851,11 @@ async function loadSurahs(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "loadSurahs:",
+            error
+        );
+
 
         surahList.innerHTML = `
 
@@ -756,8 +865,13 @@ async function loadSurahs(){
 
                 <br><br>
 
-                لطفاً اتصال اینترنت و Supabase
-                را بررسی کنید.
+                لطفاً اتصال اینترنت را بررسی کنید.
+
+                <br><br>
+
+                <small>
+                    ${error.message || ""}
+                </small>
 
             </div>
 
@@ -781,6 +895,7 @@ function renderSurahList(){
 
         const card =
             document.createElement("div");
+
 
         card.className =
             "surah-card";
@@ -816,9 +931,12 @@ function renderSurahList(){
 
                 <div class="surah-meta">
 
-                    ${count
-                        ? faNumber(count) + " آیه"
-                        : "مشاهده آیات"
+                    ${
+                        count
+                        ?
+                        faNumber(count) + " آیه"
+                        :
+                        "مشاهده آیات"
                     }
 
                 </div>
@@ -853,15 +971,23 @@ function renderSurahList(){
 async function openSurah(surah){
 
     currentSurah =
-        surah.id;
+        Number(surah.number || surah.id);
+
 
     currentAyah =
         1;
 
+
     isPlaying =
         false;
 
+
     audio.pause();
+
+
+    audio.currentTime =
+        0;
+
 
     playButton.textContent =
         "▶";
@@ -870,6 +996,7 @@ async function openSurah(surah){
     surahPage.classList.add(
         "hidden"
     );
+
 
     quranPage.classList.remove(
         "hidden"
@@ -888,6 +1015,10 @@ async function openSurah(surah){
         getSurahName(surah);
 
 
+    currentAyahInfo.textContent =
+        "در حال دریافت آیات...";
+
+
     ayahContainer.innerHTML = `
 
         <div class="loading">
@@ -899,12 +1030,11 @@ async function openSurah(surah){
 
     await loadAyahs();
 
-
 }
 
 
 /* =========================================
-   دریافت آیات سوره
+   دریافت آیات از Worker
 ========================================= */
 
 async function loadAyahs(){
@@ -913,25 +1043,40 @@ async function loadAyahs(){
 
         const response =
             await fetch(
-                SUPABASE_URL +
-                "/rest/v1/ayahs" +
-                `?select=id,surah_id,ayah_number,text_ar,text_fa,juz,page` +
-                `&surah_id=eq.${currentSurah}` +
-                `&order=ayah_number.asc`
+                `${WORKER_URL}/ayahs?surah=${encodeURIComponent(currentSurah)}`,
+                {
+                    method:"GET"
+                }
             );
 
 
         if(!response.ok){
 
             throw new Error(
-                await response.text()
+                `خطای Worker: ${response.status}`
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if(
+            !result.ok ||
+            !Array.isArray(result.ayahs)
+        ){
+
+            throw new Error(
+                "آیات از Worker دریافت نشد."
             );
 
         }
 
 
         ayahData =
-            await response.json();
+            result.ayahs;
 
 
         if(!ayahData.length){
@@ -949,7 +1094,9 @@ async function loadAyahs(){
 
         renderAyahs();
 
+
         updateSurahInfo();
+
 
         loadAyah();
 
@@ -957,7 +1104,11 @@ async function loadAyahs(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "loadAyahs:",
+            error
+        );
+
 
         ayahContainer.innerHTML = `
 
@@ -967,7 +1118,7 @@ async function loadAyahs(){
 
                 <br><br>
 
-                ${error.message}
+                ${error.message || ""}
 
             </div>
 
@@ -991,6 +1142,7 @@ function renderAyahs(){
 
         const div =
             document.createElement("div");
+
 
         div.className =
             "ayah";
@@ -1052,9 +1204,12 @@ function renderAyahs(){
                         ayah.ayah_number
                     );
 
+
                 updateSurahInfo();
 
+
                 loadAyah();
+
 
                 playAudio();
 
@@ -1078,7 +1233,7 @@ function updateSurahInfo(){
     const surah =
         surahData.find(
             item =>
-                Number(item.id) ===
+                Number(item.number || item.id) ===
                 Number(currentSurah)
         );
 
@@ -1159,6 +1314,7 @@ function loadAyah(){
 
     updateSurahInfo();
 
+
     activateAyah();
 
 
@@ -1208,7 +1364,19 @@ async function playAudio(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "playAudio:",
+            error
+        );
+
+
+        isPlaying =
+            false;
+
+
+        playButton.textContent =
+            "▶";
+
 
         statusElement.textContent =
             "پخش فایل صوتی انجام نشد.";
@@ -1226,11 +1394,14 @@ function pauseAudio(){
 
     audio.pause();
 
+
     isPlaying =
         false;
 
+
     playButton.textContent =
         "▶";
+
 
     statusElement.textContent =
         `پخش آیه ${faNumber(currentAyah)} متوقف شد.`;
@@ -1248,8 +1419,10 @@ backButton.addEventListener(
 
         audio.pause();
 
+
         isPlaying =
             false;
+
 
         playButton.textContent =
             "▶";
@@ -1258,6 +1431,7 @@ backButton.addEventListener(
         quranPage.classList.add(
             "hidden"
         );
+
 
         surahPage.classList.remove(
             "hidden"
@@ -1310,7 +1484,9 @@ prevButton.addEventListener(
 
             currentAyah--;
 
+
             loadAyah();
+
 
             playAudio();
 
@@ -1341,7 +1517,9 @@ nextButton.addEventListener(
 
             currentAyah++;
 
+
             loadAyah();
+
 
             playAudio();
 
@@ -1476,7 +1654,9 @@ audio.addEventListener(
 
             currentAyah++;
 
+
             loadAyah();
+
 
             playAudio();
 
@@ -1486,7 +1666,7 @@ audio.addEventListener(
             const surah =
                 surahData.find(
                     item =>
-                        Number(item.id) ===
+                        Number(item.number || item.id) ===
                         Number(currentSurah)
                 );
 
@@ -1506,4 +1686,7 @@ audio.addEventListener(
 
 loadSurahs();
 
-</script></body></html>
+</script>
+
+</body>
+</html>
