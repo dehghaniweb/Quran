@@ -33,7 +33,7 @@ header h1{
 
 header p{
     margin:0;
-    opacity:.85;
+    opacity:.9;
     font-size:13px;
 }
 
@@ -41,6 +41,15 @@ header p{
     width:min(850px,calc(100% - 24px));
     margin:18px auto 40px;
 }
+
+.hidden{
+    display:none !important;
+}
+
+
+/* ================================
+   SURAH LIST
+================================ */
 
 .surah-list{
     display:grid;
@@ -97,6 +106,11 @@ header p{
     color:#27845a;
 }
 
+
+/* ================================
+   BACK
+================================ */
+
 .back-button{
     border:0;
     background:#e9f2ed;
@@ -108,6 +122,11 @@ header p{
     margin-bottom:14px;
     font-size:13px;
 }
+
+
+/* ================================
+   PLAYER
+================================ */
 
 .player{
     background:white;
@@ -123,13 +142,13 @@ header p{
     border-radius:14px;
     padding:12px;
     margin-bottom:15px;
-    color:#0b4b35;
 }
 
 .surah-current-name{
     font-size:18px;
     font-weight:bold;
-    margin-bottom:5px;
+    color:#0b4b35;
+    margin-bottom:6px;
 }
 
 .surah-current-ayah{
@@ -137,6 +156,11 @@ header p{
     color:#718278;
     font-weight:bold;
 }
+
+
+/* ================================
+   MODES
+================================ */
 
 .mode-title{
     font-weight:bold;
@@ -166,6 +190,11 @@ header p{
     border-color:#0b4b35;
 }
 
+
+/* ================================
+   CONTROLS
+================================ */
+
 .controls{
     display:flex;
     justify-content:center;
@@ -193,6 +222,11 @@ header p{
     font-size:25px;
 }
 
+
+/* ================================
+   PROGRESS
+================================ */
+
 .progress{
     width:100%;
     height:7px;
@@ -208,6 +242,11 @@ header p{
     transition:width .1s linear;
 }
 
+
+/* ================================
+   TIME
+================================ */
+
 .time{
     display:flex;
     justify-content:space-between;
@@ -216,6 +255,11 @@ header p{
     color:#718278;
     margin-top:7px;
 }
+
+
+/* ================================
+   AYAH
+================================ */
 
 .ayah{
     background:white;
@@ -254,7 +298,7 @@ header p{
     font-size:29px;
     line-height:2.2;
     text-align:right;
-    font-weight:bold;
+    font-weight:700 !important;
 }
 
 .translation{
@@ -264,8 +308,19 @@ header p{
     color:#65766d;
     font-size:14px;
     line-height:2;
+    font-weight:700 !important;
+}
+
+.translation-empty{
+    color:#8a9991;
+    font-size:12px;
     font-weight:bold;
 }
+
+
+/* ================================
+   STATUS
+================================ */
 
 .status{
     text-align:center;
@@ -274,9 +329,24 @@ header p{
     margin-top:12px;
 }
 
-.hidden{
-    display:none;
+
+/* ================================
+   LOADING
+================================ */
+
+.loading{
+    text-align:center;
+    background:white;
+    border-radius:18px;
+    padding:25px;
+    color:#718278;
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
 }
+
+
+/* ================================
+   MOBILE
+================================ */
 
 @media(max-width:600px){
 
@@ -298,72 +368,35 @@ header p{
     فهرست سوره‌ها
 </p>
 
-</header><div class="container"><section id="surahPage">
+</header><div class="container"><!-- ============================
+     فهرست سوره‌ها
+============================= -->
 
-    <div class="surah-list">
+<section id="surahPage">
 
-        <div
-            class="surah-card"
-            data-surah="1"
-        >
+    <div
+        id="surahList"
+        class="surah-list"
+    >
 
-            <div class="surah-number">
-                ۱
-            </div>
-
-            <div class="surah-info">
-
-                <div class="surah-name">
-                    سوره حمد
-                </div>
-
-                <div class="surah-meta">
-                    ۷ آیه
-                </div>
-
-            </div>
-
-            <div class="surah-arrow">
-                ‹
-            </div>
-
-        </div>
-
-        <div
-            class="surah-card"
-            data-surah="2"
-        >
-
-            <div class="surah-number">
-                ۲
-            </div>
-
-            <div class="surah-info">
-
-                <div class="surah-name">
-                    سوره بقره
-                </div>
-
-                <div class="surah-meta">
-                    ۲۸۶ آیه
-                </div>
-
-            </div>
-
-            <div class="surah-arrow">
-                ‹
-            </div>
-
+        <div class="loading">
+            در حال دریافت فهرست سوره‌ها...
         </div>
 
     </div>
 
 </section>
 
+
+<!-- ============================
+     صفحه سوره
+============================= -->
+
 <section
     id="quranPage"
     class="hidden"
 >
+
 
     <button
         class="back-button"
@@ -372,7 +405,9 @@ header p{
         → بازگشت به فهرست سوره‌ها
     </button>
 
+
     <div class="player">
+
 
         <div class="surah-current-info">
 
@@ -380,21 +415,23 @@ header p{
                 class="surah-current-name"
                 id="currentSurahName"
             >
-                سوره حمد
+                سوره
             </div>
 
             <div
                 class="surah-current-ayah"
                 id="currentAyahInfo"
             >
-                آیه ۱ از ۷
+                آیه ۱
             </div>
 
         </div>
 
+
         <div class="mode-title">
             حالت پخش
         </div>
+
 
         <div class="modes">
 
@@ -421,9 +458,12 @@ header p{
 
         </div>
 
+
         <div class="controls">
 
+
             <!-- آیه بعد -->
+
             <button
                 class="control"
                 id="next"
@@ -431,6 +471,9 @@ header p{
             >
                 ⏭
             </button>
+
+
+            <!-- پخش -->
 
             <button
                 class="control play"
@@ -440,7 +483,9 @@ header p{
                 ▶
             </button>
 
+
             <!-- آیه قبل -->
+
             <button
                 class="control"
                 id="prev"
@@ -449,7 +494,9 @@ header p{
                 ⏮
             </button>
 
+
         </div>
+
 
         <div class="progress">
 
@@ -459,6 +506,7 @@ header p{
             ></div>
 
         </div>
+
 
         <div class="time">
 
@@ -472,6 +520,7 @@ header p{
 
         </div>
 
+
         <div
             class="status"
             id="status"
@@ -479,16 +528,33 @@ header p{
             آماده پخش
         </div>
 
+
     </div>
 
+
     <div id="ayahContainer"></div>
+
 
 </section>
 
 </div><script>
 
+
+/* =========================================
+   تنظیمات
+========================================= */
+
+const SUPABASE_URL =
+"https://wiulmslaensqnwlcjxtp.supabase.co";
+
 const SUPABASE_BASE =
-"https://wiulmslaensqnwlcjxtp.supabase.co/storage/v1/object/public/quran-audio/arabic/";
+SUPABASE_URL +
+"/storage/v1/object/public/quran-audio/arabic/";
+
+
+/* =========================================
+   وضعیت برنامه
+========================================= */
 
 let currentSurah = 1;
 
@@ -498,77 +564,23 @@ let currentMode = "arabic";
 
 let isPlaying = false;
 
-const surahs = {
+let surahData = [];
 
-    1:{
-        name:"سوره حمد",
-        count:7
-    },
+let ayahData = [];
 
-    2:{
-        name:"سوره بقره",
-        count:286
-    }
 
-};
-
-const fatihahAyahs = [
-
-    {
-        number:1,
-        arabic:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-        translation:"به نام خداوند بخشنده مهربان"
-    },
-
-    {
-        number:2,
-        arabic:"الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-        translation:"ستایش مخصوص خداوند، پروردگار جهانیان است."
-    },
-
-    {
-        number:3,
-        arabic:"الرَّحْمَٰنِ الرَّحِيمِ",
-        translation:"بخشنده مهربان است."
-    },
-
-    {
-        number:4,
-        arabic:"مَالِكِ يَوْمِ الدِّينِ",
-        translation:"مالک روز جزاست."
-    },
-
-    {
-        number:5,
-        arabic:"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-        translation:"تنها تو را می‌پرستیم و تنها از تو یاری می‌جوییم."
-    },
-
-    {
-        number:6,
-        arabic:"اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-        translation:"ما را به راه راست هدایت کن."
-    },
-
-    {
-        number:7,
-        arabic:"صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
-        translation:"راه کسانی که به آنان نعمت داده‌ای؛ نه راه کسانی که مورد خشم قرار گرفته‌اند و نه راه گمراهان."
-    }
-
-];
-
-const audio =
-new Audio();
-
-audio.preload =
-"metadata";
+/* =========================================
+   عناصر
+========================================= */
 
 const surahPage =
 document.getElementById("surahPage");
 
 const quranPage =
 document.getElementById("quranPage");
+
+const surahList =
+document.getElementById("surahList");
 
 const pageTitle =
 document.getElementById("pageTitle");
@@ -610,6 +622,50 @@ const currentAyahInfo =
 document.getElementById("currentAyahInfo");
 
 
+/* =========================================
+   Audio
+========================================= */
+
+const audio =
+new Audio();
+
+audio.preload =
+"metadata";
+
+
+/* =========================================
+   تبدیل اعداد به فارسی
+========================================= */
+
+function faNumber(value){
+
+    return String(value)
+        .replace(/\d/g, d =>
+            "۰۱۲۳۴۵۶۷۸۹"[d]
+        );
+
+}
+
+
+/* =========================================
+   نام سوره
+========================================= */
+
+function getSurahName(surah){
+
+    if(surah.name){
+        return surah.name;
+    }
+
+    return `سوره ${surah.number}`;
+
+}
+
+
+/* =========================================
+   URL صوت
+========================================= */
+
 function getAudioUrl(
     surahId,
     ayahNumber
@@ -631,6 +687,10 @@ function getAudioUrl(
 }
 
 
+/* =========================================
+   زمان
+========================================= */
+
 function formatTime(seconds){
 
     if(!Number.isFinite(seconds)){
@@ -650,105 +710,54 @@ function formatTime(seconds){
 }
 
 
-function updateSurahInfo(){
+/* =========================================
+   دریافت سوره‌ها
+========================================= */
 
-    currentSurahName.textContent =
-        surahs[currentSurah].name;
+async function loadSurahs(){
 
-    currentAyahInfo.textContent =
-        `آیه ${currentAyah} از ${surahs[currentSurah].count}`;
+    try{
 
-}
-
-
-function renderAyahs(){
-
-    ayahContainer.innerHTML = "";
-
-    if(currentSurah === 1){
-
-        fatihahAyahs.forEach(ayah=>{
-
-            const div =
-                document.createElement("div");
-
-            div.className =
-                "ayah";
-
-            div.dataset.ayah =
-                ayah.number;
-
-            div.id =
-                `ayah-${ayah.number}`;
-
-            div.innerHTML = `
-
-                <div class="arabic">
-
-                    <span class="ayah-number">
-                        ${ayah.number}
-                    </span>
-
-                    ${ayah.arabic}
-
-                </div>
-
-                <div class="translation">
-
-                    ${ayah.translation}
-
-                </div>
-
-            `;
-
-            div.addEventListener(
-                "click",
-                ()=>{
-
-                    currentAyah =
-                        ayah.number;
-
-                    updateSurahInfo();
-
-                    loadAyah();
-
-                    playAudio();
-
-                }
+        const response =
+            await fetch(
+                SUPABASE_URL +
+                "/rest/v1/surahs" +
+                "?select=*" +
+                "&order=number.asc"
             );
 
-            ayahContainer.appendChild(div);
 
-        });
+        if(!response.ok){
 
-        return;
+            throw new Error(
+                await response.text()
+            );
+
+        }
+
+
+        surahData =
+            await response.json();
+
+
+        renderSurahList();
+
 
     }
+    catch(error){
 
-    if(currentSurah === 2){
+        console.error(error);
 
-        ayahContainer.innerHTML = `
+        surahList.innerHTML = `
 
-            <div class="ayah">
+            <div class="loading">
 
-                <div class="arabic">
+                دریافت فهرست سوره‌ها انجام نشد.
 
-                    <span class="ayah-number">
-                        ۲
-                    </span>
+                <br><br>
 
-                    سوره بقره
-
-                </div>
-
-                <div class="translation">
-
-                    فایل‌های صوتی این سوره در
-                    Supabase قرار گرفته‌اند.
-                    متن کامل آیات در مرحله بعد
-                    به دیتابیس اضافه می‌شود.
-
-                </div>
+                لطفاً اتصال اینترنت و Supabase
+                را بررسی کنید.
 
             </div>
 
@@ -758,6 +767,339 @@ function renderAyahs(){
 
 }
 
+
+/* =========================================
+   نمایش فهرست سوره‌ها
+========================================= */
+
+function renderSurahList(){
+
+    surahList.innerHTML = "";
+
+
+    surahData.forEach(surah=>{
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "surah-card";
+
+
+        card.dataset.surah =
+            surah.id;
+
+
+        const count =
+            surah.ayah_count ??
+            surah.verses_count ??
+            "";
+
+
+        card.innerHTML = `
+
+            <div class="surah-number">
+
+                ${faNumber(surah.number)}
+
+            </div>
+
+
+            <div class="surah-info">
+
+                <div class="surah-name">
+
+                    ${getSurahName(surah)}
+
+                </div>
+
+
+                <div class="surah-meta">
+
+                    ${count
+                        ? faNumber(count) + " آیه"
+                        : "مشاهده آیات"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="surah-arrow">
+                ‹
+            </div>
+
+        `;
+
+
+        card.addEventListener(
+            "click",
+            ()=>openSurah(surah)
+        );
+
+
+        surahList.appendChild(card);
+
+    });
+
+}
+
+
+/* =========================================
+   باز کردن سوره
+========================================= */
+
+async function openSurah(surah){
+
+    currentSurah =
+        surah.id;
+
+    currentAyah =
+        1;
+
+    isPlaying =
+        false;
+
+    audio.pause();
+
+    playButton.textContent =
+        "▶";
+
+
+    surahPage.classList.add(
+        "hidden"
+    );
+
+    quranPage.classList.remove(
+        "hidden"
+    );
+
+
+    pageTitle.textContent =
+        "📖 قرآن کریم";
+
+
+    pageSubtitle.textContent =
+        getSurahName(surah);
+
+
+    currentSurahName.textContent =
+        getSurahName(surah);
+
+
+    ayahContainer.innerHTML = `
+
+        <div class="loading">
+            در حال دریافت آیات...
+        </div>
+
+    `;
+
+
+    await loadAyahs();
+
+
+}
+
+
+/* =========================================
+   دریافت آیات سوره
+========================================= */
+
+async function loadAyahs(){
+
+    try{
+
+        const response =
+            await fetch(
+                SUPABASE_URL +
+                "/rest/v1/ayahs" +
+                `?select=id,surah_id,ayah_number,text_ar,text_fa,juz,page` +
+                `&surah_id=eq.${currentSurah}` +
+                `&order=ayah_number.asc`
+            );
+
+
+        if(!response.ok){
+
+            throw new Error(
+                await response.text()
+            );
+
+        }
+
+
+        ayahData =
+            await response.json();
+
+
+        if(!ayahData.length){
+
+            throw new Error(
+                "هیچ آیه‌ای برای این سوره پیدا نشد."
+            );
+
+        }
+
+
+        currentAyah =
+            1;
+
+
+        renderAyahs();
+
+        updateSurahInfo();
+
+        loadAyah();
+
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        ayahContainer.innerHTML = `
+
+            <div class="loading">
+
+                دریافت آیات انجام نشد.
+
+                <br><br>
+
+                ${error.message}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================
+   نمایش آیات
+========================================= */
+
+function renderAyahs(){
+
+    ayahContainer.innerHTML = "";
+
+
+    ayahData.forEach(ayah=>{
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "ayah";
+
+
+        div.id =
+            `ayah-${ayah.ayah_number}`;
+
+
+        div.dataset.ayah =
+            ayah.ayah_number;
+
+
+        const translation =
+            ayah.text_fa &&
+            ayah.text_fa.trim()
+                ? ayah.text_fa
+                : "";
+
+
+        div.innerHTML = `
+
+            <div class="arabic">
+
+                <span class="ayah-number">
+
+                    ${faNumber(ayah.ayah_number)}
+
+                </span>
+
+                ${ayah.text_ar || ""}
+
+            </div>
+
+
+            <div class="translation">
+
+                ${
+                    translation
+                    ?
+                    translation
+                    :
+                    `<span class="translation-empty">
+                        ترجمه فارسی در مرحله بعد اضافه می‌شود.
+                    </span>`
+                }
+
+            </div>
+
+        `;
+
+
+        div.addEventListener(
+            "click",
+            ()=>{
+
+                currentAyah =
+                    Number(
+                        ayah.ayah_number
+                    );
+
+                updateSurahInfo();
+
+                loadAyah();
+
+                playAudio();
+
+            }
+        );
+
+
+        ayahContainer.appendChild(div);
+
+    });
+
+}
+
+
+/* =========================================
+   اطلاعات سوره و آیه
+========================================= */
+
+function updateSurahInfo(){
+
+    const surah =
+        surahData.find(
+            item =>
+                Number(item.id) ===
+                Number(currentSurah)
+        );
+
+
+    if(surah){
+
+        currentSurahName.textContent =
+            getSurahName(surah);
+
+    }
+
+
+    currentAyahInfo.textContent =
+        `آیه ${faNumber(currentAyah)} از ${faNumber(ayahData.length)}`;
+
+}
+
+
+/* =========================================
+   فعال کردن آیه
+========================================= */
 
 function activateAyah(){
 
@@ -771,18 +1113,22 @@ function activateAyah(){
 
         });
 
+
     const ayah =
         document.getElementById(
             `ayah-${currentAyah}`
         );
 
+
     if(!ayah){
         return;
     }
 
+
     ayah.classList.add(
         "active"
     );
+
 
     ayah.scrollIntoView({
 
@@ -795,6 +1141,10 @@ function activateAyah(){
 }
 
 
+/* =========================================
+   بارگذاری صوت آیه
+========================================= */
+
 function loadAyah(){
 
     audio.src =
@@ -803,26 +1153,36 @@ function loadAyah(){
             currentAyah
         );
 
+
     audio.load();
+
 
     updateSurahInfo();
 
     activateAyah();
 
+
     progressBar.style.width =
         "0%";
+
 
     currentTimeElement.textContent =
         "0:00";
 
+
     durationElement.textContent =
         "0:00";
 
+
     statusElement.textContent =
-        `آیه ${currentAyah} آماده پخش است.`;
+        `آیه ${faNumber(currentAyah)} آماده پخش است.`;
 
 }
 
+
+/* =========================================
+   پخش
+========================================= */
 
 async function playAudio(){
 
@@ -830,19 +1190,22 @@ async function playAudio(){
 
         await audio.play();
 
+
         isPlaying =
             true;
+
 
         playButton.textContent =
             "⏸";
 
+
         statusElement.textContent =
-            `در حال پخش آیه ${currentAyah}`;
+            `در حال پخش آیه ${faNumber(currentAyah)}`;
+
 
         activateAyah();
 
     }
-
     catch(error){
 
         console.error(error);
@@ -855,6 +1218,10 @@ async function playAudio(){
 }
 
 
+/* =========================================
+   توقف
+========================================= */
+
 function pauseAudio(){
 
     audio.pause();
@@ -866,58 +1233,14 @@ function pauseAudio(){
         "▶";
 
     statusElement.textContent =
-        `پخش آیه ${currentAyah} متوقف شد.`;
+        `پخش آیه ${faNumber(currentAyah)} متوقف شد.`;
 
 }
 
 
-document
-    .querySelectorAll(".surah-card")
-    .forEach(card=>{
-
-        card.addEventListener(
-            "click",
-            ()=>{
-
-                currentSurah =
-                    Number(
-                        card.dataset.surah
-                    );
-
-                currentAyah =
-                    1;
-
-                isPlaying =
-                    false;
-
-                audio.pause();
-
-                playButton.textContent =
-                    "▶";
-
-                surahPage.classList.add(
-                    "hidden"
-                );
-
-                quranPage.classList.remove(
-                    "hidden"
-                );
-
-                pageTitle.textContent =
-                    "📖 قرآن کریم";
-
-                pageSubtitle.textContent =
-                    surahs[currentSurah].name;
-
-                renderAyahs();
-
-                loadAyah();
-
-            }
-        );
-
-    });
-
+/* =========================================
+   بازگشت
+========================================= */
 
 backButton.addEventListener(
     "click",
@@ -928,16 +1251,22 @@ backButton.addEventListener(
         isPlaying =
             false;
 
-        surahPage.classList.remove(
-            "hidden"
-        );
+        playButton.textContent =
+            "▶";
+
 
         quranPage.classList.add(
             "hidden"
         );
 
+        surahPage.classList.remove(
+            "hidden"
+        );
+
+
         pageTitle.textContent =
             "📖 قرآن کریم";
+
 
         pageSubtitle.textContent =
             "فهرست سوره‌ها";
@@ -945,6 +1274,10 @@ backButton.addEventListener(
     }
 );
 
+
+/* =========================================
+   Play / Pause
+========================================= */
 
 playButton.addEventListener(
     "click",
@@ -964,6 +1297,10 @@ playButton.addEventListener(
     }
 );
 
+
+/* =========================================
+   آیه قبل
+========================================= */
 
 prevButton.addEventListener(
     "click",
@@ -989,13 +1326,17 @@ prevButton.addEventListener(
 );
 
 
+/* =========================================
+   آیه بعد
+========================================= */
+
 nextButton.addEventListener(
     "click",
     ()=>{
 
         if(
             currentAyah <
-            surahs[currentSurah].count
+            ayahData.length
         ){
 
             currentAyah++;
@@ -1016,6 +1357,10 @@ nextButton.addEventListener(
 );
 
 
+/* =========================================
+   حالت پخش
+========================================= */
+
 document
     .querySelectorAll(".mode")
     .forEach(button=>{
@@ -1034,12 +1379,15 @@ document
 
                     });
 
+
                 button.classList.add(
                     "active"
                 );
 
+
                 currentMode =
                     button.dataset.mode;
+
 
                 statusElement.textContent =
                     "حالت پخش انتخاب شد: " +
@@ -1050,6 +1398,10 @@ document
 
     });
 
+
+/* =========================================
+   Metadata
+========================================= */
 
 audio.addEventListener(
     "loadedmetadata",
@@ -1064,6 +1416,10 @@ audio.addEventListener(
 );
 
 
+/* =========================================
+   پیشرفت
+========================================= */
+
 audio.addEventListener(
     "timeupdate",
     ()=>{
@@ -1072,14 +1428,17 @@ audio.addEventListener(
             return;
         }
 
+
         const percent =
             (
                 audio.currentTime /
                 audio.duration
             ) * 100;
 
+
         progressBar.style.width =
             percent + "%";
+
 
         currentTimeElement.textContent =
             formatTime(
@@ -1090,6 +1449,10 @@ audio.addEventListener(
 );
 
 
+/* =========================================
+   پایان آیه
+========================================= */
+
 audio.addEventListener(
     "ended",
     ()=>{
@@ -1097,15 +1460,18 @@ audio.addEventListener(
         isPlaying =
             false;
 
+
         playButton.textContent =
             "▶";
+
 
         progressBar.style.width =
             "100%";
 
+
         if(
             currentAyah <
-            surahs[currentSurah].count
+            ayahData.length
         ){
 
             currentAyah++;
@@ -1115,15 +1481,29 @@ audio.addEventListener(
             playAudio();
 
         }
-
         else{
 
+            const surah =
+                surahData.find(
+                    item =>
+                        Number(item.id) ===
+                        Number(currentSurah)
+                );
+
+
             statusElement.textContent =
-                `${surahs[currentSurah].name} به پایان رسید.`;
+                `${getSurahName(surah || {})} به پایان رسید.`;
 
         }
 
     }
 );
+
+
+/* =========================================
+   شروع برنامه
+========================================= */
+
+loadSurahs();
 
 </script></body></html>
