@@ -868,6 +868,25 @@ let currentMode = "arabic";
 let isLoading = false;
 
 
+/*
+    وضعیت پخش بسم‌الله
+
+    false:
+    هنوز بسم‌الله این آیه پخش نشده
+
+    true:
+    بسم‌الله برای آیه اول این سوره پخش شده
+*/
+let bismillahPlayedForCurrentAyah = false;
+
+
+/*
+    مشخص می‌کند فایل فعلی که در audio قرار دارد
+    فایل بسم‌الله است یا فایل آیه.
+*/
+let isBismillahAudio = false;
+
+
 /* =========================================================
    DOM
 ========================================================= */
@@ -1006,6 +1025,46 @@ function getSurahName(surah){
    AUDIO URL
 ========================================================= */
 
+/*
+    فایل بسم‌الله مشترک:
+
+    001001.mp3
+*/
+
+function getBismillahAudioUrl(){
+
+    return (
+        SUPABASE_BASE +
+        "001/001001.mp3"
+    );
+
+}
+
+
+/*
+    فایل صوتی آیه:
+
+    حمد:
+        آیه 1 = 001002
+        آیه 2 = 001003
+        ...
+
+    سوره‌های 2 تا 8 و 10 تا 114:
+        آیه 1 = 002002
+        آیه 2 = 002003
+        ...
+
+    توبه:
+        آیه 1 = 009001
+        آیه 2 = 009002
+        ...
+
+    بنابراین فقط حمد و توبه با شماره آیه
+    یکسان نیستند؛ در حمد هم بسم‌الله
+    فایل اول است و در سوره‌های دیگر
+    بسم‌الله از فایل مشترک استفاده می‌کند.
+*/
+
 function getAudioUrl(
     surahId,
     ayahNumber
@@ -1015,9 +1074,52 @@ function getAudioUrl(
         String(surahId)
         .padStart(3,"0");
 
+
+    let fileNumber =
+        Number(ayahNumber);
+
+
+    /*
+        حمد:
+        فایل اول بسم‌الله است.
+    */
+
+    if(
+        Number(surahId) === 1
+    ){
+
+        fileNumber =
+            Number(ayahNumber) + 1;
+
+    }
+
+
+    /*
+        سوره‌های دارای بسم‌الله:
+        فایل صوتی بسم‌الله جداست
+        و فایل آیه اول از 002 شروع می‌شود.
+    */
+
+    else if(
+        Number(surahId) !== 9
+    ){
+
+        fileNumber =
+            Number(ayahNumber) + 1;
+
+    }
+
+
+    /*
+        توبه:
+        فایل 009001 مستقیماً آیه اول است.
+    */
+
+
     const ayah =
-        String(ayahNumber)
+        String(fileNumber)
         .padStart(3,"0");
+
 
     return (
         SUPABASE_BASE +
@@ -1199,6 +1301,10 @@ async function loadAyahs(){
             result.ayahs;
 
         currentAyah = 1;
+
+        bismillahPlayedForCurrentAyah = false;
+
+        isBismillahAudio = false;
 
         renderAyahs();
 
@@ -1436,6 +1542,31 @@ function renderAyahs(){
                             ayah.ayah_number
                         );
 
+
+                    /*
+                        اگر کاربر مستقیماً
+                        آیه اول را انتخاب کند،
+                        بسم‌الله باید دوباره پخش شود.
+                    */
+
+                    if(
+                        currentAyah === 1 &&
+                        Number(currentSurah) !== 1 &&
+                        Number(currentSurah) !== 9
+                    ){
+
+                        bismillahPlayedForCurrentAyah =
+                            false;
+
+                    }
+                    else{
+
+                        bismillahPlayedForCurrentAyah =
+                            true;
+
+                    }
+
+
                     updateSurahInfo();
 
                     loadAyah();
@@ -1533,6 +1664,9 @@ function loadAyah(){
         );
 
 
+    isBismillahAudio = false;
+
+
     audio.src =
         audioUrl;
 
@@ -1561,12 +1695,109 @@ function loadAyah(){
 
 
 /* =========================================================
+   PLAY BISMILLAH
+========================================================= */
+
+async function playBismillah(){
+
+    try{
+
+        isBismillahAudio = true;
+
+
+        audio.src =
+            getBismillahAudioUrl();
+
+        audio.load();
+
+
+        currentTimeElement.textContent =
+            "0:00";
+
+        durationElement.textContent =
+            "0:00";
+
+        progress.style.width =
+            "0%";
+
+
+        playerStatus.textContent =
+            "در حال پخش بسم‌الله";
+
+
+        await audio.play();
+
+
+        playButton.textContent =
+            "⏸";
+
+        playButton.title =
+            "توقف";
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        isBismillahAudio = false;
+
+        playerStatus.textContent =
+            "برای پخش، دوباره دکمه پخش را لمس کنید.";
+
+    }
+
+}
+
+
+/* =========================================================
    PLAY
 ========================================================= */
 
 async function playAudio(){
 
     try{
+
+        /*
+            اگر در حال پخش بسم‌الله هستیم،
+            فقط ادامه بده.
+        */
+
+        if(
+            isBismillahAudio
+        ){
+
+            await audio.play();
+
+            playButton.textContent =
+                "⏸";
+
+            playButton.title =
+                "توقف";
+
+            return;
+
+        }
+
+
+        /*
+            برای سوره‌های دارای بسم‌الله،
+            قبل از آیه اول یک بار بسم‌الله
+            پخش می‌شود.
+        */
+
+        if(
+            Number(currentAyah) === 1 &&
+            Number(currentSurah) !== 1 &&
+            Number(currentSurah) !== 9 &&
+            !bismillahPlayedForCurrentAyah
+        ){
+
+            await playBismillah();
+
+            return;
+
+        }
+
 
         if(!audio.src){
 
@@ -1616,8 +1847,18 @@ function pauseAudio(){
         "پخش";
 
 
-    playerStatus.textContent =
-        `آیه ${faNumber(currentAyah)}`;
+    if(isBismillahAudio){
+
+        playerStatus.textContent =
+            "بسم‌الله";
+
+    }
+    else{
+
+        playerStatus.textContent =
+            `آیه ${faNumber(currentAyah)}`;
+
+    }
 
 }
 
@@ -1662,6 +1903,31 @@ prevButton.addEventListener(
 
             currentAyah--;
 
+
+            /*
+                اگر به آیه اول رسیدیم،
+                برای سوره‌های دارای بسم‌الله
+                باید بسم‌الله دوباره پخش شود.
+            */
+
+            if(
+                currentAyah === 1 &&
+                Number(currentSurah) !== 1 &&
+                Number(currentSurah) !== 9
+            ){
+
+                bismillahPlayedForCurrentAyah =
+                    false;
+
+            }
+            else{
+
+                bismillahPlayedForCurrentAyah =
+                    true;
+
+            }
+
+
             loadAyah();
 
             playAudio();
@@ -1698,6 +1964,16 @@ nextButton.addEventListener(
 
             currentAyah++;
 
+
+            /*
+                برای آیات بعد از آیه اول
+                دیگر نیازی به بسم‌الله نیست.
+            */
+
+            bismillahPlayedForCurrentAyah =
+                true;
+
+
             loadAyah();
 
             playAudio();
@@ -1722,6 +1998,34 @@ audio.addEventListener(
     "ended",
     () => {
 
+        /*
+            اگر بسم‌الله تمام شد:
+            حالا آیه اول همان سوره را پخش کن.
+        */
+
+        if(isBismillahAudio){
+
+            isBismillahAudio =
+                false;
+
+            bismillahPlayedForCurrentAyah =
+                true;
+
+
+            loadAyah();
+
+            playAudio();
+
+            return;
+
+        }
+
+
+        /*
+            اگر آیه تمام شد،
+            برو آیه بعدی.
+        */
+
         playButton.textContent =
             "▶";
 
@@ -1735,6 +2039,9 @@ audio.addEventListener(
         ){
 
             currentAyah++;
+
+            bismillahPlayedForCurrentAyah =
+                true;
 
             loadAyah();
 
@@ -1953,6 +2260,13 @@ surahSelect.addEventListener(
         );
 
 
+        isBismillahAudio =
+            false;
+
+        bismillahPlayedForCurrentAyah =
+            false;
+
+
         progress.style.width =
             "0%";
 
@@ -2106,4 +2420,4 @@ loadSurahs();
 </script>
 
 </body>
-            </html>
+</html>
