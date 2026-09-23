@@ -2,12 +2,11 @@
 <html lang="fa" dir="rtl">
 
 <head>
-
 <meta charset="UTF-8">
 
 <meta
     name="viewport"
-    content="width=device-width,initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 >
 
 <title>قرآن کریم</title>
@@ -19,496 +18,682 @@
     -webkit-tap-highlight-color:transparent;
 }
 
+html,
 body{
     margin:0;
-    font-family:Tahoma,Arial,sans-serif;
-    background:#f4f7f4;
+    padding:0;
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    background:#f3f7f4;
     color:#173c2c;
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+    direction:rtl;
 }
 
-header{
+button{
+    font-family:inherit;
+}
+
+.app{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+    min-height:100vh;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    position:sticky;
+    top:0;
+    z-index:100;
+
     background:#0b4b35;
     color:white;
-    padding:20px 16px;
+
+    padding:
+        14px
+        14px
+        12px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,.12);
+}
+
+.header-title{
     text-align:center;
-    box-shadow:0 3px 12px rgba(0,0,0,.15);
-}
-
-header h1{
-    margin:0 0 8px;
     font-size:22px;
-}
-
-header p{
-    margin:0;
-    opacity:.9;
-    font-size:13px;
-}
-
-.container{
-    width:min(850px,calc(100% - 24px));
-    margin:18px auto 40px;
-}
-
-.hidden{
-    display:none !important;
-}
-
-
-/* ================================
-   SURAH LIST
-================================ */
-
-.surah-list{
-    display:grid;
-    gap:12px;
-}
-
-.surah-card{
-    background:white;
-    border-radius:18px;
-    padding:16px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    box-shadow:0 4px 15px rgba(0,0,0,.06);
-    cursor:pointer;
-    transition:.2s;
-    border:2px solid transparent;
-}
-
-.surah-card:active{
-    transform:scale(.98);
-}
-
-.surah-number{
-    width:46px;
-    height:46px;
-    border-radius:14px;
-    background:#0b4b35;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     font-weight:bold;
-    flex-shrink:0;
+    margin-bottom:12px;
 }
+
+.surah-selector{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.surah-selector select{
+    flex:1;
+
+    min-width:0;
+
+    border:none;
+    outline:none;
+
+    background:white;
+    color:#173c2c;
+
+    border-radius:12px;
+
+    padding:
+        11px
+        12px;
+
+    font-size:15px;
+    font-weight:bold;
+}
+
+/* =========================
+   SURAH INFO
+========================= */
 
 .surah-info{
-    flex:1;
+    background:white;
+
+    margin:12px;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.07);
+
+    text-align:center;
 }
 
 .surah-name{
-    font-size:17px;
+    color:#0b4b35;
+    font-size:21px;
     font-weight:bold;
     margin-bottom:5px;
 }
 
 .surah-meta{
-    font-size:12px;
-    color:#718278;
-}
-
-.surah-arrow{
-    font-size:22px;
-    color:#27845a;
-}
-
-
-/* ================================
-   BACK
-================================ */
-
-.back-button{
-    border:0;
-    background:#e9f2ed;
-    color:#0b4b35;
-    border-radius:12px;
-    padding:10px 15px;
-    font-family:inherit;
-    cursor:pointer;
-    margin-bottom:14px;
+    color:#648073;
     font-size:13px;
 }
 
-
-/* ================================
-   PLAYER
-================================ */
-
-.player{
-    background:white;
-    border-radius:18px;
-    padding:18px;
-    box-shadow:0 5px 20px rgba(0,0,0,.08);
-    margin-bottom:18px;
-}
-
-.surah-current-info{
-    text-align:center;
-    background:#eef8f2;
-    border-radius:14px;
-    padding:12px;
-    margin-bottom:15px;
-}
-
-.surah-current-name{
-    font-size:18px;
-    font-weight:bold;
-    color:#0b4b35;
-    margin-bottom:6px;
-}
-
-.surah-current-ayah{
-    font-size:12px;
-    color:#718278;
-    font-weight:bold;
-}
-
-
-/* ================================
-   MODES
-================================ */
-
-.mode-title{
-    font-weight:bold;
-    margin-bottom:12px;
-}
+/* =========================
+   MODE BUTTONS
+========================= */
 
 .modes{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
+    display:flex;
+
     gap:8px;
+
+    margin:
+        0
+        12px
+        12px;
+
+    overflow-x:auto;
+
+    scrollbar-width:none;
+}
+
+.modes::-webkit-scrollbar{
+    display:none;
 }
 
 .mode{
-    border:1px solid #d6e3dc;
-    background:#f7faf8;
-    color:#24533f;
+    flex:1;
+
+    min-width:115px;
+
+    border:
+        1px solid
+        #cfe0d7;
+
+    background:white;
+
+    color:#176c49;
+
     border-radius:12px;
-    padding:11px 5px;
+
+    padding:
+        10px
+        8px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
     cursor:pointer;
-    font-family:inherit;
-    font-size:12px;
+
+    transition:.2s;
 }
 
 .mode.active{
-    background:#0b4b35;
+    background:#176c49;
     color:white;
-    border-color:#0b4b35;
+
+    border-color:#176c49;
+
+    box-shadow:
+        0 3px 8px rgba(23,108,73,.2);
 }
 
+/* =========================
+   PLAYER
+========================= */
 
-/* ================================
+.player{
+    background:white;
+
+    margin:
+        0
+        12px
+        12px;
+
+    padding:14px;
+
+    border-radius:18px;
+
+    box-shadow:
+        0 3px 14px rgba(0,0,0,.08);
+}
+
+.player-status{
+    text-align:center;
+
+    font-size:14px;
+
+    color:#547265;
+
+    margin-bottom:10px;
+}
+
+.progress-wrap{
+    width:100%;
+
+    height:7px;
+
+    background:#e2ebe6;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    cursor:pointer;
+}
+
+.progress{
+    width:0%;
+
+    height:100%;
+
+    background:#176c49;
+
+    transition:
+        width .1s linear;
+}
+
+.time-row{
+    display:flex;
+
+    justify-content:space-between;
+
+    direction:ltr;
+
+    margin-top:6px;
+
+    color:#6d8077;
+
+    font-size:12px;
+}
+
+/* =========================
    CONTROLS
-================================ */
+========================= */
 
 .controls{
     display:flex;
+
     justify-content:center;
+
     align-items:center;
-    gap:12px;
-    margin:18px 0;
+
+    gap:18px;
+
+    margin-top:14px;
+
+    direction:rtl;
 }
 
 .control{
-    border:0;
-    width:48px;
-    height:48px;
+    width:52px;
+    height:52px;
+
+    border:none;
+
     border-radius:50%;
+
     background:#e9f2ed;
-    color:#0b4b35;
-    font-size:20px;
-    cursor:pointer;
-}
 
-.play{
-    width:62px;
-    height:62px;
-    background:#0b4b35;
-    color:white;
-    font-size:25px;
-}
+    color:#176c49;
 
+    font-size:23px;
 
-/* ================================
-   PROGRESS
-================================ */
-
-.progress{
-    width:100%;
-    height:7px;
-    border-radius:10px;
-    overflow:hidden;
-    background:#e1e9e4;
-}
-
-.progress-bar{
-    width:0%;
-    height:100%;
-    background:#27845a;
-    transition:width .1s linear;
-}
-
-
-/* ================================
-   TIME
-================================ */
-
-.time{
     display:flex;
-    justify-content:space-between;
-    direction:rtl;
-    font-size:11px;
-    color:#718278;
-    margin-top:7px;
+
+    justify-content:center;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    box-shadow:
+        0 2px 7px rgba(0,0,0,.08);
+
+    transition:
+        transform .15s,
+        background .15s;
 }
 
+.control:active{
+    transform:scale(.92);
+}
 
-/* ================================
+.control.play{
+    width:64px;
+    height:64px;
+
+    background:#176c49;
+
+    color:white;
+
+    font-size:28px;
+}
+
+/* =========================
+   AYAH CONTAINER
+========================= */
+
+.ayah-container{
+    padding:
+        0
+        12px
+        30px;
+}
+
+/* =========================
+   BISMILLAH
+========================= */
+
+.bismillah{
+    text-align:center;
+
+    font-family:
+        "Amiri",
+        "Traditional Arabic",
+        serif;
+
+    font-size:25px;
+
+    line-height:2;
+
+    font-weight:700;
+
+    color:#0b4b35;
+
+    margin:
+        4px
+        0
+        18px;
+
+    padding:
+        4px
+        8px
+        14px;
+
+    border-bottom:
+        1px solid
+        #dfe8e2;
+}
+
+/* =========================
    AYAH
-================================ */
+========================= */
 
 .ayah{
     background:white;
+
     border-radius:18px;
-    padding:25px 20px;
-    margin-bottom:14px;
-    border:2px solid transparent;
-    box-shadow:0 4px 15px rgba(0,0,0,.06);
+
+    margin-bottom:12px;
+
+    padding:16px;
+
+    border:
+        1px solid
+        #e4ece7;
+
+    box-shadow:
+        0 2px 9px rgba(0,0,0,.045);
+
     cursor:pointer;
-    transition:.25s;
+
+    transition:
+        background .2s,
+        border .2s,
+        transform .15s;
+}
+
+.ayah:active{
+    transform:scale(.995);
 }
 
 .ayah.active{
-    border-color:#27845a;
-    background:#eef8f2;
-    box-shadow:0 5px 22px rgba(39,132,90,.18);
+    background:#edf7f1;
+
+    border:
+        2px solid
+        #27845a;
+
+    box-shadow:
+        0 4px 15px rgba(23,108,73,.12);
+}
+
+/* =========================
+   ARABIC
+========================= */
+
+.arabic{
+    direction:rtl;
+
+    text-align:right;
+
+    font-family:
+        "Amiri",
+        "Traditional Arabic",
+        serif;
+
+    font-size:25px;
+
+    line-height:2.25;
+
+    font-weight:700;
+
+    color:#173c2c;
 }
 
 .ayah-number{
     display:inline-flex;
-    align-items:center;
+
     justify-content:center;
-    width:32px;
-    height:32px;
-    border-radius:50%;
-    background:#0b4b35;
-    color:white;
-    font-size:13px;
+    align-items:center;
+
+    width:30px;
+    height:30px;
+
     margin-left:8px;
-    font-family:Tahoma,Arial,sans-serif;
+
+    border-radius:50%;
+
+    background:#176c49;
+
+    color:white;
+
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    font-size:12px;
+
     vertical-align:middle;
 }
 
-.arabic{
-    font-family:"Amiri","Traditional Arabic",serif;
-    font-size:29px;
-    line-height:2.2;
-    text-align:right;
-    font-weight:700 !important;
-}
+/* =========================
+   TRANSLATION
+========================= */
 
 .translation{
-    margin-top:15px;
-    padding-top:13px;
-    border-top:1px solid #dfe8e2;
-    color:#65766d;
-    font-size:14px;
+    margin-top:13px;
+
+    padding-top:12px;
+
+    border-top:
+        1px solid
+        #edf1ee;
+
+    color:#45675a;
+
+    font-size:16px;
+
     line-height:2;
-    font-weight:700 !important;
+
+    font-weight:bold;
+
+    text-align:right;
 }
 
 .translation-empty{
-    color:#8a9991;
-    font-size:12px;
-    font-weight:bold;
+    color:#94a69e;
+
+    font-size:13px;
+
+    font-weight:normal;
 }
 
-
-/* ================================
-   STATUS
-================================ */
-
-.status{
-    text-align:center;
-    font-size:12px;
-    color:#718278;
-    margin-top:12px;
-}
-
-
-/* ================================
+/* =========================
    LOADING
-================================ */
+========================= */
 
 .loading{
     text-align:center;
-    background:white;
-    border-radius:18px;
-    padding:25px;
-    color:#718278;
-    box-shadow:0 4px 15px rgba(0,0,0,.05);
+
+    padding:35px 15px;
+
+    color:#668276;
+
+    font-size:15px;
 }
 
+.error{
+    margin:20px 12px;
 
-/* ================================
+    padding:16px;
+
+    background:#fff0f0;
+
+    color:#a33;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    line-height:1.9;
+}
+
+/* =========================
    MOBILE
-================================ */
+========================= */
 
 @media(max-width:600px){
 
-    .modes{
-        grid-template-columns:1fr;
+    .header-title{
+        font-size:20px;
+    }
+
+    .surah-info{
+        margin-top:10px;
     }
 
     .arabic{
-        font-size:25px;
+        font-size:24px;
+        line-height:2.2;
     }
 
+    .translation{
+        font-size:15px;
+    }
+
+    .controls{
+        gap:14px;
+    }
+
+    .control{
+        width:48px;
+        height:48px;
+    }
+
+    .control.play{
+        width:60px;
+        height:60px;
+    }
+
+    .bismillah{
+        font-size:23px;
+    }
 }
 
 </style>
-
 </head>
 
 
 <body>
 
+<div class="app">
 
-<header>
+    <!-- HEADER -->
 
-<h1 id="pageTitle">
-    📖 قرآن کریم
-</h1>
+    <header class="header">
 
-<p id="pageSubtitle">
-    فهرست سوره‌ها
-</p>
-
-</header>
-
-
-<div class="container">
-
-
-<!-- ============================
-     فهرست سوره‌ها
-============================= -->
-
-<section id="surahPage">
-
-    <div
-        id="surahList"
-        class="surah-list"
-    >
-
-        <div class="loading">
-            در حال دریافت فهرست سوره‌ها...
+        <div class="header-title">
+            📖 قرآن کریم
         </div>
+
+        <div class="surah-selector">
+
+            <select id="surahSelect">
+                <option value="">در حال دریافت سوره‌ها...</option>
+            </select>
+
+        </div>
+
+    </header>
+
+
+    <!-- SURAH INFO -->
+
+    <section class="surah-info">
+
+        <div
+            class="surah-name"
+            id="surahName"
+        >
+            قرآن کریم
+        </div>
+
+        <div
+            class="surah-meta"
+            id="surahInfo"
+        >
+            در حال آماده‌سازی...
+        </div>
+
+    </section>
+
+
+    <!-- MODES -->
+
+    <div class="modes">
+
+        <button
+            class="mode active"
+            data-mode="arabic"
+            id="modeArabic"
+        >
+            🔊 فقط قرائت
+        </button>
+
+        <button
+            class="mode"
+            data-mode="translation"
+            id="modeTranslation"
+        >
+            🇮🇷 فقط ترجمه
+        </button>
+
+        <button
+            class="mode"
+            data-mode="both"
+            id="modeBoth"
+        >
+            🔊🇮🇷 قرائت + ترجمه
+        </button>
 
     </div>
 
-</section>
+
+    <!-- PLAYER -->
+
+    <section class="player">
+
+        <div
+            class="player-status"
+            id="playerStatus"
+        >
+            آماده پخش
+        </div>
 
 
-<!-- ============================
-     صفحه سوره
-============================= -->
-
-<section
-    id="quranPage"
-    class="hidden"
->
-
-
-    <button
-        class="back-button"
-        id="backButton"
-    >
-        → بازگشت به فهرست سوره‌ها
-    </button>
-
-
-    <div class="player">
-
-
-        <div class="surah-current-info">
+        <div
+            class="progress-wrap"
+            id="progressWrap"
+        >
 
             <div
-                class="surah-current-name"
-                id="currentSurahName"
-            >
-                سوره
-            </div>
-
-            <div
-                class="surah-current-ayah"
-                id="currentAyahInfo"
-            >
-                آیه ۱
-            </div>
+                class="progress"
+                id="progress"
+            ></div>
 
         </div>
 
 
-        <div class="mode-title">
-            حالت پخش
-        </div>
+        <div class="time-row">
 
+            <span id="duration">
+                0:00
+            </span>
 
-        <div class="modes">
-
-            <button
-                class="mode active"
-                data-mode="arabic"
-            >
-                🔊 فقط قرائت
-            </button>
-
-            <button
-                class="mode"
-                data-mode="persian"
-            >
-                🇮🇷 فقط ترجمه
-            </button>
-
-            <button
-                class="mode"
-                data-mode="both"
-            >
-                🔊🇮🇷 قرائت + ترجمه
-            </button>
+            <span id="currentTime">
+                0:00
+            </span>
 
         </div>
 
+
+        <!--
+            RTL:
+            دکمه قبلی سمت راست
+            پخش وسط
+            دکمه بعدی سمت چپ
+        -->
 
         <div class="controls">
-
-
-            <!-- آیه بعد -->
-
-            <button
-                class="control"
-                id="next"
-                title="آیه بعد"
-            >
-                ⏭
-            </button>
-
-
-            <!-- پخش -->
-
-            <button
-                class="control play"
-                id="play"
-                title="پخش"
-            >
-                ▶
-            </button>
-
-
-            <!-- آیه قبل -->
 
             <button
                 class="control"
@@ -518,90 +703,75 @@ header p{
                 ⏮
             </button>
 
+            <button
+                class="control play"
+                id="play"
+                title="پخش"
+            >
+                ▶
+            </button>
+
+            <button
+                class="control"
+                id="next"
+                title="آیه بعد"
+            >
+                ⏭
+            </button>
 
         </div>
 
+    </section>
 
-        <div class="progress">
 
-            <div
-                class="progress-bar"
-                id="progressBar"
-            ></div>
+    <!-- AYAHES -->
 
+    <main
+        class="ayah-container"
+        id="ayahContainer"
+    >
+
+        <div class="loading">
+            در حال دریافت آیات...
         </div>
 
-
-        <div class="time">
-
-            <span id="currentTime">
-                0:00
-            </span>
-
-            <span id="duration">
-                0:00
-            </span>
-
-        </div>
-
-
-        <div
-            class="status"
-            id="status"
-        >
-            آماده پخش
-        </div>
-
-
-    </div>
-
-
-    <div id="ayahContainer"></div>
-
-
-</section>
-
+    </main>
 
 </div>
 
 
+<!-- AUDIO -->
+
+<audio
+    id="audio"
+    preload="metadata"
+></audio>
+
+
 <script>
 
-
-/* =========================================
-   تنظیمات
-========================================= */
-
-
-/*
-   آدرس Cloudflare Worker
-
-   هیچ کلید Supabase در این فایل وجود ندارد.
-*/
+/* =========================================================
+   CONFIG
+========================================================= */
 
 const WORKER_URL =
-"https://quran-importer.dehghaniweb.workers.dev";
-
-
-/*
-   آدرس عمومی فایل‌های صوتی
-
-   این Bucket عمومی است و برای پخش MP3
-   نیازی به API Key ندارد.
-*/
+    "https://quran-importer.dehghaniweb.workers.dev";
 
 const SUPABASE_URL =
-"https://wiulmslaensqnwlcjxtp.supabase.co";
-
+    "https://wiulmslaensqnwlcjxtp.supabase.co";
 
 const SUPABASE_BASE =
-SUPABASE_URL +
-"/storage/v1/object/public/quran-audio/arabic/";
+    SUPABASE_URL +
+    "/storage/v1/object/public/quran-audio/arabic/";
 
 
-/* =========================================
-   وضعیت برنامه
-========================================= */
+/* =========================================================
+   STATE
+========================================================= */
+
+let surahData = [];
+
+let ayahData = [];
 
 let currentSurah = 1;
 
@@ -609,101 +779,98 @@ let currentAyah = 1;
 
 let currentMode = "arabic";
 
-let isPlaying = false;
-
-let surahData = [];
-
-let ayahData = [];
+let isLoading = false;
 
 
-/* =========================================
-   عناصر
-========================================= */
+/* =========================================================
+   DOM
+========================================================= */
 
-const surahPage =
-document.getElementById("surahPage");
+const surahSelect =
+    document.getElementById("surahSelect");
 
-const quranPage =
-document.getElementById("quranPage");
+const surahName =
+    document.getElementById("surahName");
 
-const surahList =
-document.getElementById("surahList");
-
-const pageTitle =
-document.getElementById("pageTitle");
-
-const pageSubtitle =
-document.getElementById("pageSubtitle");
+const surahInfo =
+    document.getElementById("surahInfo");
 
 const ayahContainer =
-document.getElementById("ayahContainer");
-
-const backButton =
-document.getElementById("backButton");
-
-const playButton =
-document.getElementById("play");
-
-const prevButton =
-document.getElementById("prev");
-
-const nextButton =
-document.getElementById("next");
-
-const progressBar =
-document.getElementById("progressBar");
-
-const currentTimeElement =
-document.getElementById("currentTime");
-
-const durationElement =
-document.getElementById("duration");
-
-const statusElement =
-document.getElementById("status");
-
-const currentSurahName =
-document.getElementById("currentSurahName");
-
-const currentAyahInfo =
-document.getElementById("currentAyahInfo");
-
-
-/* =========================================
-   Audio
-========================================= */
+    document.getElementById("ayahContainer");
 
 const audio =
-new Audio();
+    document.getElementById("audio");
 
-audio.preload =
-"metadata";
+const playButton =
+    document.getElementById("play");
+
+const prevButton =
+    document.getElementById("prev");
+
+const nextButton =
+    document.getElementById("next");
+
+const progress =
+    document.getElementById("progress");
+
+const progressWrap =
+    document.getElementById("progressWrap");
+
+const currentTimeElement =
+    document.getElementById("currentTime");
+
+const durationElement =
+    document.getElementById("duration");
+
+const playerStatus =
+    document.getElementById("playerStatus");
 
 
-/* =========================================
-   تبدیل اعداد به فارسی
-========================================= */
+/* =========================================================
+   PERSIAN NUMBERS
+========================================================= */
 
 function faNumber(value){
 
     return String(value)
         .replace(/\d/g, d =>
-            "۰۱۲۳۴۵۶۷۸۹"[d]
+            "۰۱۲۳۴۵۶۷۸۹"[Number(d)]
         );
 
 }
 
 
-/* =========================================
-   نام سوره
-========================================= */
+/* =========================================================
+   TIME
+========================================================= */
+
+function formatTime(seconds){
+
+    if(
+        !Number.isFinite(seconds) ||
+        seconds < 0
+    ){
+        return "0:00";
+    }
+
+    const minutes =
+        Math.floor(seconds / 60);
+
+    const secs =
+        Math.floor(seconds % 60)
+        .toString()
+        .padStart(2,"0");
+
+    return `${minutes}:${secs}`;
+
+}
+
+
+/* =========================================================
+   SURAH NAME
+========================================================= */
 
 function getSurahName(surah){
-
-    /*
-       نام فارسی را ترجیح می‌دهیم.
-       اگر موجود نبود نام عربی استفاده می‌شود.
-    */
 
     if(
         surah &&
@@ -712,14 +879,12 @@ function getSurahName(surah){
         return surah.name_fa;
     }
 
-
     if(
         surah &&
         surah.name_ar
     ){
         return surah.name_ar;
     }
-
 
     if(
         surah &&
@@ -728,7 +893,6 @@ function getSurahName(surah){
         return surah.name;
     }
 
-
     if(
         surah &&
         surah.number
@@ -736,15 +900,14 @@ function getSurahName(surah){
         return `سوره ${faNumber(surah.number)}`;
     }
 
-
     return "سوره";
 
 }
 
 
-/* =========================================
-   URL صوت
-========================================= */
+/* =========================================================
+   AUDIO URL
+========================================================= */
 
 function getAudioUrl(
     surahId,
@@ -753,13 +916,11 @@ function getAudioUrl(
 
     const surah =
         String(surahId)
-        .padStart(3,"0");
-
+            .padStart(3,"0");
 
     const ayah =
         String(ayahNumber)
-        .padStart(3,"0");
-
+            .padStart(3,"0");
 
     return (
         SUPABASE_BASE +
@@ -769,43 +930,18 @@ function getAudioUrl(
 }
 
 
-/* =========================================
-   زمان
-========================================= */
-
-function formatTime(seconds){
-
-    if(!Number.isFinite(seconds)){
-        return "0:00";
-    }
-
-
-    const minutes =
-        Math.floor(seconds / 60);
-
-
-    const secs =
-        Math.floor(seconds % 60)
-        .toString()
-        .padStart(2,"0");
-
-
-    return `${minutes}:${secs}`;
-
-}
-
-
-/* =========================================
-   دریافت سوره‌ها از Worker
-========================================= */
+/* =========================================================
+   LOAD SURAHS
+========================================================= */
 
 async function loadSurahs(){
 
     try{
 
-        statusElement.textContent =
-            "در حال دریافت فهرست سوره‌ها...";
-
+        surahSelect.innerHTML =
+            `<option value="">
+                در حال دریافت سوره‌ها...
+             </option>`;
 
         const response =
             await fetch(
@@ -815,19 +951,16 @@ async function loadSurahs(){
                 }
             );
 
-
         if(!response.ok){
 
             throw new Error(
-                `خطای Worker: ${response.status}`
+                `HTTP ${response.status}`
             );
 
         }
 
-
         const result =
             await response.json();
-
 
         if(
             !result.ok ||
@@ -840,206 +973,87 @@ async function loadSurahs(){
 
         }
 
-
         surahData =
             result.surahs;
 
-
         renderSurahList();
 
+        await loadAyahs();
 
     }
     catch(error){
 
-        console.error(
-            "loadSurahs:",
-            error
-        );
+        console.error(error);
 
+        surahSelect.innerHTML =
+            `<option>
+                خطا در دریافت سوره‌ها
+             </option>`;
 
-        surahList.innerHTML = `
-
-            <div class="loading">
-
-                دریافت فهرست سوره‌ها انجام نشد.
-
-                <br><br>
-
-                لطفاً اتصال اینترنت را بررسی کنید.
-
-                <br><br>
-
-                <small>
-                    ${error.message || ""}
-                </small>
-
-            </div>
-
-        `;
+        ayahContainer.innerHTML =
+            `<div class="error">
+                دریافت اطلاعات سوره‌ها با خطا مواجه شد.<br>
+                ${error.message || ""}
+             </div>`;
 
     }
 
 }
 
 
-/* =========================================
-   نمایش فهرست سوره‌ها
-========================================= */
+/* =========================================================
+   RENDER SURAH LIST
+========================================================= */
 
 function renderSurahList(){
 
-    surahList.innerHTML = "";
+    surahSelect.innerHTML = "";
 
+    surahData.forEach(surah => {
 
-    surahData.forEach(surah=>{
+        const option =
+            document.createElement("option");
 
-        const card =
-            document.createElement("div");
+        option.value =
+            surah.number;
 
+        option.textContent =
+            `${faNumber(surah.number)} - ${getSurahName(surah)}`;
 
-        card.className =
-            "surah-card";
+        if(
+            Number(surah.number) ===
+            Number(currentSurah)
+        ){
 
+            option.selected = true;
 
-        card.dataset.surah =
-            surah.id;
+        }
 
-
-        const count =
-            surah.ayah_count ??
-            surah.verses_count ??
-            "";
-
-
-        card.innerHTML = `
-
-            <div class="surah-number">
-
-                ${faNumber(surah.number)}
-
-            </div>
-
-
-            <div class="surah-info">
-
-                <div class="surah-name">
-
-                    ${getSurahName(surah)}
-
-                </div>
-
-
-                <div class="surah-meta">
-
-                    ${
-                        count
-                        ?
-                        faNumber(count) + " آیه"
-                        :
-                        "مشاهده آیات"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <div class="surah-arrow">
-                ‹
-            </div>
-
-        `;
-
-
-        card.addEventListener(
-            "click",
-            ()=>openSurah(surah)
-        );
-
-
-        surahList.appendChild(card);
+        surahSelect.appendChild(option);
 
     });
 
 }
 
 
-/* =========================================
-   باز کردن سوره
-========================================= */
-
-async function openSurah(surah){
-
-    currentSurah =
-        Number(surah.number || surah.id);
-
-
-    currentAyah =
-        1;
-
-
-    isPlaying =
-        false;
-
-
-    audio.pause();
-
-
-    audio.currentTime =
-        0;
-
-
-    playButton.textContent =
-        "▶";
-
-
-    surahPage.classList.add(
-        "hidden"
-    );
-
-
-    quranPage.classList.remove(
-        "hidden"
-    );
-
-
-    pageTitle.textContent =
-        "📖 قرآن کریم";
-
-
-    pageSubtitle.textContent =
-        getSurahName(surah);
-
-
-    currentSurahName.textContent =
-        getSurahName(surah);
-
-
-    currentAyahInfo.textContent =
-        "در حال دریافت آیات...";
-
-
-    ayahContainer.innerHTML = `
-
-        <div class="loading">
-            در حال دریافت آیات...
-        </div>
-
-    `;
-
-
-    await loadAyahs();
-
-}
-
-
-/* =========================================
-   دریافت آیات از Worker
-========================================= */
+/* =========================================================
+   LOAD AYAHS
+========================================================= */
 
 async function loadAyahs(){
 
+    if(isLoading){
+        return;
+    }
+
+    isLoading = true;
+
     try{
+
+        ayahContainer.innerHTML =
+            `<div class="loading">
+                در حال دریافت آیات سوره...
+             </div>`;
 
         const response =
             await fetch(
@@ -1049,19 +1063,16 @@ async function loadAyahs(){
                 }
             );
 
-
         if(!response.ok){
 
             throw new Error(
-                `خطای Worker: ${response.status}`
+                `HTTP ${response.status}`
             );
 
         }
 
-
         const result =
             await response.json();
-
 
         if(
             !result.ok ||
@@ -1074,86 +1085,158 @@ async function loadAyahs(){
 
         }
 
-
         ayahData =
             result.ayahs;
 
-
-        if(!ayahData.length){
-
-            throw new Error(
-                "هیچ آیه‌ای برای این سوره پیدا نشد."
-            );
-
-        }
-
-
-        currentAyah =
-            1;
-
+        currentAyah = 1;
 
         renderAyahs();
 
-
         updateSurahInfo();
 
-
         loadAyah();
-
 
     }
     catch(error){
 
-        console.error(
-            "loadAyahs:",
-            error
-        );
+        console.error(error);
 
-
-        ayahContainer.innerHTML = `
-
-            <div class="loading">
-
-                دریافت آیات انجام نشد.
-
-                <br><br>
-
+        ayahContainer.innerHTML =
+            `<div class="error">
+                دریافت آیات با خطا مواجه شد.<br>
                 ${error.message || ""}
+             </div>`;
 
-            </div>
+    }
+    finally{
 
-        `;
+        isLoading = false;
 
     }
 
 }
 
 
-/* =========================================
-   نمایش آیات
-========================================= */
+/* =========================================================
+   BASMALA
+========================================================= */
+
+function extractBismillah(text){
+
+    if(!text){
+        return {
+            bismillah:"",
+            remaining:""
+        };
+    }
+
+    const normalized =
+        text.normalize("NFC");
+
+    const patterns = [
+
+        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+
+        "بِّسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
+
+    ];
+
+    for(
+        const pattern of patterns
+    ){
+
+        const p =
+            pattern.normalize("NFC");
+
+        if(
+            normalized.startsWith(p)
+        ){
+
+            return {
+
+                bismillah:
+                    normalized.substring(
+                        0,
+                        p.length
+                    ),
+
+                remaining:
+                    normalized
+                    .substring(p.length)
+                    .trim()
+
+            };
+
+        }
+
+    }
+
+    return {
+        bismillah:"",
+        remaining:normalized
+    };
+
+}
+
+
+/* =========================================================
+   RENDER AYAHS
+========================================================= */
 
 function renderAyahs(){
 
     ayahContainer.innerHTML = "";
 
-
-    ayahData.forEach(ayah=>{
+    ayahData.forEach(ayah => {
 
         const div =
             document.createElement("div");
 
-
-        div.className =
-            "ayah";
-
+        div.className = "ayah";
 
         div.id =
             `ayah-${ayah.ayah_number}`;
 
-
         div.dataset.ayah =
             ayah.ayah_number;
+
+
+        let arabicText =
+            ayah.text_ar || "";
+
+        let bismillah = "";
+
+
+        /*
+            در اکثر سوره‌ها، منبع quran-json
+            بسم‌الله را ابتدای آیه اول قرار داده است.
+
+            اینجا فقط برای نمایش جدا می‌کنیم.
+            شماره آیه و فایل صوتی تغییر نمی‌کند.
+        */
+
+        if(
+            Number(currentSurah) !== 1 &&
+            Number(currentSurah) !== 9 &&
+            Number(ayah.ayah_number) === 1
+        ){
+
+            const extracted =
+                extractBismillah(
+                    arabicText
+                );
+
+            bismillah =
+                extracted.bismillah;
+
+            arabicText =
+                extracted.remaining;
+
+        }
 
 
         const translation =
@@ -1163,31 +1246,44 @@ function renderAyahs(){
                 : "";
 
 
-        div.innerHTML = `
+        let html = "";
+
+
+        if(bismillah){
+
+            html += `
+                <div class="bismillah">
+                    ${bismillah}
+                </div>
+            `;
+
+        }
+
+
+        html += `
 
             <div class="arabic">
 
                 <span class="ayah-number">
-
                     ${faNumber(ayah.ayah_number)}
-
                 </span>
 
-                ${ayah.text_ar || ""}
+                ${arabicText}
 
             </div>
-
 
             <div class="translation">
 
                 ${
                     translation
-                    ?
-                    translation
-                    :
-                    `<span class="translation-empty">
-                        ترجمه فارسی در مرحله بعد اضافه می‌شود.
-                    </span>`
+
+                    ? translation
+
+                    : `
+                        <span class="translation-empty">
+                            ترجمه فارسی در مرحله بعد اضافه می‌شود.
+                        </span>
+                      `
                 }
 
             </div>
@@ -1195,21 +1291,22 @@ function renderAyahs(){
         `;
 
 
+        div.innerHTML =
+            html;
+
+
         div.addEventListener(
             "click",
-            ()=>{
+            () => {
 
                 currentAyah =
                     Number(
                         ayah.ayah_number
                     );
 
-
                 updateSurahInfo();
 
-
                 loadAyah();
-
 
                 playAudio();
 
@@ -1221,57 +1318,71 @@ function renderAyahs(){
 
     });
 
+
+    highlightCurrentAyah();
+
 }
 
 
-/* =========================================
-   اطلاعات سوره و آیه
-========================================= */
+/* =========================================================
+   SURAH INFO
+========================================================= */
 
 function updateSurahInfo(){
 
     const surah =
         surahData.find(
             item =>
-                Number(item.number || item.id) ===
+                Number(item.number) ===
                 Number(currentSurah)
         );
 
 
     if(surah){
 
-        currentSurahName.textContent =
+        surahName.textContent =
             getSurahName(surah);
+
+    }
+    else{
+
+        surahName.textContent =
+            `سوره ${faNumber(currentSurah)}`;
 
     }
 
 
-    currentAyahInfo.textContent =
-        `آیه ${faNumber(currentAyah)} از ${faNumber(ayahData.length)}`;
+    const total =
+        ayahData.length ||
+        (
+            surah
+            ? surah.ayah_count
+            : 0
+        );
+
+
+    surahInfo.textContent =
+        `آیه ${faNumber(currentAyah)} از ${faNumber(total)}`;
 
 }
 
 
-/* =========================================
-   فعال کردن آیه
-========================================= */
+/* =========================================================
+   LOAD CURRENT AYAH AUDIO
+========================================================= */
 
-function activateAyah(){
+function loadAyah(){
 
-    document
-        .querySelectorAll(".ayah")
-        .forEach(el=>{
-
-            el.classList.remove(
-                "active"
-            );
-
-        });
+    if(!ayahData.length){
+        return;
+    }
 
 
     const ayah =
-        document.getElementById(
-            `ayah-${currentAyah}`
+        ayahData.find(
+            item =>
+                Number(item.ayah_number) ===
+                Number(currentAyah)
         );
 
 
@@ -1280,220 +1391,150 @@ function activateAyah(){
     }
 
 
-    ayah.classList.add(
-        "active"
-    );
-
-
-    ayah.scrollIntoView({
-
-        behavior:"smooth",
-
-        block:"center"
-
-    });
-
-}
-
-
-/* =========================================
-   بارگذاری صوت آیه
-========================================= */
-
-function loadAyah(){
-
-    audio.src =
+    const audioUrl =
         getAudioUrl(
             currentSurah,
             currentAyah
         );
 
 
+    audio.src =
+        audioUrl;
+
     audio.load();
-
-
-    updateSurahInfo();
-
-
-    activateAyah();
-
-
-    progressBar.style.width =
-        "0%";
 
 
     currentTimeElement.textContent =
         "0:00";
 
-
     durationElement.textContent =
         "0:00";
 
+    progress.style.width =
+        "0%";
 
-    statusElement.textContent =
-        `آیه ${faNumber(currentAyah)} آماده پخش است.`;
+
+    playerStatus.textContent =
+        `آیه ${faNumber(currentAyah)}`;
+
+
+    highlightCurrentAyah();
+
+
+    updateSurahInfo();
 
 }
 
 
-/* =========================================
-   پخش
-========================================= */
+/* =========================================================
+   PLAY AUDIO
+========================================================= */
 
 async function playAudio(){
 
     try{
 
+        if(!audio.src){
+
+            loadAyah();
+
+        }
+
+
         await audio.play();
-
-
-        isPlaying =
-            true;
-
 
         playButton.textContent =
             "⏸";
 
+        playButton.title =
+            "توقف";
 
-        statusElement.textContent =
+
+        playerStatus.textContent =
             `در حال پخش آیه ${faNumber(currentAyah)}`;
-
-
-        activateAyah();
 
     }
     catch(error){
 
-        console.error(
-            "playAudio:",
-            error
-        );
+        console.error(error);
 
-
-        isPlaying =
-            false;
-
-
-        playButton.textContent =
-            "▶";
-
-
-        statusElement.textContent =
-            "پخش فایل صوتی انجام نشد.";
+        playerStatus.textContent =
+            "برای پخش، دوباره دکمه پخش را لمس کنید.";
 
     }
 
 }
 
 
-/* =========================================
-   توقف
-========================================= */
+/* =========================================================
+   PAUSE
+========================================================= */
 
 function pauseAudio(){
 
     audio.pause();
 
-
-    isPlaying =
-        false;
-
-
     playButton.textContent =
         "▶";
 
+    playButton.title =
+        "پخش";
 
-    statusElement.textContent =
-        `پخش آیه ${faNumber(currentAyah)} متوقف شد.`;
+
+    playerStatus.textContent =
+        `آیه ${faNumber(currentAyah)}`;
 
 }
 
 
-/* =========================================
-   بازگشت
-========================================= */
-
-backButton.addEventListener(
-    "click",
-    ()=>{
-
-        audio.pause();
-
-
-        isPlaying =
-            false;
-
-
-        playButton.textContent =
-            "▶";
-
-
-        quranPage.classList.add(
-            "hidden"
-        );
-
-
-        surahPage.classList.remove(
-            "hidden"
-        );
-
-
-        pageTitle.textContent =
-            "📖 قرآن کریم";
-
-
-        pageSubtitle.textContent =
-            "فهرست سوره‌ها";
-
-    }
-);
-
-
-/* =========================================
-   Play / Pause
-========================================= */
+/* =========================================================
+   PLAY BUTTON
+========================================================= */
 
 playButton.addEventListener(
     "click",
-    ()=>{
+    () => {
 
-        if(isPlaying){
-
-            pauseAudio();
-
-        }
-        else{
+        if(audio.paused){
 
             playAudio();
 
         }
+        else{
+
+            pauseAudio();
+
+        }
 
     }
 );
 
 
-/* =========================================
-   آیه قبل
-========================================= */
+/* =========================================================
+   PREVIOUS AYAH
+========================================================= */
 
 prevButton.addEventListener(
     "click",
-    ()=>{
+    () => {
+
+        if(!ayahData.length){
+            return;
+        }
+
 
         if(currentAyah > 1){
 
             currentAyah--;
 
-
             loadAyah();
-
 
             playAudio();
 
         }
         else{
 
-            statusElement.textContent =
+            playerStatus.textContent =
                 "این اولین آیه سوره است.";
 
         }
@@ -1502,13 +1543,18 @@ prevButton.addEventListener(
 );
 
 
-/* =========================================
-   آیه بعد
-========================================= */
+/* =========================================================
+   NEXT AYAH
+========================================================= */
 
 nextButton.addEventListener(
     "click",
-    ()=>{
+    () => {
+
+        if(!ayahData.length){
+            return;
+        }
+
 
         if(
             currentAyah <
@@ -1517,16 +1563,14 @@ nextButton.addEventListener(
 
             currentAyah++;
 
-
             loadAyah();
-
 
             playAudio();
 
         }
         else{
 
-            statusElement.textContent =
+            playerStatus.textContent =
                 "این آخرین آیه سوره است.";
 
         }
@@ -1535,27 +1579,288 @@ nextButton.addEventListener(
 );
 
 
-/* =========================================
-   حالت پخش
-========================================= */
+/* =========================================================
+   AUTO NEXT
+========================================================= */
 
-document
-    .querySelectorAll(".mode")
-    .forEach(button=>{
+audio.addEventListener(
+    "ended",
+    () => {
+
+        playButton.textContent =
+            "▶";
+
+        playButton.title =
+            "پخش";
+
+
+        if(
+            currentAyah <
+            ayahData.length
+        ){
+
+            currentAyah++;
+
+            loadAyah();
+
+            playAudio();
+
+        }
+        else{
+
+            playerStatus.textContent =
+                "سوره به پایان رسید.";
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUDIO METADATA
+========================================================= */
+
+audio.addEventListener(
+    "loadedmetadata",
+    () => {
+
+        if(
+            Number.isFinite(
+                audio.duration
+            )
+        ){
+
+            durationElement.textContent =
+                formatTime(
+                    audio.duration
+                );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUDIO TIME UPDATE
+========================================================= */
+
+audio.addEventListener(
+    "timeupdate",
+    () => {
+
+        const current =
+            audio.currentTime || 0;
+
+        const duration =
+            audio.duration || 0;
+
+
+        currentTimeElement.textContent =
+            formatTime(current);
+
+
+        if(duration > 0){
+
+            const percent =
+                (
+                    current /
+                    duration
+                ) * 100;
+
+            progress.style.width =
+                `${Math.min(
+                    100,
+                    Math.max(0, percent)
+                )}%`;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   PROGRESS SEEK
+========================================================= */
+
+progressWrap.addEventListener(
+    "click",
+    event => {
+
+        if(
+            !Number.isFinite(
+                audio.duration
+            ) ||
+            audio.duration <= 0
+        ){
+
+            return;
+
+        }
+
+
+        const rect =
+            progressWrap.getBoundingClientRect();
+
+
+        const position =
+            event.clientX -
+            rect.left;
+
+
+        const percent =
+            position /
+            rect.width;
+
+
+        const safePercent =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    percent
+                )
+            );
+
+
+        audio.currentTime =
+            safePercent *
+            audio.duration;
+
+    }
+);
+
+
+/* =========================================================
+   HIGHLIGHT CURRENT AYAH
+========================================================= */
+
+function highlightCurrentAyah(){
+
+    document
+        .querySelectorAll(".ayah")
+        .forEach(
+            element => {
+
+                element.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const current =
+        document.getElementById(
+            `ayah-${currentAyah}`
+        );
+
+
+    if(current){
+
+        current.classList.add(
+            "active"
+        );
+
+
+        setTimeout(
+            () => {
+
+                current.scrollIntoView({
+                    behavior:"smooth",
+                    block:"center"
+                });
+
+            },
+            50
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SURAH CHANGE
+========================================================= */
+
+surahSelect.addEventListener(
+    "change",
+    async () => {
+
+        const value =
+            Number(
+                surahSelect.value
+            );
+
+
+        if(
+            !value ||
+            value < 1 ||
+            value > 114
+        ){
+
+            return;
+
+        }
+
+
+        pauseAudio();
+
+        audio.removeAttribute("src");
+
+        progress.style.width =
+            "0%";
+
+        currentTimeElement.textContent =
+            "0:00";
+
+        durationElement.textContent =
+            "0:00";
+
+
+        currentSurah =
+            value;
+
+
+        currentAyah =
+            1;
+
+
+        await loadAyahs();
+
+    }
+);
+
+
+/* =========================================================
+   MODE BUTTONS
+========================================================= */
+
+const modeButtons =
+    document.querySelectorAll(
+        ".mode"
+    );
+
+
+modeButtons.forEach(
+    button => {
 
         button.addEventListener(
             "click",
-            ()=>{
+            () => {
 
-                document
-                    .querySelectorAll(".mode")
-                    .forEach(btn=>{
+                modeButtons.forEach(
+                    item => {
 
-                        btn.classList.remove(
+                        item.classList.remove(
                             "active"
                         );
 
-                    });
+                    }
+                );
 
 
                 button.classList.add(
@@ -1567,112 +1872,92 @@ document
                     button.dataset.mode;
 
 
-                statusElement.textContent =
-                    "حالت پخش انتخاب شد: " +
-                    button.textContent.trim();
+                /*
+                    فعلاً فقط حالت رابط کاربری
+                    تغییر می‌کند.
+
+                    پس از اضافه شدن فایل‌های
+                    ترجمه فارسی، منطق پخش
+                    فارسی در همین قسمت تکمیل می‌شود.
+                */
+
+                if(
+                    currentMode ===
+                    "arabic"
+                ){
+
+                    playerStatus.textContent =
+                        `🔊 فقط قرائت`;
+
+                }
+                else if(
+                    currentMode ===
+                    "translation"
+                ){
+
+                    playerStatus.textContent =
+                        `🇮🇷 فقط ترجمه`;
+
+                }
+                else{
+
+                    playerStatus.textContent =
+                        `🔊🇮🇷 قرائت + ترجمه`;
+
+                }
 
             }
         );
 
-    });
-
-
-/* =========================================
-   Metadata
-========================================= */
-
-audio.addEventListener(
-    "loadedmetadata",
-    ()=>{
-
-        durationElement.textContent =
-            formatTime(
-                audio.duration
-            );
-
     }
 );
 
 
-/* =========================================
-   پیشرفت
-========================================= */
+/* =========================================================
+   KEYBOARD
+========================================================= */
 
-audio.addEventListener(
-    "timeupdate",
-    ()=>{
+document.addEventListener(
+    "keydown",
+    event => {
 
-        if(!audio.duration){
-            return;
+        if(
+            event.code ===
+            "Space"
+        ){
+
+            event.preventDefault();
+
+            if(audio.paused){
+
+                playAudio();
+
+            }
+            else{
+
+                pauseAudio();
+
+            }
+
         }
-
-
-        const percent =
-            (
-                audio.currentTime /
-                audio.duration
-            ) * 100;
-
-
-        progressBar.style.width =
-            percent + "%";
-
-
-        currentTimeElement.textContent =
-            formatTime(
-                audio.currentTime
-            );
-
-    }
-);
-
-
-/* =========================================
-   پایان آیه
-========================================= */
-
-audio.addEventListener(
-    "ended",
-    ()=>{
-
-        isPlaying =
-            false;
-
-
-        playButton.textContent =
-            "▶";
-
-
-        progressBar.style.width =
-            "100%";
 
 
         if(
-            currentAyah <
-            ayahData.length
+            event.key ===
+            "ArrowRight"
         ){
 
-            currentAyah++;
-
-
-            loadAyah();
-
-
-            playAudio();
+            prevButton.click();
 
         }
-        else{
-
-            const surah =
-                surahData.find(
-                    item =>
-                        Number(item.number || item.id) ===
-                        Number(currentSurah)
-                );
 
 
-            statusElement.textContent =
-                `${getSurahName(surah || {})} به پایان رسید.`;
+        if(
+            event.key ===
+            "ArrowLeft"
+        ){
+
+            nextButton.click();
 
         }
 
@@ -1680,9 +1965,9 @@ audio.addEventListener(
 );
 
 
-/* =========================================
-   شروع برنامه
-========================================= */
+/* =========================================================
+   START
+========================================================= */
 
 loadSurahs();
 
