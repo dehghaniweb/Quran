@@ -47,6 +47,7 @@ button{
     min-height:100vh;
 }
 
+
 /* =========================
    HEADER
 ========================= */
@@ -83,7 +84,6 @@ button{
 
 .surah-selector select{
     flex:1;
-
     min-width:0;
 
     border:none;
@@ -101,6 +101,7 @@ button{
     font-size:15px;
     font-weight:bold;
 }
+
 
 /* =========================
    SURAH INFO
@@ -133,8 +134,9 @@ button{
     font-size:13px;
 }
 
+
 /* =========================
-   MODE BUTTONS
+   MODES
 ========================= */
 
 .modes{
@@ -193,6 +195,7 @@ button{
     box-shadow:
         0 3px 8px rgba(23,108,73,.2);
 }
+
 
 /* =========================
    PLAYER
@@ -263,6 +266,7 @@ button{
     font-size:12px;
 }
 
+
 /* =========================
    CONTROLS
 ========================= */
@@ -272,13 +276,25 @@ button{
 
     justify-content:center;
 
-    align-items:center;
+    align-items:flex-start;
 
     gap:18px;
 
-    margin-top:14px;
+    margin-top:15px;
 
     direction:rtl;
+}
+
+.control-box{
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    min-width:62px;
 }
 
 .control{
@@ -293,7 +309,7 @@ button{
 
     color:#176c49;
 
-    font-size:23px;
+    font-size:25px;
 
     display:flex;
 
@@ -309,6 +325,8 @@ button{
     transition:
         transform .15s,
         background .15s;
+
+    line-height:1;
 }
 
 .control:active{
@@ -326,6 +344,19 @@ button{
     font-size:28px;
 }
 
+.control-label{
+    margin-top:5px;
+
+    font-size:11px;
+
+    color:#668277;
+
+    white-space:nowrap;
+
+    line-height:1.2;
+}
+
+
 /* =========================
    AYAH CONTAINER
 ========================= */
@@ -336,6 +367,7 @@ button{
         12px
         30px;
 }
+
 
 /* =========================
    BISMILLAH
@@ -371,6 +403,7 @@ button{
         1px solid
         #dfe8e2;
 }
+
 
 /* =========================
    AYAH
@@ -414,6 +447,7 @@ button{
     box-shadow:
         0 4px 15px rgba(23,108,73,.12);
 }
+
 
 /* =========================
    ARABIC
@@ -465,6 +499,7 @@ button{
     vertical-align:middle;
 }
 
+
 /* =========================
    TRANSLATION
 ========================= */
@@ -497,6 +532,7 @@ button{
     font-weight:normal;
 }
 
+
 /* =========================
    LOADING
 ========================= */
@@ -527,6 +563,7 @@ button{
     line-height:1.9;
 }
 
+
 /* =========================
    MOBILE
 ========================= */
@@ -551,12 +588,13 @@ button{
     }
 
     .controls{
-        gap:14px;
+        gap:13px;
     }
 
     .control{
         width:48px;
         height:48px;
+        font-size:23px;
     }
 
     .control.play{
@@ -564,9 +602,18 @@ button{
         height:60px;
     }
 
+    .control-box{
+        min-width:58px;
+    }
+
+    .control-label{
+        font-size:10px;
+    }
+
     .bismillah{
         font-size:23px;
     }
+
 }
 
 </style>
@@ -576,6 +623,7 @@ button{
 <body>
 
 <div class="app">
+
 
     <!-- HEADER -->
 
@@ -588,7 +636,11 @@ button{
         <div class="surah-selector">
 
             <select id="surahSelect">
-                <option value="">در حال دریافت سوره‌ها...</option>
+
+                <option value="">
+                    در حال دریافت سوره‌ها...
+                </option>
+
             </select>
 
         </div>
@@ -624,7 +676,6 @@ button{
         <button
             class="mode active"
             data-mode="arabic"
-            id="modeArabic"
         >
             🔊 فقط قرائت
         </button>
@@ -632,7 +683,6 @@ button{
         <button
             class="mode"
             data-mode="translation"
-            id="modeTranslation"
         >
             🇮🇷 فقط ترجمه
         </button>
@@ -640,7 +690,6 @@ button{
         <button
             class="mode"
             data-mode="both"
-            id="modeBoth"
         >
             🔊🇮🇷 قرائت + ترجمه
         </button>
@@ -688,43 +737,80 @@ button{
 
         <!--
             RTL:
-            دکمه قبلی سمت راست
-            پخش وسط
-            دکمه بعدی سمت چپ
+            راست = قبلی
+            وسط = پخش
+            چپ = بعدی
         -->
 
         <div class="controls">
 
-            <button
-                class="control"
-                id="prev"
-                title="آیه قبل"
-            >
-                ⏮
-            </button>
 
-            <button
-                class="control play"
-                id="play"
-                title="پخش"
-            >
-                ▶
-            </button>
+            <!-- آیه قبلی - سمت راست -->
 
-            <button
-                class="control"
-                id="next"
-                title="آیه بعد"
-            >
-                ⏭
-            </button>
+            <div class="control-box">
+
+                <button
+                    class="control"
+                    id="prev"
+                    title="آیه قبلی"
+                    aria-label="آیه قبلی"
+                >
+                    →
+                </button>
+
+                <div class="control-label">
+                    آیه قبلی
+                </div>
+
+            </div>
+
+
+            <!-- پخش - وسط -->
+
+            <div class="control-box">
+
+                <button
+                    class="control play"
+                    id="play"
+                    title="پخش"
+                    aria-label="پخش"
+                >
+                    ▶
+                </button>
+
+                <div class="control-label">
+                    پخش
+                </div>
+
+            </div>
+
+
+            <!-- آیه بعدی - سمت چپ -->
+
+            <div class="control-box">
+
+                <button
+                    class="control"
+                    id="next"
+                    title="آیه بعدی"
+                    aria-label="آیه بعدی"
+                >
+                    ←
+                </button>
+
+                <div class="control-label">
+                    آیه بعدی
+                </div>
+
+            </div>
+
 
         </div>
 
     </section>
 
 
-    <!-- AYAHES -->
+    <!-- AYAH CONTAINER -->
 
     <main
         class="ayah-container"
@@ -833,8 +919,9 @@ const playerStatus =
 function faNumber(value){
 
     return String(value)
-        .replace(/\d/g, d =>
-            "۰۱۲۳۴۵۶۷۸۹"[Number(d)]
+        .replace(
+            /\d/g,
+            d => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]
         );
 
 }
@@ -850,7 +937,9 @@ function formatTime(seconds){
         !Number.isFinite(seconds) ||
         seconds < 0
     ){
+
         return "0:00";
+
     }
 
     const minutes =
@@ -876,28 +965,36 @@ function getSurahName(surah){
         surah &&
         surah.name_fa
     ){
+
         return surah.name_fa;
+
     }
 
     if(
         surah &&
         surah.name_ar
     ){
+
         return surah.name_ar;
+
     }
 
     if(
         surah &&
         surah.name
     ){
+
         return surah.name;
+
     }
 
     if(
         surah &&
         surah.number
     ){
+
         return `سوره ${faNumber(surah.number)}`;
+
     }
 
     return "سوره";
@@ -916,11 +1013,11 @@ function getAudioUrl(
 
     const surah =
         String(surahId)
-            .padStart(3,"0");
+        .padStart(3,"0");
 
     const ayah =
         String(ayahNumber)
-            .padStart(3,"0");
+        .padStart(3,"0");
 
     return (
         SUPABASE_BASE +
@@ -939,9 +1036,11 @@ async function loadSurahs(){
     try{
 
         surahSelect.innerHTML =
-            `<option value="">
+            `
+            <option value="">
                 در حال دریافت سوره‌ها...
-             </option>`;
+            </option>
+            `;
 
         const response =
             await fetch(
@@ -986,15 +1085,20 @@ async function loadSurahs(){
         console.error(error);
 
         surahSelect.innerHTML =
-            `<option>
+            `
+            <option>
                 خطا در دریافت سوره‌ها
-             </option>`;
+            </option>
+            `;
 
         ayahContainer.innerHTML =
-            `<div class="error">
-                دریافت اطلاعات سوره‌ها با خطا مواجه شد.<br>
+            `
+            <div class="error">
+                دریافت اطلاعات سوره‌ها با خطا مواجه شد.
+                <br>
                 ${error.message || ""}
-             </div>`;
+            </div>
+            `;
 
     }
 
@@ -1009,29 +1113,33 @@ function renderSurahList(){
 
     surahSelect.innerHTML = "";
 
-    surahData.forEach(surah => {
+    surahData.forEach(
+        surah => {
 
-        const option =
-            document.createElement("option");
+            const option =
+                document.createElement("option");
 
-        option.value =
-            surah.number;
+            option.value =
+                surah.number;
 
-        option.textContent =
-            `${faNumber(surah.number)} - ${getSurahName(surah)}`;
+            option.textContent =
+                `${faNumber(surah.number)} - ${getSurahName(surah)}`;
 
-        if(
-            Number(surah.number) ===
-            Number(currentSurah)
-        ){
+            if(
+                Number(surah.number) ===
+                Number(currentSurah)
+            ){
 
-            option.selected = true;
+                option.selected = true;
+
+            }
+
+            surahSelect.appendChild(
+                option
+            );
 
         }
-
-        surahSelect.appendChild(option);
-
-    });
+    );
 
 }
 
@@ -1051,9 +1159,11 @@ async function loadAyahs(){
     try{
 
         ayahContainer.innerHTML =
-            `<div class="loading">
+            `
+            <div class="loading">
                 در حال دریافت آیات سوره...
-             </div>`;
+            </div>
+            `;
 
         const response =
             await fetch(
@@ -1102,10 +1212,13 @@ async function loadAyahs(){
         console.error(error);
 
         ayahContainer.innerHTML =
-            `<div class="error">
-                دریافت آیات با خطا مواجه شد.<br>
+            `
+            <div class="error">
+                دریافت آیات با خطا مواجه شد.
+                <br>
                 ${error.message || ""}
-             </div>`;
+            </div>
+            `;
 
     }
     finally{
@@ -1118,20 +1231,24 @@ async function loadAyahs(){
 
 
 /* =========================================================
-   BASMALA
+   EXTRACT BISMILLAH
 ========================================================= */
 
 function extractBismillah(text){
 
     if(!text){
+
         return {
             bismillah:"",
             remaining:""
         };
+
     }
+
 
     const normalized =
         text.normalize("NFC");
+
 
     const patterns = [
 
@@ -1145,12 +1262,14 @@ function extractBismillah(text){
 
     ];
 
+
     for(
         const pattern of patterns
     ){
 
         const p =
             pattern.normalize("NFC");
+
 
         if(
             normalized.startsWith(p)
@@ -1175,9 +1294,14 @@ function extractBismillah(text){
 
     }
 
+
     return {
+
         bismillah:"",
-        remaining:normalized
+
+        remaining:
+            normalized
+
     };
 
 }
@@ -1191,132 +1315,143 @@ function renderAyahs(){
 
     ayahContainer.innerHTML = "";
 
-    ayahData.forEach(ayah => {
 
-        const div =
-            document.createElement("div");
+    ayahData.forEach(
+        ayah => {
 
-        div.className = "ayah";
+            const div =
+                document.createElement("div");
 
-        div.id =
-            `ayah-${ayah.ayah_number}`;
+            div.className =
+                "ayah";
 
-        div.dataset.ayah =
-            ayah.ayah_number;
+            div.id =
+                `ayah-${ayah.ayah_number}`;
 
-
-        let arabicText =
-            ayah.text_ar || "";
-
-        let bismillah = "";
+            div.dataset.ayah =
+                ayah.ayah_number;
 
 
-        /*
-            در اکثر سوره‌ها، منبع quran-json
-            بسم‌الله را ابتدای آیه اول قرار داده است.
+            let arabicText =
+                ayah.text_ar || "";
 
-            اینجا فقط برای نمایش جدا می‌کنیم.
-            شماره آیه و فایل صوتی تغییر نمی‌کند.
-        */
-
-        if(
-            Number(currentSurah) !== 1 &&
-            Number(currentSurah) !== 9 &&
-            Number(ayah.ayah_number) === 1
-        ){
-
-            const extracted =
-                extractBismillah(
-                    arabicText
-                );
-
-            bismillah =
-                extracted.bismillah;
-
-            arabicText =
-                extracted.remaining;
-
-        }
+            let bismillah = "";
 
 
-        const translation =
-            ayah.text_fa &&
-            ayah.text_fa.trim()
-                ? ayah.text_fa
-                : "";
+            /*
+                برای همه سوره‌ها به‌جز:
+                سوره حمد
+                سوره توبه
+
+                بسم‌الله از نظر نمایشی
+                از آیه اول جدا می‌شود.
+            */
+
+            if(
+                Number(currentSurah) !== 1 &&
+                Number(currentSurah) !== 9 &&
+                Number(ayah.ayah_number) === 1
+            ){
+
+                const extracted =
+                    extractBismillah(
+                        arabicText
+                    );
+
+                bismillah =
+                    extracted.bismillah;
+
+                arabicText =
+                    extracted.remaining;
+
+            }
 
 
-        let html = "";
+            const translation =
+                ayah.text_fa &&
+                ayah.text_fa.trim()
+                    ? ayah.text_fa
+                    : "";
 
 
-        if(bismillah){
+            let html = "";
 
-            html += `
-                <div class="bismillah">
-                    ${bismillah}
+
+            if(bismillah){
+
+                html +=
+                    `
+                    <div class="bismillah">
+                        ${bismillah}
+                    </div>
+                    `;
+
+            }
+
+
+            html +=
+                `
+                <div class="arabic">
+
+                    <span class="ayah-number">
+                        ${faNumber(
+                            ayah.ayah_number
+                        )}
+                    </span>
+
+                    ${arabicText}
+
                 </div>
-            `;
 
-        }
+                <div class="translation">
 
+                    ${
+                        translation
 
-        html += `
+                        ? translation
 
-            <div class="arabic">
+                        :
 
-                <span class="ayah-number">
-                    ${faNumber(ayah.ayah_number)}
-                </span>
-
-                ${arabicText}
-
-            </div>
-
-            <div class="translation">
-
-                ${
-                    translation
-
-                    ? translation
-
-                    : `
+                        `
                         <span class="translation-empty">
                             ترجمه فارسی در مرحله بعد اضافه می‌شود.
                         </span>
-                      `
+                        `
+                    }
+
+                </div>
+                `;
+
+
+            div.innerHTML =
+                html;
+
+
+            div.addEventListener(
+                "click",
+                () => {
+
+                    currentAyah =
+                        Number(
+                            ayah.ayah_number
+                        );
+
+                    updateSurahInfo();
+
+                    loadAyah();
+
+                    playAudio();
+
                 }
-
-            </div>
-
-        `;
+            );
 
 
-        div.innerHTML =
-            html;
+            ayahContainer.appendChild(
+                div
+            );
 
-
-        div.addEventListener(
-            "click",
-            () => {
-
-                currentAyah =
-                    Number(
-                        ayah.ayah_number
-                    );
-
-                updateSurahInfo();
-
-                loadAyah();
-
-                playAudio();
-
-            }
-        );
-
-
-        ayahContainer.appendChild(div);
-
-    });
+        }
+    );
 
 
     highlightCurrentAyah();
@@ -1368,7 +1503,7 @@ function updateSurahInfo(){
 
 
 /* =========================================================
-   LOAD CURRENT AYAH AUDIO
+   LOAD AYAH AUDIO
 ========================================================= */
 
 function loadAyah(){
@@ -1420,14 +1555,13 @@ function loadAyah(){
 
     highlightCurrentAyah();
 
-
     updateSurahInfo();
 
 }
 
 
 /* =========================================================
-   PLAY AUDIO
+   PLAY
 ========================================================= */
 
 async function playAudio(){
@@ -1442,6 +1576,7 @@ async function playAudio(){
 
 
         await audio.play();
+
 
         playButton.textContent =
             "⏸";
@@ -1511,7 +1646,7 @@ playButton.addEventListener(
 
 
 /* =========================================================
-   PREVIOUS AYAH
+   PREVIOUS
 ========================================================= */
 
 prevButton.addEventListener(
@@ -1544,7 +1679,7 @@ prevButton.addEventListener(
 
 
 /* =========================================================
-   NEXT AYAH
+   NEXT
 ========================================================= */
 
 nextButton.addEventListener(
@@ -1618,7 +1753,7 @@ audio.addEventListener(
 
 
 /* =========================================================
-   AUDIO METADATA
+   METADATA
 ========================================================= */
 
 audio.addEventListener(
@@ -1643,7 +1778,7 @@ audio.addEventListener(
 
 
 /* =========================================================
-   AUDIO TIME UPDATE
+   TIME UPDATE
 ========================================================= */
 
 audio.addEventListener(
@@ -1669,10 +1804,14 @@ audio.addEventListener(
                     duration
                 ) * 100;
 
+
             progress.style.width =
                 `${Math.min(
                     100,
-                    Math.max(0, percent)
+                    Math.max(
+                        0,
+                        percent
+                    )
                 )}%`;
 
         }
@@ -1682,7 +1821,7 @@ audio.addEventListener(
 
 
 /* =========================================================
-   PROGRESS SEEK
+   SEEK
 ========================================================= */
 
 progressWrap.addEventListener(
@@ -1734,7 +1873,7 @@ progressWrap.addEventListener(
 
 
 /* =========================================================
-   HIGHLIGHT CURRENT AYAH
+   HIGHLIGHT
 ========================================================= */
 
 function highlightCurrentAyah(){
@@ -1809,7 +1948,10 @@ surahSelect.addEventListener(
 
         pauseAudio();
 
-        audio.removeAttribute("src");
+        audio.removeAttribute(
+            "src"
+        );
+
 
         progress.style.width =
             "0%";
@@ -1824,7 +1966,6 @@ surahSelect.addEventListener(
         currentSurah =
             value;
 
-
         currentAyah =
             1;
 
@@ -1836,7 +1977,7 @@ surahSelect.addEventListener(
 
 
 /* =========================================================
-   MODE BUTTONS
+   MODES
 ========================================================= */
 
 const modeButtons =
@@ -1872,22 +2013,13 @@ modeButtons.forEach(
                     button.dataset.mode;
 
 
-                /*
-                    فعلاً فقط حالت رابط کاربری
-                    تغییر می‌کند.
-
-                    پس از اضافه شدن فایل‌های
-                    ترجمه فارسی، منطق پخش
-                    فارسی در همین قسمت تکمیل می‌شود.
-                */
-
                 if(
                     currentMode ===
                     "arabic"
                 ){
 
                     playerStatus.textContent =
-                        `🔊 فقط قرائت`;
+                        "🔊 فقط قرائت";
 
                 }
                 else if(
@@ -1896,13 +2028,13 @@ modeButtons.forEach(
                 ){
 
                     playerStatus.textContent =
-                        `🇮🇷 فقط ترجمه`;
+                        "🇮🇷 فقط ترجمه";
 
                 }
                 else{
 
                     playerStatus.textContent =
-                        `🔊🇮🇷 قرائت + ترجمه`;
+                        "🔊🇮🇷 قرائت + ترجمه";
 
                 }
 
@@ -1974,4 +2106,4 @@ loadSurahs();
 </script>
 
 </body>
-</html>
+            </html>
