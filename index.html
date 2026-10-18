@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light" data-palette="meadow">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>قرآن کریم</title>
+<meta name="description" content="قرآن کریم با متن عثمان طه، پخش صوتی آیه‌به‌آیه، یادآوری و ادامه از آخرین جای خواندن">
+<meta name="theme-color" content="#fbf8de">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f3877'/%3E%3Cg fill='none' stroke='%23d9b25a' stroke-width='1.8' stroke-linejoin='round'%3E%3Crect x='8' y='8' width='16' height='16'/%3E%3Crect x='8' y='8' width='16' height='16' transform='rotate(45 16 16)'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.6' fill='%23d9b25a'/%3E%3C/svg%3E">
+<script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(typeof s.size==='number'&&s.size>=22&&s.size<=52)d.style.setProperty('--ayah-size',s.size+'px')}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Vazirmatn:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Vazirmatn:wght@400;500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="style.css?v=27a83e75">
+</head>
+<body>
+<noscript><p style="padding:24px;text-align:center">برای استفاده از این برنامه، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
+<!-- آیکون‌ها و تزئینات (یک‌بار تعریف می‌شوند) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="rosette" viewBox="0 0 40 40">
+      <g stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+        <rect x="7.5" y="7.5" width="25" height="25"/>
+        <rect x="7.5" y="7.5" width="25" height="25" transform="rotate(45 20 20)"/>
+        <circle cx="20" cy="20" r="10.4" stroke-width="1"/>
+      </g>
+    </symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 0 0-12 0c0 6.5-2.5 8.5-2.5 8.5h17S18 15 18 8.5"/><path d="M13.7 20.5a2 2 0 0 1-3.4 0"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.2"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H16"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.6L6 20V5a1 1 0 0 1 1-1z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.4-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.3"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.3"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><rect x="17.4" y="5.5" width="2.6" height="13" rx="1"/><path d="M4.6 6.4v11.2a.9.9 0 0 0 1.4.74l9.4-5.6a.9.9 0 0 0 0-1.48L6 5.66a.9.9 0 0 0-1.4.74z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><rect x="4" y="5.5" width="2.6" height="13" rx="1"/><path d="M19.4 6.4v11.2a.9.9 0 0 1-1.4.74l-9.4-5.6a.9.9 0 0 1 0-1.48L18 5.66a.9.9 0 0 1 1.4.74z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="7" y="7" width="18" height="18"/><rect x="7" y="7" width="18" height="18" transform="rotate(45 16 16)"/><circle cx="16" cy="16" r="3.2" fill="currentColor" stroke="none"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-star" xlink:href="#i-star"/></svg>
+      <span class="brand-name">قرآن کریم</span>
+    </div>
+    <button class="icon-btn" id="btnSurahs" type="button" aria-label="فهرست سوره‌ها" title="فهرست سوره‌ها">
+      <svg class="i"><use href="#i-search" xlink:href="#i-search"/></svg>
+    </button>
+    <button class="icon-btn" id="btnReminders" type="button" aria-label="یادآوری‌ها" title="یادآوری‌ها">
+      <svg class="i"><use href="#i-bell" xlink:href="#i-bell"/></svg>
+      <span class="count" id="remCount" hidden>0</span>
+    </button>
+    <button class="icon-btn" id="btnSettings" type="button" aria-label="تنظیمات" title="تنظیمات">
+      <svg class="i"><use href="#i-sliders" xlink:href="#i-sliders"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="sarlowh" id="sarlowh" aria-label="سوره فعلی">
+      <span class="orn r" aria-hidden="true"></span>
+      <span class="orn l" aria-hidden="true"></span>
+      <div class="sar-row">
+        <button class="sar-nav" id="prevSurah" type="button" aria-label="سوره قبل">
+          <svg class="i"><use href="#i-chev-r" xlink:href="#i-chev-r"/></svg>
+          <small id="prevName">سوره قبل</small>
+        </button>
+        <button class="sar-title" id="titleBtn" type="button" aria-label="انتخاب سوره">
+          <span class="sar-ar" id="surahAr" lang="ar">قرآن کریم</span>
+          <span class="sar-fa" id="surahFa">در حال آماده‌سازی…</span>
+        </button>
+        <button class="sar-nav" id="nextSurah" type="button" aria-label="سوره بعد">
+          <svg class="i"><use href="#i-chev-l" xlink:href="#i-chev-l"/></svg>
+          <small id="nextName">سوره بعد</small>
+        </button>
+      </div>
+      <div class="sar-meta" id="surahMeta"></div>
+    </section>
+
+    <div class="now" id="nowLine" aria-live="off"></div>
+
+    <section class="tools">
+      <form class="pagejump" id="pageForm" novalidate>
+        <label for="pageInput">رفتن به صفحه</label>
+        <div class="pj-field">
+          <input id="pageInput" type="text" inputmode="numeric" maxlength="4" placeholder="۱ تا ۶۰۴" autocomplete="off" enterkeyhint="go" aria-label="شماره صفحه مصحف عثمان طه (۱ تا ۶۰۴)" aria-describedby="pageError">
+          <button class="btn btn-primary" id="pageGo" type="submit">برو</button>
+        </div>
+        <p class="pj-error" id="pageError" aria-live="polite"></p>
+      </form>
+      <div class="resume">
+        <button class="btn btn-primary" id="btnStart" type="button">
+          <svg class="i fill"><use href="#i-play" xlink:href="#i-play"/></svg><span>پخش از ابتدای سوره</span>
+        </button>
+        <button class="btn btn-soft" id="continueBtn" type="button" hidden>
+          <svg class="i"><use href="#i-bookmark" xlink:href="#i-bookmark"/></svg><span id="continueText">ادامه</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="modes" id="modes" role="radiogroup" aria-label="حالت نمایش">
+      <button type="button" role="radio" aria-checked="true" data-mode="arabic">فقط قرائت</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="translation">فقط ترجمه</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="both">قرائت و ترجمه</button>
+    </div>
+
+    <div class="list-spinner" id="listSpinner" hidden role="status">در حال بارگذاری سوره…</div>
+    <div class="list m-arabic" id="list" aria-live="off"></div>
+  </main>
+
+  <footer class="footer">
+    این برنامه کاملاً رایگان و بدون تبلیغات، برای آسایش شما ارائه شده است.
+    <br>
+    (علی دهقانی)
+  </footer>
+</div>
+
+<!-- پخش‌کننده -->
+<div class="player" id="player" role="region" aria-label="پخش‌کننده">
+  <div class="p-seek" id="seek" role="slider" tabindex="0" aria-label="جلو و عقب بردن صوت" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <i id="seekFill"></i>
+  </div>
+  <div class="p-row">
+    <div class="p-info">
+      <span class="p-status" id="pStatus" aria-live="polite">آماده پخش</span>
+    </div>
+    <div class="p-controls">
+      <div class="pc-side">
+        <span class="p-times"><span id="tCur">۰:۰۰</span> / <span id="tDur">۰:۰۰</span></span>
+      </div>
+      <div class="trio">
+        <button class="pbtn prev" id="btnPrev" type="button" aria-label="آیه قبلی" title="آیه قبلی"><svg class="i fill"><use href="#i-prev" xlink:href="#i-prev"/></svg></button>
+        <button class="pbtn play" id="btnPlay" type="button" aria-label="پخش" title="پخش">
+          <svg class="i fill glyph"><use href="#i-play" xlink:href="#i-play"/></svg>
+          <span class="spin" aria-hidden="true"></span>
+        </button>
+        <button class="pbtn next" id="btnNext" type="button" aria-label="آیه بعدی" title="آیه بعدی"><svg class="i fill"><use href="#i-next" xlink:href="#i-next"/></svg></button>
+      </div>
+      <div class="pc-side end">
+        <button class="pbtn p-toggle" id="btnMin" type="button" aria-label="کوچک‌کردن پخش‌کننده" title="کوچک‌کردن"><svg class="i"><use href="#i-chev-d" xlink:href="#i-chev-d"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- فهرست سوره‌ها -->
+<div class="sheet" id="sheetSurahs" role="dialog" aria-modal="true" aria-labelledby="hSurahs" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hSurahs">فهرست سوره‌ها</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="search">
+      <svg class="i"><use href="#i-search" xlink:href="#i-search"/></svg>
+      <input id="surahSearch" type="search" placeholder="جستجوی سوره (نام یا شماره)" autocomplete="off" enterkeyhint="search" aria-label="جستجوی سوره">
+    </div>
+    <div class="panel-body" id="surahRows"></div>
+  </div>
+</div>
+
+<!-- یادآوری‌ها -->
+<div class="sheet" id="sheetReminders" role="dialog" aria-modal="true" aria-labelledby="hRem" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hRem">یادآوری‌ها</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body" id="remRows"></div>
+  </div>
+</div>
+
+<!-- تنظیمات -->
+<div class="sheet" id="sheetSettings" role="dialog" aria-modal="true" aria-labelledby="hSet" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hSet">تنظیمات</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body">
+      <div class="setting">
+        <h3>ظاهر</h3>
+        <div class="seg" id="segTheme" role="radiogroup" aria-label="ظاهر">
+          <button type="button" role="radio" data-value="auto">خودکار</button>
+          <button type="button" role="radio" data-value="light">روز</button>
+          <button type="button" role="radio" data-value="dark">شب</button>
+        </div>
+      </div>
+      <div class="setting">
+        <h3>رنگ‌بندی</h3>
+        <div class="seg" id="segPalette" role="radiogroup" aria-label="رنگ‌بندی">
+          <button type="button" role="radio" data-value="meadow">سبز و زرد روشن</button>
+          <button type="button" role="radio" data-value="lapis">لاجورد و زر</button>
+          <button type="button" role="radio" data-value="emerald">زمرد و زر</button>
+        </div>
+      </div>
+      <div class="setting">
+        <h3>اندازه متن عربی</h3>
+        <div class="sizer">
+          <button class="btn" id="sizeUp" type="button" aria-label="بزرگ‌تر">+</button>
+          <output id="sizeOut" aria-live="polite">۳۰</output>
+          <button class="btn" id="sizeDown" type="button" aria-label="کوچک‌تر">−</button>
+        </div>
+        <div class="size-preview" lang="ar" dir="rtl" id="sizePreview"></div>
+      </div>
+      <div class="setting">
+        <h3>مسیر دریافت صوت</h3>
+        <div class="seg" id="segAudio" role="radiogroup" aria-label="مسیر دریافت صوت">
+          <button type="button" role="radio" data-value="auto">خودکار</button>
+          <button type="button" role="radio" data-value="direct">مستقیم</button>
+          <button type="button" role="radio" data-value="relay">از طریق گوگل</button>
+        </div>
+        <p>اگر صدا در شبکه شما بارگذاری نمی‌شود، «از طریق گوگل» را انتخاب کنید. در حالت خودکار، اگر اتصال مستقیم جواب ندهد، خودش به مسیر گوگل می‌رود.</p>
+      </div>
+      <div class="setting">
+        <h3>داده‌های ذخیره‌شده روی این دستگاه</h3>
+        <button class="btn" id="btnClearCache" type="button">پاک‌کردن سوره‌های ذخیره‌شده</button>
+        <p>یادآوری‌ها و جای آخرین خواندن حذف نمی‌شوند.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastAction" hidden></button></div>
+
+<audio id="audio" preload="none"></audio>
+
+<script>
+window.__qerr=[];
+window.addEventListener('error',function(e){var t=e.target;if(t&&t!==window&&(t.src||t.href)){window.__qerr.push('failed to load: '+(t.src||t.href))}else{window.__qerr.push(String(e.message||e)+(e.lineno?' (line '+e.lineno+')':''))}},true);
+setTimeout(function(){
+  if(window.__quranBooted)return;
+  var l=document.getElementById('list');if(!l)return;
+  var box=document.createElement('div');box.className='state';
+  var h=document.createElement('h2');h.textContent='صفحه درست شروع نشد';box.appendChild(h);
+  var p=document.createElement('p');p.setAttribute('dir','ltr');p.style.textAlign='left';
+  p.textContent=(window.__qerr.join(' | ')||'no error captured')+' || '+navigator.userAgent;box.appendChild(p);
+  var n=document.createElement('p');n.textContent='ممکن است یکی از فایل‌های برنامه کامل آپلود نشده باشد. همهٔ فایل‌ها (index.html، style.css و app-*.js) باید کنار هم در GitHub باشند. اگر باز هم درست نشد، این متن را بفرستید.';box.appendChild(n);
+  l.innerHTML='';l.appendChild(box);
+},6000);
+</script>
+<script src="app-1.js?v=283e0627"></script>
+<script src="app-2.js?v=a220d070"></script>
+<script src="app-3.js?v=066fea8f"></script>
+<script src="app-4.js?v=b7e18005"></script>
+</body>
+</html>
