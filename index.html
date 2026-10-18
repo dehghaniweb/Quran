@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="light" data-palette="lapis">
+<html lang="fa" dir="rtl" data-theme="light" data-palette="meadow">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>قرآن کریم</title>
 <meta name="description" content="قرآن کریم با متن عثمان طه، پخش صوتی آیه‌به‌آیه، یادآوری و ادامه از آخرین جای خواندن">
-<meta name="theme-color" content="#f5f1e6">
+<meta name="theme-color" content="#fbf8de">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f3877'/%3E%3Cg fill='none' stroke='%23d9b25a' stroke-width='1.8' stroke-linejoin='round'%3E%3Crect x='8' y='8' width='16' height='16'/%3E%3Crect x='8' y='8' width='16' height='16' transform='rotate(45 16 16)'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2.6' fill='%23d9b25a'/%3E%3C/svg%3E">
-<script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',s.palette==='emerald'?'emerald':'lapis');if(typeof s.size==='number'&&s.size>=22&&s.size<=52)d.style.setProperty('--ayah-size',s.size+'px')}catch(e){}})();</script>
+<script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(typeof s.size==='number'&&s.size>=22&&s.size<=52)d.style.setProperty('--ayah-size',s.size+'px')}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Vazirmatn:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -49,6 +49,23 @@
   color-scheme:light;
 }
 
+html[data-palette="meadow"]{
+  --paper:#fbf8de;
+  --paper-2:#eef0c8;
+  --surface:#fffdee;
+  --ink:#1f2b1c;
+  --ink-2:#4a5a42;
+  --ink-3:#77846b;
+  --line:rgba(40,60,30,.14);
+  --field:#3b8d5d;
+  --field-2:#2b6e47;
+  --on-field:#fffbe2;
+  --gold:#a98512;
+  --gold-2:#e3c55a;
+  --gold-wash:rgba(227,197,90,.22);
+  --hover-wash:rgba(227,197,90,.12);
+  --focus:#1f7a4d;
+}
 html[data-palette="emerald"]{
   --field:#0f5a46;
   --field-2:#0a4636;
@@ -73,6 +90,21 @@ html[data-theme="dark"]{
   --focus:#8fb0ff;
   --shadow:0 10px 30px rgba(0,0,0,.5);
   color-scheme:dark;
+}
+html[data-theme="dark"][data-palette="meadow"]{
+  --paper:#101a12;
+  --paper-2:#182519;
+  --surface:#14201a;
+  --ink:#f1efd6;
+  --ink-2:#bcc7ae;
+  --ink-3:#8e9a82;
+  --line:rgba(241,239,214,.13);
+  --field:#2f7a52;
+  --field-2:#1f5a3a;
+  --gold:#e3c55a;
+  --gold-wash:rgba(227,197,90,.13);
+  --hover-wash:rgba(227,197,90,.07);
+  --focus:#9fe0b4;
 }
 html[data-theme="dark"][data-palette="emerald"]{
   --field:#145646;
@@ -624,6 +656,7 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
       <div class="setting">
         <h3>رنگ‌بندی</h3>
         <div class="seg" id="segPalette" role="radiogroup" aria-label="رنگ‌بندی">
+          <button type="button" role="radio" data-value="meadow">سبز و زرد روشن</button>
           <button type="button" role="radio" data-value="lapis">لاجورد و زر</button>
           <button type="button" role="radio" data-value="emerald">زمرد و زر</button>
         </div>
@@ -659,6 +692,20 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
 
 <audio id="audio" preload="none"></audio>
 
+<script>
+window.__qerr=[];
+window.addEventListener('error',function(e){window.__qerr.push(String(e.message||e)+(e.lineno?' (خط '+e.lineno+')':''))});
+setTimeout(function(){
+  if(window.__quranBooted)return;
+  var l=document.getElementById('list');if(!l)return;
+  var box=document.createElement('div');box.className='state';
+  var h=document.createElement('h2');h.textContent='صفحه درست شروع نشد';box.appendChild(h);
+  var p=document.createElement('p');p.setAttribute('dir','ltr');p.style.textAlign='left';
+  p.textContent=(window.__qerr.join(' | ')||'no error captured')+' || '+navigator.userAgent;box.appendChild(p);
+  var n=document.createElement('p');n.textContent='این متن را برای پشتیبان بفرستید.';box.appendChild(n);
+  l.innerHTML='';l.appendChild(box);
+},6000);
+</script>
 <script>
 (function () {
 'use strict';
@@ -931,7 +978,7 @@ function cacheClearAll() {
 ========================================================= */
 const SETTING_DEFAULTS = {
   theme: 'auto',        // auto | light | dark
-  palette: 'lapis',     // lapis | emerald
+  palette: 'meadow',    // meadow | lapis | emerald
   size: 30,             // اندازه متن عربی (px)
   route: 'auto',        // auto | direct | relay  (مسیر دریافت صوت)
   mode: 'arabic',       // arabic | translation | both
@@ -946,7 +993,7 @@ const settings = (function () {
   const s = Object.assign({}, SETTING_DEFAULTS);
   if (saved && typeof saved === 'object') {
     if (['auto', 'light', 'dark'].indexOf(saved.theme) >= 0) s.theme = saved.theme;
-    if (['lapis', 'emerald'].indexOf(saved.palette) >= 0) s.palette = saved.palette;
+    if (['meadow', 'lapis', 'emerald'].indexOf(saved.palette) >= 0) s.palette = saved.palette;
     if (typeof saved.size === 'number' && saved.size >= SIZE_MIN && saved.size <= SIZE_MAX) s.size = Math.round(saved.size);
     if (['auto', 'direct', 'relay'].indexOf(saved.route) >= 0) s.route = saved.route;
     if (['arabic', 'translation', 'both'].indexOf(saved.mode) >= 0) s.mode = saved.mode;
@@ -2483,53 +2530,4 @@ function showLoadError(num, err, opts) {
   showState('بارگذاری ' + surahTitle(num) + ' ممکن نشد', esc(describeApiError(err)),
     [{ act: 'retry', label: 'تلاش دوباره', primary: true }]);
   dom.surahAr.textContent = '';
-  dom.surahFa.textContent = surahTitle(num);
-  dom.surahMeta.innerHTML = '';
-  dom.nowLine.innerHTML = '';
-}
-
-function showSetupNeeded() {
-  S.retryFn = null;
-  showState('اتصال به گوگل اسکریپت هنوز تنظیم نشده',
-    'در فایل <code>index.html</code> مقدار <code>API_URL</code> را با آدرس وب‌اپ Google Apps Script (آدرسی که به <code>/exec</code> ختم می‌شود) جایگزین کنید.',
-    [], 'مراحل کامل در فایل «راهنمای نصب» آمده است.');
-  dom.surahAr.textContent = 'القرآن الكريم';
-  dom.surahFa.textContent = 'قرآن کریم';
-  dom.surahMeta.innerHTML = '';
-}
-
-async function goToSurah(num, opts) {
-  opts = opts || {};
-  num = Number(num);
-  if (!(num >= 1 && num <= 114)) return false;
-
-  // همین سوره روی صفحه است: فقط جابه‌جایی داخل آن
-  if (num === S.surah && S.data && !opts.force) {
-    S.navToken++;
-    S.loadingNum = 0;
-    S.autoLoading = false;
-    setListLoading(false);
-    if (P.wantPlay && !P.loaded) { P.wantPlay = false; P.buffering = false; updatePlayUI(); }   // پخش خودکارِ در انتظار لغو شد
-    const same = resolvePos(opts);
-    if (opts.autoplay && same >= 0) playItem(same);
-    else if (same >= 0) focusItem(same, { scroll: opts.scroll, resume: opts.resume });
-    else window.scrollTo(0, 0);
-    updatePlayerInfo();
-    return true;
-  }
-
-  const token = ++S.navToken;
-  S.loadingNum = num;
-  S.autoLoading = !!opts.autoplay;
-  if (S.surah === 0) showSkeleton();
-  else setListLoading(true, num);
-  updatePlayerInfo();
-
-  let data;
-  try {
-    data = await loadSurahData(num);
-  } catch (err) {
-    if (token !== S.navToken) return false;        // کاربر در این فاصله جای دیگری رفته است
-    S.loadingNum = 0;
-    S.autoLoading = false;
-  
+  dom.surahFa.textCont
