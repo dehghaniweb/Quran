@@ -482,6 +482,14 @@ function bindUI() {
 
   dom.continueBtn.addEventListener('click', continueFromBookmark);
   dom.trSwitch.addEventListener('click', function () { setTranslation(!settings.translation); });
+  if (dom.faSwitch) dom.faSwitch.addEventListener('click', function () {
+    settings.faAudio = !settings.faAudio;
+    saveSettings();
+    applyListClasses();
+    if (settings.faAudio && S.data && !S.data.hasFa) showToast('ترجمهٔ فارسی این سوره هنوز در پایگاه داده نیست.');
+    else showToast(settings.faAudio ? 'بعد از هر آیه، ترجمهٔ فارسی هم خوانده می‌شود.' : 'صدای ترجمه خاموش شد.');
+    if (P.loaded && P.wantPlay) { P.preloadedFor = 0; preloadNext(); }
+  });
 
   dom.btnPlay.addEventListener('click', togglePlay);
   dom.btnPrev.addEventListener('click', function () { stepItem(-1); });

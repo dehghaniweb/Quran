@@ -15,6 +15,7 @@ const dom = {
   continueBtn: $('continueBtn'), continueText: $('continueText'),
   saveSurah: $('btnSaveSurah'), saveSurahText: $('saveSurahText'), saveSurahBar: $('saveSurahBar'),
   trSwitch: $('trSwitch'),
+  faSwitch: $('faSwitch'),
   player: $('player'), seek: $('seek'), seekFill: $('seekFill'), pStatus: $('pStatus'), tCur: $('tCur'), tDur: $('tDur'),
   btnStart: $('btnStart'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'), btnMin: $('btnMin'),
   toast: $('toast'), toastText: $('toastText'), toastAction: $('toastAction'),
@@ -312,6 +313,7 @@ function applyListClasses() {
   L.toggle('tr-on', !!settings.translation);
   L.toggle('no-fa', !!(S.data && !S.data.hasFa));
   dom.trSwitch.setAttribute('aria-checked', settings.translation ? 'true' : 'false');
+  if (dom.faSwitch) dom.faSwitch.setAttribute('aria-checked', settings.faAudio ? 'true' : 'false');
 }
 
 function ayahHtml(a, i) {

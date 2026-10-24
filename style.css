@@ -290,6 +290,7 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
 .arabic{
   margin:4px 0 0;direction:rtl;text-align:right;font-family:var(--font-quran);overflow-wrap:normal;word-break:normal;
   font-size:var(--ayah-size);line-height:2.35;color:var(--ink);word-spacing:.04em;
+  -webkit-text-stroke:.045em currentColor;paint-order:stroke fill;
 }
 .translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:var(--tr-size);line-height:2;text-align:right}
 .bismillah .bis-tr{border-top:0;padding-top:2px;font-family:var(--font-ui);font-size:var(--tr-size);line-height:1.9;text-align:center}
@@ -456,7 +457,7 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
 /* =========================================================
    NEW: translation switch, FABs, offline
 ========================================================= */
-.trbar{margin:10px 14px 0}
+.trbar{margin:10px 14px 0;display:grid;gap:8px}
 .trsw{width:100%;min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:14.5px;font-weight:500;text-align:start}
 .trsw .knob{position:relative;flex:none;width:46px;height:26px;border-radius:13px;background:var(--paper-2);border:1px solid var(--line);transition:background-color .2s}
 .trsw .knob::after{content:"";position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:var(--ink-3);transition:transform .2s,background-color .2s}
@@ -501,3 +502,6 @@ html[data-theme="dark"] .save-surah.is-saved{color:var(--gold-2);border-color:va
 .orow .del:hover{background:var(--gold-wash);color:var(--rose)}
 .off-del-all{margin-top:14px;color:var(--rose);border-color:var(--rose)}
 .footer .credits{display:block;margin-top:6px;font-size:12px;color:var(--ink-3)}
+
+.bis-ar{-webkit-text-stroke:.045em currentColor;paint-order:stroke fill}
+.bismillah .bis-tr{-webkit-text-stroke:0}

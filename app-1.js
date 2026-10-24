@@ -169,7 +169,7 @@ function audioUrl(base, surah, ayah) {
 
 /* کلید یک آهنگ: «سوره:آیه» (بسم‌الله همیشه ۱:۱ است) */
 function trackKey(t) {
-  return Number(t.surah) + ':' + Number(t.ayah);
+  return (t.fa ? 'fa:' : '') + Number(t.surah) + ':' + Number(t.ayah);
 }
 
 /* اولین آهنگی که با شروع یک سوره پخش می‌شود */
@@ -235,7 +235,8 @@ const SUPABASE_URL = 'https://wiulmslaensqnwlcjxtp.supabase.co';
 
 // منبع صوت. برای مرحله بعد (صوت ترجمه فارسی) یک ورودی دیگر مثل fa اینجا اضافه می‌شود.
 const AUDIO_BASES = {
-  ar: SUPABASE_URL + '/storage/v1/object/public/quran-audio/arabic/'
+  ar: SUPABASE_URL + '/storage/v1/object/public/quran-audio/arabic/',
+  fa: SUPABASE_URL + '/storage/v1/object/public/quran-audio/persian/'
 };
 
 const API_READY = /^https?:\/\//i.test(API_URL) && API_URL.indexOf('PUT_YOUR') === -1;
@@ -310,6 +311,7 @@ const SETTING_DEFAULTS = {
   size: 34,             // اندازه متن عربی (px)
   trSize: 17,           // اندازه ترجمه (px)
   translation: false,   // نمایش ترجمه فارسی زیر آیه‌ها
+  faAudio: false,       // پخش صوت ترجمهٔ فارسی بعد از هر آیه
   route: 'auto',        // auto | direct | relay  (مسیر دریافت صوت)
   minPlayer: false
 };
@@ -327,6 +329,7 @@ const settings = (function () {
     if (['meadow', 'lapis', 'emerald'].indexOf(saved.palette) >= 0) s.palette = saved.palette;
     if (['auto', 'direct', 'relay'].indexOf(saved.route) >= 0) s.route = saved.route;
     s.minPlayer = !!saved.minPlayer;
+    s.faAudio = !!saved.faAudio;
     if (saved.v === SETTINGS_VERSION) {
       if (typeof saved.size === 'number' && saved.size >= SIZE_MIN && saved.size <= SIZE_MAX) s.size = Math.round(saved.size);
       if (typeof saved.trSize === 'number' && saved.trSize >= TR_MIN && saved.trSize <= TR_MAX) s.trSize = Math.round(saved.trSize);

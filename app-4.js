@@ -81,11 +81,28 @@ function initDecks() {
 initDecks();
 
 /* ---------- آهنگِ هر آیتم ---------- */
-function trackFor(pos) {
+function trackFor(pos, fa) {
   const it = S.items[pos];
   if (!it) return null;
-  if (it.kind === 'bismillah') return { surah: 1, ayah: 1, bismillah: true };
-  return { surah: S.surah, ayah: it.ayah.ayah_number, bismillah: false };
+  const t = it.kind === 'bismillah'
+    ? { surah: 1, ayah: 1, bismillah: true }
+    : { surah: S.surah, ayah: it.ayah.ayah_number, bismillah: false };
+  if (fa) t.fa = true;
+  return t;
+}
+
+/* آیه‌هایی که صدای ترجمهٔ فارسیِ منبع خراب است (با شنیدن و بررسی طول فایل پیدا شده‌اند)؛ برایشان صدای ترجمه پخش نمی‌شود */
+const FA_SKIP = ['17:22', '26:48', '28:34', '50:25', '57:10', '75:5', '75:20', '75:33'];
+
+function faAudioFor(track) {
+  return !!(settings.faAudio && S.data && S.data.hasFa && track && FA_SKIP.indexOf(track.surah + ':' + track.ayah) < 0);
+}
+
+/* آهنگِ بعد از این آهنگ در همین سوره: (عربی ← ترجمه) ← آیهٔ بعد؛ null = پایان سوره */
+function afterTrack(pos, fa) {
+  if (!fa && faAudioFor(trackFor(pos))) return { pos: pos, fa: true };
+  if (pos + 1 < S.items.length) return { pos: pos + 1, fa: false };
+  return null;
 }
 
 function itemLabel(pos) {
@@ -139,7 +156,7 @@ function updatePlayerInfo() {
   } else if (S.pos < 0) {
     text = 'آماده پخش · ' + surahTitle(S.surah);
   } else {
-    const where = surahTitle(S.surah) + '، ' + itemLabel(S.pos);
+    const where = surahTitle(S.surah) + '، ' + itemLabel(S.pos) + (P.loaded && P.loaded.fa && P.loaded.pos === S.pos ? ' · ترجمه' : '');
     if (P.wantPlay && P.buffering) text = 'در حال دریافت صدا · ' + where;
     else if (P.playing) text = 'در حال پخش · ' + where;
     else text = where;
@@ -360,13 +377,13 @@ async function directBlob(url, signal) {
 
 /* یک آهنگ را به‌صورت Blob می‌دهد: دستگاه ← مسیر انتخابی ← مسیر دیگر (در حالت خودکار) */
 async function fetchTrackBlob(t, signal) {
-  const url = audioUrl(AUDIO_BASES.ar, t.surah, t.ayah);
+  const url = audioUrl(t.fa ? AUDIO_BASES.fa : AUDIO_BASES.ar, t.surah, t.ayah);
   if (typeof offlineHas === 'function' && offlineHas(url)) {
     const saved = await offlineBlob(url);
     if (saved) return saved;
   }
   const first = chooseRoute();
-  const order = settings.route === 'auto' ? (first === 'relay' ? ['relay', 'direct'] : ['direct', 'relay']) : [first];
+  const order = t.fa ? ['direct'] : (settings.route === 'auto' ? (first === 'relay' ? ['relay', 'direct'] : ['direct', 'relay']) : [first]);
   let lastErr = null;
   for (let i = 0; i < order.length; i++) {
     try {
@@ -437,7 +454,8 @@ function loadSource(id, route) {
   const L = P.loaded;
   if (!L || L.id !== id) return;
   const t = L.track;
-  const direct = audioUrl(AUDIO_BASES.ar, t.surah, t.ayah);
+  const direct = audioUrl(t.fa ? AUDIO_BASES.fa : AUDIO_BASES.ar, t.surah, t.ayah);
+  if (t.fa) route = 'direct';                  // صدای ترجمه از مسیر گوگل پشتیبانی نمی‌شود
 
   // ۰) ذخیره‌شده روی دستگاه (بدون اینترنت هم پخش می‌شود)
   if (!L.cacheFailed && typeof offlineHas === 'function' && offlineHas(direct)) {
@@ -494,6 +512,11 @@ function audioFailed(id, why) {
     return;
   }
 
+  if (L.track.fa) {                              // صدای ترجمه نیامد: بی‌صدا رد شو و ادامه بده (متن ترجمه سر جایش است)
+    advanceFrom(L);
+    return;
+  }
+
   if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
     P.wantPlay = false; P.playing = false; P.buffering = false;
     P.error = 'اینترنت قطع است';
@@ -526,11 +549,11 @@ function retryTrack() {
 /* شروع یک آهنگ تازه (آیتم pos از فهرست فعلی) */
 function startTrack(pos, opts) {
   opts = opts || {};
-  const track = trackFor(pos);
+  const track = trackFor(pos, !!opts.fa);
   if (!track) return;
   const key = trackKey(track);
   const id = ++P.trackId;
-  P.loaded = { id: id, surah: S.surah, pos: pos, track: track, key: key, route: null, triedRelay: false, triedDirect: false, relayKey: '', cacheFailed: false };
+  P.loaded = { id: id, fa: !!opts.fa, surah: S.surah, pos: pos, track: track, key: key, route: null, triedRelay: false, triedDirect: false, relayKey: '', cacheFailed: false };
   P.error = '';
   P.wantPlay = true;
   P.userPaused = false;
@@ -699,8 +722,18 @@ function onItemTap(i) {
 function onEnded() {
   const L = P.loaded;
   if (!P.wantPlay || !L || L.surah !== S.surah || L.pos !== S.pos) return;
+  advanceFrom(L);
+}
+
+/* بعد از پایان (یا ردشدنِ) یک آهنگ: آهنگ بعدی همین سوره، یا سورهٔ بعد */
+function advanceFrom(L) {
   P.playing = false;
-  if (S.pos + 1 < S.items.length) { playItem(S.pos + 1, true); return; }
+  const nx = afterTrack(L.pos, !!L.fa);
+  if (nx) {
+    if (nx.fa) startTrack(nx.pos, { fa: true });
+    else playItem(nx.pos, true);
+    return;
+  }
   if (S.loadingNum) {
     // کاربر همین حالا سوره دیگری را انتخاب کرده و در حال بارگذاری است؛ پخش خودکار جلوی او را نگیرد
     P.wantPlay = false;
@@ -821,11 +854,17 @@ function bindAudioEvents() {
    پیش‌بارگذاری آهنگ‌های بعدی (برای پخش بدون وقفه)
 ========================================================= */
 /* چند آهنگ بعدی؛ در پایان سوره، اولین آهنگ سورهٔ بعد (صدایش به متن سوره نیازی ندارد) */
-function upcomingTracks(pos, n) {
+function upcomingTracks(pos, n, fa) {
   const out = [];
-  let p = pos + 1;
-  for (; p < S.items.length && out.length < n; p++) out.push(trackFor(p));
-  if (p >= S.items.length && out.length < n && S.surah < 114) out.push(firstTrackOf(S.surah + 1));
+  let cur = { pos: pos, fa: !!fa };
+  let more = true;
+  while (out.length < n) {
+    const nx = afterTrack(cur.pos, cur.fa);
+    if (!nx) { more = false; break; }
+    out.push(trackFor(nx.pos, nx.fa));
+    cur = nx;
+  }
+  if (!more && out.length < n && S.surah < 114) out.push(firstTrackOf(S.surah + 1));
   return out;
 }
 
@@ -869,7 +908,7 @@ function prepareDeck(d, track) {
     if (settings.route === 'relay') { d.state = 'failed'; return; }
     d.route = 'direct';
     d.el.preload = 'auto';
-    deckSetSrc(d, audioUrl(AUDIO_BASES.ar, track.surah, track.ayah), false);
+    deckSetSrc(d, audioUrl(track.fa ? AUDIO_BASES.fa : AUDIO_BASES.ar, track.surah, track.ayah), false);
     try { d.el.load(); } catch (e) { /* ignore */ }
   });
 }
@@ -879,7 +918,7 @@ function preloadNext() {
   if (!L || !S.data || L.surah !== S.surah) return;
   if (S.pos >= S.items.length - 3 && S.surah < 114) prefetchSurahData(S.surah + 1);
 
-  const ahead = upcomingTracks(L.pos, PREFETCH_AHEAD);
+  const ahead = upcomingTracks(L.pos, PREFETCH_AHEAD, L.fa);
   if (!ahead.length) return;
   if (P.singleDeck) { prefetchBlob(ahead[0]).then(noop, noop); return; }
   prepareDeck(otherDeck(), ahead[0]);

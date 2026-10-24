@@ -11,7 +11,7 @@
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(s.v===3){if(typeof s.size==='number'&&s.size>=24&&s.size<=72)d.style.setProperty('--ayah-size',s.size+'px');if(typeof s.trSize==='number'&&s.trSize>=13&&s.trSize<=30)d.style.setProperty('--tr-size',s.trSize+'px')}}catch(e){}})();</script>
 <link rel="preload" href="UthmanicHafs-v22.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="Vazirmatn-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=527ebb4c">
+<link rel="stylesheet" href="style.css?v=81efe3d5">
 </head>
 <body>
 <noscript><p style="padding:24px;text-align:center">برای استفاده از این برنامه، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
@@ -122,6 +122,10 @@
         <span class="trsw-label">نمایش ترجمهٔ فارسی زیر هر آیه</span>
         <span class="knob" aria-hidden="true"></span>
       </button>
+      <button type="button" class="trsw" id="faSwitch" role="switch" aria-checked="false">
+        <span class="trsw-label">پخش صوت ترجمهٔ فارسی بعد از هر آیه</span>
+        <span class="knob" aria-hidden="true"></span>
+      </button>
     </div>
 
     <div class="list-spinner" id="listSpinner" hidden role="status">در حال بارگذاری سوره…</div>
@@ -132,7 +136,6 @@
     این برنامه کاملاً رایگان و بدون تبلیغات، برای آسایش شما ارائه شده است.
     <br>
     (علی دهقانی)
-    <small class="credits">ترجمهٔ فارسی: محمدمهدی فولادوند · خط قرآن: مجمع ملک فهد · قلم رابط: وزیرمتن</small>
   </footer>
 </div>
 
@@ -313,11 +316,11 @@ setTimeout(function(){
   l.innerHTML='';l.appendChild(box);
 },6000);
 </script>
-<script src="app-1.js?v=ab55d1b5"></script>
+<script src="app-1.js?v=485670ae"></script>
 <script src="app-2.js?v=8c684716"></script>
-<script src="app-3.js?v=e6127397"></script>
-<script src="app-4.js?v=f16aa151"></script>
+<script src="app-3.js?v=2b7aa699"></script>
+<script src="app-4.js?v=362a2e44"></script>
 <script src="app-5.js?v=bca97806"></script>
-<script src="app-6.js?v=d273bcbd"></script>
+<script src="app-6.js?v=8f2ba903"></script>
 </body>
 </html>
