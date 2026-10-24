@@ -39,6 +39,8 @@ function revelationLabel(type) {
   return '';
 }
 
+const ZERO_WIDTH_RE = new RegExp('[' + String.fromCharCode(0x200B) + '-' + String.fromCharCode(0x200F) + String.fromCharCode(0x202A) + '-' + String.fromCharCode(0x202E) + String.fromCharCode(0xFEFF) + ']', 'g');
+
 /* ---------- جستجو: یکسان‌سازی املای فارسی/عربی و ارقام ---------- */
 function normalizeSearch(text) {
   return String(text || '')
@@ -52,7 +54,7 @@ function normalizeSearch(text) {
     .replace(/[أإآٱ]/g, 'ا')
     .replace(/ؤ/g, 'و')
     .replace(/ئ/g, 'ی')
-    .replace(/[​-‏‪-‮﻿]/g, '')
+    .replace(ZERO_WIDTH_RE, '')
     .replace(/[-_'’‘`]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -162,10 +164,61 @@ function audioUrl(base, surah, ayah) {
   return `${base}${pad3(surah)}/${pad3(surah)}${pad3(ayah)}.mp3`;
 }
 
+
+/* ---------- آهنگ‌های صوتی (برای پخش بدون وقفه و ذخیره آفلاین) ---------- */
+
+/* کلید یک آهنگ: «سوره:آیه» (بسم‌الله همیشه ۱:۱ است) */
+function trackKey(t) {
+  return Number(t.surah) + ':' + Number(t.ayah);
+}
+
+/* اولین آهنگی که با شروع یک سوره پخش می‌شود */
+function firstTrackOf(surah) {
+  surah = Number(surah);
+  return surahHasBismillah(surah)
+    ? { surah: 1, ayah: 1, bismillah: true }
+    : { surah: surah, ayah: 1, bismillah: false };
+}
+
+/* همهٔ آهنگ‌های یک سوره به ترتیب پخش: بسم‌الله (اگر دارد) + آیه‌ها */
+function tracksForSurah(surah, count) {
+  surah = Number(surah);
+  const out = [];
+  if (surahHasBismillah(surah)) out.push({ surah: 1, ayah: 1, bismillah: true });
+  for (let a = 1; a <= Number(count); a++) out.push({ surah: surah, ayah: a, bismillah: false });
+  return out;
+}
+
+function trackUrls(base, surah, count) {
+  return tracksForSurah(surah, count).map(function (t) { return audioUrl(base, t.surah, t.ayah); });
+}
+
+/* «…/002/002255.mp3» ← {surah: 2, ayah: 255}  (یا null) */
+function parseAudioUrl(url) {
+  const m = /\/(\d{3})\/(\d{3})(\d{3})\.mp3(?:[?#].*)?$/.exec(String(url));
+  if (!m || m[1] !== m[2]) return null;
+  return { surah: Number(m[1]), ayah: Number(m[3]) };
+}
+
+/* حجم فایل به فارسی: «۳٫۲ مگابایت» */
+function formatBytes(n) {
+  n = Number(n) || 0;
+  if (n < 1024) return faNum(Math.round(n)) + ' بایت';
+  if (n < 1048576) return faNum(Math.round(n / 1024)) + ' کیلوبایت';
+  if (n < 1073741824) {
+    const mb = n / 1048576;
+    const t = mb >= 100 ? String(Math.round(mb)) : (Math.round(mb * 10) / 10).toFixed(1).replace(/\.0$/, '');
+    return faNum(t).replace('.', '٫') + ' مگابایت';
+  }
+  const gb = Math.round(n / 1073741824 * 100) / 100;
+  return faNum(String(gb)).replace('.', '٫') + ' گیگابایت';
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     faNum, pad3, clamp, formatTime, juzFromPage, revelationLabel, normalizeSearch,
     stripBismillah, findBismillahEnd, surahHasBismillah, buildItems, posForAyah, audioUrl,
+    trackKey, firstTrackOf, tracksForSurah, parseAudioUrl, formatBytes, trackUrls,
   };
 }
 
@@ -194,12 +247,13 @@ const KEYS = {
   bookmark: 'quran_last_position_v1',
   reminders: 'quran_ayah_reminders_v1',
   settings: 'quran_settings_v2',
-  cachePrefix: 'quran_cache_v2:',
+  cachePrefix: 'quran_cache_v3:',
+  oldCachePrefix: 'quran_cache_v2:',
   relay: 'quran_audio_relay_v1'
 };
 
-const CACHE_VERSION = 2;
-const CACHE_TTL = 24 * 3600 * 1000;
+const CACHE_VERSION = 3;
+const STALE_MS = 7 * 24 * 3600 * 1000;        // متن قرآن تقریباً هیچ‌وقت عوض نمی‌شود؛ بعد از یک هفته در پس‌زمینه تازه می‌شود
 const RELAY_PREF_TTL = 24 * 3600 * 1000;
 
 function noop() {}
@@ -244,39 +298,26 @@ function storageKeys(prefix) {
   return out;
 }
 
-/* کش سوره‌ها روی دستگاه */
-function cacheRead(name, maxAge) {
-  const entry = store.get(KEYS.cachePrefix + name, null);
-  if (!entry || entry.v !== CACHE_VERSION || !entry.data) return null;
-  return { data: entry.data, fresh: (Date.now() - Number(entry.at || 0)) < maxAge };
-}
-
-function cacheWrite(name, data) {
-  const entry = { v: CACHE_VERSION, at: Date.now(), data: data };
-  if (store.set(KEYS.cachePrefix + name, entry)) return;
-  // حافظه پر است: سوره‌های ذخیره‌شده قبلی را پاک کن و یک بار دیگر امتحان کن
-  storageKeys(KEYS.cachePrefix + 'surah:').forEach(store.remove);
-  store.set(KEYS.cachePrefix + name, entry);
-}
-
-function cacheClearAll() {
-  storageKeys(KEYS.cachePrefix).forEach(store.remove);
-}
-
 /* =========================================================
    SETTINGS
 ========================================================= */
+const SETTINGS_VERSION = 3;
+
 const SETTING_DEFAULTS = {
+  v: SETTINGS_VERSION,
   theme: 'auto',        // auto | light | dark
   palette: 'meadow',    // meadow | lapis | emerald
-  size: 30,             // اندازه متن عربی (px)
+  size: 34,             // اندازه متن عربی (px)
+  trSize: 17,           // اندازه ترجمه (px)
+  translation: false,   // نمایش ترجمه فارسی زیر آیه‌ها
   route: 'auto',        // auto | direct | relay  (مسیر دریافت صوت)
-  mode: 'arabic',       // arabic | translation | both
   minPlayer: false
 };
 
-const SIZE_MIN = 22;
-const SIZE_MAX = 52;
+const SIZE_MIN = 24;
+const SIZE_MAX = 72;
+const TR_MIN = 13;
+const TR_MAX = 30;
 
 const settings = (function () {
   const saved = store.get(KEYS.settings, {});
@@ -284,10 +325,16 @@ const settings = (function () {
   if (saved && typeof saved === 'object') {
     if (['auto', 'light', 'dark'].indexOf(saved.theme) >= 0) s.theme = saved.theme;
     if (['meadow', 'lapis', 'emerald'].indexOf(saved.palette) >= 0) s.palette = saved.palette;
-    if (typeof saved.size === 'number' && saved.size >= SIZE_MIN && saved.size <= SIZE_MAX) s.size = Math.round(saved.size);
     if (['auto', 'direct', 'relay'].indexOf(saved.route) >= 0) s.route = saved.route;
-    if (['arabic', 'translation', 'both'].indexOf(saved.mode) >= 0) s.mode = saved.mode;
     s.minPlayer = !!saved.minPlayer;
+    if (saved.v === SETTINGS_VERSION) {
+      if (typeof saved.size === 'number' && saved.size >= SIZE_MIN && saved.size <= SIZE_MAX) s.size = Math.round(saved.size);
+      if (typeof saved.trSize === 'number' && saved.trSize >= TR_MIN && saved.trSize <= TR_MAX) s.trSize = Math.round(saved.trSize);
+      s.translation = !!saved.translation;
+    } else {
+      // تنظیمات نسخهٔ قبلی: فونت عوض شده و اندازه از نو شروع می‌شود؛ «حالت نمایش» به کلید ترجمه تبدیل می‌شود
+      s.translation = saved.mode === 'translation' || saved.mode === 'both';
+    }
   }
   return s;
 })();
@@ -295,238 +342,3 @@ const settings = (function () {
 function saveSettings() {
   store.set(KEYS.settings, settings);
 }
-
-/* =========================================================
-   API (Google Apps Script)
-========================================================= */
-function apiError(kind, message, status) {
-  const err = new Error(message);
-  err.kind = kind;
-  err.retryable = kind === 'network' || kind === 'timeout' || (kind === 'http' && status >= 500);
-  return err;
-}
-
-function apiUrl(action, params) {
-  let q = '?action=' + encodeURIComponent(action);
-  if (params) {
-    Object.keys(params).forEach(function (k) {
-      q += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-    });
-  }
-  return API_URL + q;
-}
-
-function describeApiError(err) {
-  if (!err) return 'خطای ناشناخته';
-  switch (err.kind) {
-    case 'network': return 'اتصال به سرور برقرار نشد. اینترنت خود را بررسی کنید و دوباره تلاش کنید.';
-    case 'timeout': return 'پاسخ سرور دیر رسید. کمی بعد دوباره تلاش کنید.';
-    case 'format': return 'پاسخ گوگل اسکریپت قابل‌خواندن نبود. مطمئن شوید آدرس /exec درست است و دسترسی (Who has access) روی Anyone تنظیم شده است.';
-    case 'http': return 'سرور خطا داد (' + err.message + ').';
-    default: return err.message || 'خطای ناشناخته';
-  }
-}
-
-async function apiGet(action, params, opts) {
-  opts = opts || {};
-  const timeoutMs = opts.timeout || 25000;
-  const retries = opts.retries === undefined ? 1 : opts.retries;
-  let lastErr = null;
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timer = setTimeout(function () { if (ctl) ctl.abort(); }, timeoutMs);
-    try {
-      // درخواست ساده (بدون هدر سفارشی) تا مرورگر preflight نفرستد
-      const res = await fetch(apiUrl(action, params), ctl ? { signal: ctl.signal } : undefined);
-      if (!res.ok) throw apiError('http', 'HTTP ' + res.status, res.status);
-      const text = await res.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch (e) { throw apiError('format', 'invalid json'); }
-      if (!json || json.ok === false) throw apiError('server', (json && json.error) ? String(json.error) : 'خطای ناشناخته از سرور');
-      clearTimeout(timer);
-      return json;
-    } catch (err) {
-      clearTimeout(timer);
-      if (err && err.kind) lastErr = err;
-      else if (err && err.name === 'AbortError') lastErr = apiError('timeout', 'timeout');
-      else lastErr = apiError('network', String(err && err.message || err));
-      if (attempt < retries && lastErr.retryable) {
-        await sleep(700 * (attempt + 1));
-        continue;
-      }
-      break;
-    }
-  }
-  throw lastErr;
-}
-
-/* =========================================================
-   DATA — فهرست سوره‌ها و آیه‌ها (حافظه + کش دستگاه + شبکه)
-========================================================= */
-const mem = { surahs: null, data: new Map(), inflight: new Map(), listInflight: null };
-
-function validSurahList(list) {
-  return Array.isArray(list) && list.length > 0 && list.every(function (s) { return s && Number(s.number) >= 1; });
-}
-
-function loadSurahList() {
-  if (mem.surahs) return Promise.resolve(mem.surahs);
-  if (mem.listInflight) return mem.listInflight;
-
-  mem.listInflight = (async function () {
-    const cached = cacheRead('surahs', CACHE_TTL);
-    if (cached && cached.fresh && validSurahList(cached.data)) {
-      mem.surahs = cached.data;
-      return mem.surahs;
-    }
-    try {
-      const json = await apiGet('surahs');
-      if (!validSurahList(json.surahs)) throw apiError('server', 'فهرست سوره‌ها نامعتبر است');
-      cacheWrite('surahs', json.surahs);
-      mem.surahs = json.surahs;
-      return mem.surahs;
-    } catch (err) {
-      if (cached && validSurahList(cached.data)) { mem.surahs = cached.data; return mem.surahs; }
-      throw err;
-    }
-  })();
-
-  const clear = function () { mem.listInflight = null; };
-  mem.listInflight.then(clear, clear);
-  return mem.listInflight;
-}
-
-/* پاسخ سرور → ساختار داخلی. بسم‌الله یک بار دیگر هم اینجا جدا می‌شود تا حتی اگر
-   نسخه قدیمیِ گوگل‌اسکریپت یا کش قدیمی جواب داد، آیه اول با بسم‌الله قاطی نشود. */
-function prepareSurahData(num, json) {
-  if (!json || !Array.isArray(json.ayahs) || json.ayahs.length === 0) {
-    throw apiError('server', 'داده سوره نامعتبر است');
-  }
-  const hasBismillah = surahHasBismillah(num);
-  let bismillah = hasBismillah ? String(json.bismillah || '') : '';
-
-  const ayahs = json.ayahs.map(function (a) {
-    return {
-      id: a.id,
-      surah_id: Number(a.surah_id || num),
-      ayah_number: Number(a.ayah_number),
-      text_ar: a.text_ar === null || a.text_ar === undefined ? '' : String(a.text_ar),
-      text_fa: a.text_fa ? String(a.text_fa).trim() : '',
-      juz: Number(a.juz) || null,
-      page: Number(a.page) || null
-    };
-  }).sort(function (a, b) { return a.ayah_number - b.ayah_number; });
-
-  if (hasBismillah && ayahs[0].ayah_number === 1) {
-    const split = stripBismillah(ayahs[0].text_ar);
-    if (split.bismillah) {
-      ayahs[0].text_ar = split.rest;
-      if (!bismillah) bismillah = split.bismillah;
-    }
-  }
-  if (hasBismillah && !bismillah) bismillah = BISMILLAH_FALLBACK;
-
-  return {
-    surah: num,
-    ayahs: ayahs,
-    hasBismillah: hasBismillah,
-    bismillah: bismillah,
-    hasFa: ayahs.some(function (a) { return !!a.text_fa; })
-  };
-}
-
-function loadSurahData(num) {
-  if (mem.data.has(num)) return Promise.resolve(mem.data.get(num));
-  if (mem.inflight.has(num)) return mem.inflight.get(num);
-
-  const p = (async function () {
-    const cached = cacheRead('surah:' + num, CACHE_TTL);
-    if (cached && cached.fresh) {
-      try {
-        const d = prepareSurahData(num, cached.data);
-        mem.data.set(num, d);
-        return d;
-      } catch (e) { /* کش خراب است؛ از شبکه می‌گیریم */ }
-    }
-    try {
-      const json = await apiGet('ayahs', { surah: num });
-      const d = prepareSurahData(num, json);
-      cacheWrite('surah:' + num, {
-        surah: json.surah, total_ayahs: json.total_ayahs, has_bismillah: json.has_bismillah,
-        bismillah: json.bismillah, ayahs: json.ayahs
-      });
-      mem.data.set(num, d);
-      return d;
-    } catch (err) {
-      if (cached) {
-        try {
-          const d = prepareSurahData(num, cached.data);
-          mem.data.set(num, d);
-          return d;
-        } catch (e) { /* ignore */ }
-      }
-      throw err;
-    }
-  })();
-
-  mem.inflight.set(num, p);
-  const clear = function () { mem.inflight.delete(num); };
-  p.then(clear, clear);
-  return p;
-}
-
-/* فقط از حافظه/کش (همگام)، برای نمایش خلاصه آیه در فهرست یادآوری‌ها */
-function peekSurahData(num) {
-  if (mem.data.has(num)) return mem.data.get(num);
-  const cached = cacheRead('surah:' + num, Infinity);
-  if (cached) {
-    try {
-      const d = prepareSurahData(num, cached.data);
-      mem.data.set(num, d);
-      return d;
-    } catch (e) { /* ignore */ }
-  }
-  return null;
-}
-
-/* =========================================================
-   نام سوره‌ها
-========================================================= */
-const S = {
-  surahs: [],            // فهرست ۱۱۴ سوره از سرور
-  surahMap: {},
-  surah: 0,              // سوره‌ای که نمایش داده می‌شود و پخش‌کننده هم به همین وصل است
-  data: null,
-  items: [],             // فهرست پخش: بسم‌الله (اگر دارد) + آیه‌ها
-  els: [],               // عناصر DOM هر آیتم
-  pos: -1,               // اندیس آیتم فعال
-  activeEl: null,
-  navToken: 0,           // هر رفتن به سوره جدید یک شماره تازه می‌گیرد؛ پاسخ‌های کهنه نادیده گرفته می‌شوند
-  loadingNum: 0,
-  autoLoading: false,    // بارگذاریِ در انتظار از پخش خودکار آمده است
-  retryFn: null,
-  mode: settings.mode
-};
-
-function setSurahs(list) {
-  S.surahs = list;
-  S.surahMap = {};
-  list.forEach(function (s) { S.surahMap[Number(s.number)] = s; });
-}
-
-function surahBase(n) {
-  const s = S.surahMap[n];
-  const name = s && s.name_fa ? String(s.name_fa).replace(/^\s*سوره\s*/, '').trim() : '';
-  return name;
-}
-
-function surahShort(n) {
-  return surahBase(n) || ('سوره ' + faNum(n));
-}
-
-function surahTitle(n) {
-  const b = surahBase(n);
-  return b ? ('سوره ' + b) : ('سوره ' + faNum(n));
-}
-

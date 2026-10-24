@@ -1,706 +1,659 @@
 'use strict';
 /* =========================================================
-   PLAYER
-
-   اصل طراحی: پخش‌کننده همیشه به همان سوره‌ای وصل است که روی صفحه است.
-   S.surah / S.items / S.pos فقط یک‌جا و با هم عوض می‌شوند (commitSurah) و هر آهنگ،
-   سوره و آیه‌اش را در خودش دارد؛ بنابراین نشانگر هرگز روی سوره دیگری نمی‌رود.
+   DOM
 ========================================================= */
-const WATCHDOG_MS = 12000;
-const RELAY_MAX = 4;
+const $ = function (id) { return document.getElementById(id); };
+const root = document.documentElement;
 
-const P = {
-  wantPlay: false,       // نیت کاربر: پخش یا توقف
-  playing: false,        // صدا واقعاً در حال پخش است
-  buffering: false,
-  trackId: 0,            // هر بارگذاری آهنگ یک شماره تازه می‌گیرد
-  switching: false,      // بین عوض‌شدن src و رویداد loadstart
-  loaded: null,          // { id, surah, pos, track, route, triedRelay, triedDirect, relayKey }
-  watchdog: null,
-  error: '',
-  lastSave: 0,
-  resume: null,          // { surah, pos, time } فقط برای دکمه پخش بعد از «ادامه»
-  pendingSeek: 0,
-  preloadedFor: 0,
-  preloadUrl: '',
-  preloader: null,
-  seeking: false,
-  metaKey: '',
-  userPaused: false,     // فقط با دکمه توقف خودِ کاربر true می‌شود
-  markHold: false        // بعد از علامت‌زدن دستی، تا پخش دستیِ بعدی ذخیره خودکار متوقف است
+const dom = {
+  topbar: document.querySelector('.topbar'),
+  list: $('list'), spinner: $('listSpinner'),
+  surahAr: $('surahAr'), surahFa: $('surahFa'), surahMeta: $('surahMeta'),
+  prevSurah: $('prevSurah'), nextSurah: $('nextSurah'), prevName: $('prevName'), nextName: $('nextName'),
+  nowLine: $('nowLine'),
+  pageForm: $('pageForm'), pageInput: $('pageInput'), pageError: $('pageError'), pageGo: $('pageGo'),
+  continueBtn: $('continueBtn'), continueText: $('continueText'),
+  saveSurah: $('btnSaveSurah'), saveSurahText: $('saveSurahText'), saveSurahBar: $('saveSurahBar'),
+  trSwitch: $('trSwitch'),
+  player: $('player'), seek: $('seek'), seekFill: $('seekFill'), pStatus: $('pStatus'), tCur: $('tCur'), tDur: $('tDur'),
+  btnStart: $('btnStart'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'), btnMin: $('btnMin'),
+  toast: $('toast'), toastText: $('toastText'), toastAction: $('toastAction'),
+  audio: $('audio'), audio2: $('audio2'),
+  btnSurahs: $('btnSurahs'), btnReminders: $('btnReminders'), btnSettings: $('btnSettings'), btnOffline: $('btnOffline'), remCount: $('remCount'),
+  surahSearch: $('surahSearch'), surahRows: $('surahRows'), remRows: $('remRows'),
+  sizeOut: $('sizeOut'), sizeRange: $('sizeRange'), sizePreview: $('sizePreview'),
+  trSizeOut: $('trSizeOut'), trSizeRange: $('trSizeRange'), trPreview: $('trPreview'),
+  fabTop: $('fabTop'), fabCur: $('fabCur')
 };
 
-const relayCache = new Map();
-const relayPending = new Map();
+const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-/* ---------- آهنگِ هر آیتم ---------- */
-function trackFor(pos) {
-  const it = S.items[pos];
-  if (!it) return null;
-  if (it.kind === 'bismillah') return { surah: 1, ayah: 1, bismillah: true };
-  return { surah: S.surah, ayah: it.ayah.ayah_number, bismillah: false };
+const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) { return ESC_MAP[c]; });
 }
 
-function itemLabel(pos) {
-  const it = S.items[pos];
-  if (!it) return '';
-  return it.kind === 'bismillah' ? 'بسم‌الله الرحمن الرحیم' : ('آیه ' + faNum(it.ayah.ayah_number));
+function icon(id, cls) {
+  return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#' + id + '" xlink:href="#' + id + '"/></svg>';
 }
 
-function currentRef() {
-  const it = S.items[S.pos];
-  if (!it || !S.data) return null;
-  if (it.kind === 'bismillah') return { surah: S.surah, ayah: 1, bis: true };
-  return { surah: S.surah, ayah: it.ayah.ayah_number, bis: false };
+function setIcon(svg, id) {
+  const use = svg.querySelector('use');
+  if (!use) return;
+  use.setAttribute('href', '#' + id);
+  use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#' + id);
 }
 
 /* =========================================================
-   UI
+   THEME / SETTINGS (ظاهر)
 ========================================================= */
-function setBuffering(on) {
-  P.buffering = !!on;
-  updatePlayUI();
+const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+function applyTheme() {
+  const dark = settings.theme === 'dark' || (settings.theme === 'auto' && !!darkQuery && darkQuery.matches);
+  root.setAttribute('data-theme', dark ? 'dark' : 'light');
+  root.setAttribute('data-palette', settings.palette);
+  root.style.setProperty('--ayah-size', settings.size + 'px');
+  root.style.setProperty('--tr-size', settings.trSize + 'px');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', dark ? '#0d1222' : '#f5f1e6');
 }
 
-function updatePlayUI() {
-  document.body.classList.toggle('is-playing', P.playing);
-  dom.player.classList.toggle('buffering', P.wantPlay && P.buffering);
-  const glyph = dom.btnPlay.querySelector('svg.glyph');
-  if (glyph) setIcon(glyph, P.wantPlay ? 'i-pause' : 'i-play');
-  const label = P.wantPlay ? 'توقف' : 'پخش';
-  dom.btnPlay.setAttribute('aria-label', label);
-  dom.btnPlay.title = label;
-  const hasData = !!(S.data && S.items.length);
-  dom.btnPlay.disabled = !hasData;
-  dom.btnPrev.disabled = !hasData;
-  dom.btnNext.disabled = !hasData;
-  dom.btnStart.disabled = !hasData;
-  if ('mediaSession' in navigator) {
-    try { navigator.mediaSession.playbackState = P.wantPlay ? 'playing' : 'paused'; } catch (e) { /* ignore */ }
-  }
-  updatePlayerInfo();
+function updatePlayerHeightVar() {
+  root.style.setProperty('--player-h', dom.player.offsetHeight + 'px');
 }
 
-function updatePlayerInfo() {
-  let text;
-  if (P.error) {
-    text = P.error;
-  } else if (S.loadingNum && P.wantPlay) {
-    text = 'در حال بارگذاری ' + surahTitle(S.loadingNum) + '…';
-  } else if (!S.data) {
-    text = S.loadingNum ? ('در حال بارگذاری ' + surahTitle(S.loadingNum) + '…') : 'آماده پخش';
-  } else if (S.pos < 0) {
-    text = 'آماده پخش · ' + surahTitle(S.surah);
+/* =========================================================
+   TOAST
+========================================================= */
+let toastTimer = null;
+
+function hideToast() {
+  dom.toast.classList.remove('show');
+}
+
+function showToast(text, opts) {
+  opts = opts || {};
+  dom.toastText.textContent = text;
+  if (opts.action) {
+    dom.toastAction.hidden = false;
+    dom.toastAction.textContent = opts.action;
+    dom.toastAction.onclick = function () { hideToast(); if (opts.fn) opts.fn(); };
   } else {
-    const where = surahTitle(S.surah) + '، ' + itemLabel(S.pos);
-    if (P.wantPlay && P.buffering) text = 'در حال دریافت صدا · ' + where;
-    else if (P.playing) text = 'در حال پخش · ' + where;
-    else text = where;
+    dom.toastAction.hidden = true;
+    dom.toastAction.onclick = null;
   }
-  dom.pStatus.textContent = text;
-  updateMediaMetadata();
-}
-
-function updateSeekUI() {
-  const a = dom.audio;
-  const d = a.duration;
-  const t = a.currentTime || 0;
-  const ok = isFinite(d) && d > 0;
-  const pct = ok ? clamp(t / d * 100, 0, 100) : 0;
-  dom.seekFill.style.width = pct + '%';
-  dom.seek.setAttribute('aria-valuenow', String(Math.round(pct)));
-  dom.seek.setAttribute('aria-valuetext', formatTime(t) + ' از ' + formatTime(ok ? d : 0));
-  dom.tCur.textContent = formatTime(t);
-  dom.tDur.textContent = formatTime(ok ? d : 0);
-}
-
-function applyPlayerMin() {
-  dom.player.classList.toggle('min', !!settings.minPlayer);
-  const label = settings.minPlayer ? 'بزرگ‌کردن پخش‌کننده' : 'کوچک‌کردن پخش‌کننده';
-  dom.btnMin.setAttribute('aria-label', label);
-  dom.btnMin.title = label;
-  updatePlayerHeightVar();
+  dom.toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, opts.ms || (opts.action ? 6500 : 2800));
 }
 
 /* =========================================================
-   MEDIA SESSION (دکمه‌های قفل صفحه و هدفون)
+   SCROLL
 ========================================================= */
-function updateMediaMetadata() {
-  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined' || !S.data) return;
-  const key = S.surah + ':' + S.pos;
-  if (key === P.metaKey) return;
-  P.metaKey = key;
+function visibleBand() {
+  const top = dom.topbar ? dom.topbar.getBoundingClientRect().height : 56;
+  const playerTop = dom.player.getBoundingClientRect().top;
+  return { top: top, bottom: Math.min(window.innerHeight, playerTop) };
+}
+
+function scrollByY(dy, smooth) {
+  if (Math.abs(dy) < 1) return;
   try {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: S.pos >= 0 ? itemLabel(S.pos) : surahTitle(S.surah),
-      artist: surahTitle(S.surah),
-      album: 'قرآن کریم'
-    });
+    window.scrollBy({ top: dy, left: 0, behavior: (smooth && !reduceMotion) ? 'smooth' : 'auto' });
+  } catch (e) {
+    window.scrollBy(0, dy);
+  }
+}
+
+function scrollToEl(el, mode) {
+  if (!el) return;
+  const band = visibleBand();
+  const rect = el.getBoundingClientRect();
+  const bandH = band.bottom - band.top;
+  if (mode === 'nearest') {
+    if (rect.top >= band.top + 8 && rect.bottom <= band.bottom - 8) return;
+    mode = 'center';
+  }
+  let dy;
+  if (mode === 'start' || rect.height > bandH - 24) dy = rect.top - band.top - 12;
+  else dy = rect.top - band.top - (bandH - rect.height) / 2;
+  scrollByY(dy, true);
+}
+
+function firstVisibleIndex() {
+  const edge = (dom.topbar ? dom.topbar.offsetHeight : 56) + 24;
+  for (let i = 0; i < S.els.length; i++) {
+    if (S.els[i].getBoundingClientRect().bottom > edge) return i;
+  }
+  return -1;
+}
+
+/* وقتی ارتفاع فهرست عوض می‌شود (نمایش ترجمه، اندازه خط) آیه‌ای که می‌خوانید سر جایش می‌ماند */
+function withScrollAnchor(fn) {
+  const idx = firstVisibleIndex();
+  const el = idx >= 0 ? S.els[idx] : null;
+  const before = el ? el.getBoundingClientRect().top : 0;
+  fn();
+  if (el) scrollByY(el.getBoundingClientRect().top - before, false);
+}
+
+/* =========================================================
+   فلش‌های شناور: «ابتدای سوره» و «برگشت به آیه‌ای که می‌خوانید»
+========================================================= */
+let fabQueued = false;
+
+function updateFabs() {
+  fabQueued = false;
+  if (!dom.fabTop || !dom.fabCur) return;
+  const y = window.pageYOffset || root.scrollTop || 0;
+  dom.fabTop.classList.toggle('show', y > 260);
+
+  let showCur = false;
+  let up = false;
+  const el = S.activeEl;
+  if (el && el.isConnected) {
+    const band = visibleBand();
+    const r = el.getBoundingClientRect();
+    if (r.bottom < band.top + 6) { showCur = true; up = true; }
+    else if (r.top > band.bottom - 6) { showCur = true; up = false; }
+  }
+  dom.fabCur.classList.toggle('show', showCur);
+  if (showCur) {
+    setIcon(dom.fabCur.querySelector('svg'), up ? 'i-arrow-up' : 'i-arrow-down');
+    dom.fabCur.setAttribute('data-dir', up ? 'up' : 'down');
+  }
+}
+
+function queueFabs() {
+  if (fabQueued) return;
+  fabQueued = true;
+  if (window.requestAnimationFrame) window.requestAnimationFrame(updateFabs);
+  else setTimeout(updateFabs, 50);
+}
+
+function bindFabs() {
+  window.addEventListener('scroll', queueFabs, { passive: true });
+  window.addEventListener('resize', queueFabs);
+  dom.fabTop.addEventListener('click', function () {
+    try { window.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+  });
+  dom.fabCur.addEventListener('click', function () {
+    if (S.activeEl) scrollToEl(S.activeEl, 'center');
+  });
+}
+
+/* =========================================================
+   SHEETS (پنجره‌های پایین‌صفحه) + دکمه برگشت مرورگر
+========================================================= */
+const sheetEls = { surahs: $('sheetSurahs'), reminders: $('sheetReminders'), settings: $('sheetSettings'), offline: $('sheetOffline') };
+const sheets = { open: null, opener: null, ignorePop: 0 };
+
+function focusables(container) {
+  return Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled]), [tabindex="0"]'))
+    .filter(function (n) { return n.offsetParent !== null; });
+}
+
+function showSheetUI(name) {
+  const el = sheetEls[name];
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('sheet-open');
+  const close = el.querySelector('.panel-head .icon-btn');
+  if (close) close.focus();
+}
+
+function hideSheetUI(name) {
+  const el = sheetEls[name];
+  if (!el) return;
+  el.classList.remove('open');
+  el.setAttribute('aria-hidden', 'true');
+}
+
+function afterSheetClosed() {
+  document.body.classList.remove('sheet-open');
+  const opener = sheets.opener;
+  sheets.opener = null;
+  if (opener && typeof opener.focus === 'function' && document.contains(opener)) {
+    try { opener.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+  }
+}
+
+function openSheet(name, opener) {
+  if (sheets.open === name) return;
+  hideToast();
+  const had = sheets.open;
+  if (had) hideSheetUI(had);
+  sheets.open = name;
+  if (!had) sheets.opener = opener || document.activeElement;
+  if (name === 'surahs') prepareSurahSheet();
+  if (name === 'reminders') renderRemindersSheet();
+  if (name === 'settings') syncSettingsUI();
+  if (name === 'offline' && typeof prepareOfflineSheet === 'function') prepareOfflineSheet();
+  showSheetUI(name);
+  try {
+    if (had) history.replaceState({ sheet: name }, '');
+    else history.pushState({ sheet: name }, '');
   } catch (e) { /* ignore */ }
 }
 
-function setupMediaSession() {
-  if (!('mediaSession' in navigator)) return;
-  const set = function (name, fn) {
-    try { navigator.mediaSession.setActionHandler(name, fn); } catch (e) { /* پشتیبانی نمی‌شود */ }
-  };
-  set('play', function () { if (!P.wantPlay) resumePlayback(); });
-  set('pause', function () { pausePlayback(); });
-  set('stop', function () { pausePlayback(); });
-  set('previoustrack', function () { stepItem(-1); });
-  set('nexttrack', function () { stepItem(1); });
-  set('seekto', function (d) {
-    if (d && typeof d.seekTime === 'number' && isFinite(dom.audio.duration)) {
-      dom.audio.currentTime = clamp(d.seekTime, 0, dom.audio.duration);
-      updateSeekUI();
-    }
-  });
+function closeSheet() {
+  if (!sheets.open) return;
+  const name = sheets.open;
+  sheets.open = null;
+  hideSheetUI(name);
+  afterSheetClosed();
+  try {
+    if (history.state && history.state.sheet) { sheets.ignorePop++; history.back(); }
+  } catch (e) { /* ignore */ }
+}
+
+window.addEventListener('popstate', function () {
+  if (sheets.ignorePop > 0) { sheets.ignorePop--; return; }
+  if (sheets.open) {
+    const name = sheets.open;
+    sheets.open = null;
+    hideSheetUI(name);
+    afterSheetClosed();
+  }
+});
+
+/* =========================================================
+   HEADER / NOW LINE
+========================================================= */
+function renderHeader() {
+  const n = S.surah;
+  if (!n) return;
+  const s = S.surahMap[n];
+  dom.surahAr.textContent = s && s.name_ar ? s.name_ar : '';
+  dom.surahFa.textContent = surahTitle(n);
+  const total = S.data ? S.data.ayahs.length : (s ? Number(s.ayah_count) : 0);
+  const type = s ? revelationLabel(s.revelation_type) : '';
+  const parts = ['<span>سوره شماره ' + faNum(n) + '</span>'];
+  if (type) parts.push('<span>' + type + '</span>');
+  if (total) parts.push('<span>' + faNum(total) + ' آیه</span>');
+  dom.surahMeta.innerHTML = parts.join('');
+  document.title = surahTitle(n) + ' — قرآن کریم';
+  updateSurahNav();
+  if (typeof updateSaveSurahButton === 'function') updateSaveSurahButton();
+}
+
+function updateSurahNav() {
+  const n = S.surah;
+  dom.prevSurah.disabled = !(n > 1);
+  dom.nextSurah.disabled = !(n >= 1 && n < 114);
+  dom.prevName.textContent = n > 1 ? surahShort(n - 1) : '';
+  dom.nextName.textContent = (n >= 1 && n < 114) ? surahShort(n + 1) : '';
+}
+
+/* آیه‌ای که صفحه و جزء را از آن می‌خوانیم */
+function refAyah() {
+  if (!S.data) return null;
+  const it = S.items[S.pos];
+  if (it && it.kind === 'ayah') return it.ayah;
+  return S.data.ayahs[0] || null;
+}
+
+function updateNow() {
+  const a = refAyah();
+  if (!a) { dom.nowLine.innerHTML = ''; return; }
+  const parts = [];
+  if (a.page) parts.push('<span><b>صفحه</b> ' + faNum(a.page) + '</span>');
+  if (a.juz) parts.push('<span><b>جزء</b> ' + faNum(a.juz) + '</span>');
+  parts.push('<span><b>آیه</b> ' + faNum(a.ayah_number) + ' از ' + faNum(S.data.ayahs.length) + '</span>');
+  dom.nowLine.innerHTML = parts.join('');
 }
 
 /* =========================================================
-   ذخیره جای آخرین شنیدن / علامت‌گذاری
-   (فقط هنگام پخش واقعی یا با دکمه «علامت‌گذاری» نوشته می‌شود؛ هیچ‌وقت هنگام باز شدن صفحه)
+   LIST
 ========================================================= */
-function getBookmark() {
-  const b = store.get(KEYS.bookmark, null);
-  if (!b || !(Number(b.surah) >= 1 && Number(b.surah) <= 114) || !(Number(b.ayah) >= 1)) return null;
-  return b;
+function applyListClasses() {
+  const L = dom.list.classList;
+  L.toggle('tr-on', !!settings.translation);
+  L.toggle('no-fa', !!(S.data && !S.data.hasFa));
+  dom.trSwitch.setAttribute('aria-checked', settings.translation ? 'true' : 'false');
 }
 
-function saveBookmark(ref, time) {
-  return store.set(KEYS.bookmark, {
-    surah: ref.surah,
-    ayah: ref.ayah,
-    bis: !!ref.bis,
-    time: Math.max(0, Math.floor(time || 0)),
-    updatedAt: Date.now()
-  });
+function ayahHtml(a, i) {
+  const n = a.ayah_number;
+  return '<article class="ayah" data-i="' + i + '" data-n="' + n + '" tabindex="-1">' +
+    '<div class="a-head">' +
+      '<span class="rosette" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#rosette" xlink:href="#rosette"/></svg><b>' + faNum(n) + '</b></span>' +
+      '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
+      '<span class="a-tools">' +
+        '<button type="button" data-act="mark" class="mark" aria-label="ذخیره جای خواندن از آیه ' + faNum(n) + '" title="ذخیره جای خواندن">' + icon('i-bookmark') + '</button>' +
+        '<button type="button" data-act="remind" class="bell" aria-pressed="false" aria-label="یادآوری برای آیه ' + faNum(n) + '" title="یادآوری">' + icon('i-bell') + '</button>' +
+        '<button type="button" data-act="copy" aria-label="کپی آیه ' + faNum(n) + '" title="کپی">' + icon('i-copy') + '</button>' +
+      '</span>' +
+    '</div>' +
+    '<p class="arabic" lang="ar" dir="rtl">' + esc(a.text_ar) + '</p>' +
+    (a.text_fa ? '<p class="translation" lang="fa">' + esc(a.text_fa) + '</p>' : '') +
+  '</article>';
 }
 
-function savePlayingPosition(force) {
-  if (P.markHold) return;                        // کاربر جای خواندن را دستی علامت زده؛ پخش آن را پاک نمی‌کند
-  if (!force && !P.wantPlay) return;
-  const now = Date.now();
-  if (!force && now - P.lastSave < 5000) return;
-  const L = P.loaded;
-  const ref = currentRef();
-  if (!ref || !L || L.pos !== S.pos || L.surah !== S.surah) return;
-  P.lastSave = now;
-  saveBookmark(ref, ref.bis ? 0 : dom.audio.currentTime);
-  updateResumeUI();
-}
-
-function updateResumeUI() {
-  const b = getBookmark();
-  if (!b) { dom.continueBtn.hidden = true; refreshBookmarkMark(); return; }
-  const cur = currentRef();
-  const same = !!cur && cur.surah === Number(b.surah) && cur.ayah === Number(b.ayah);
-  dom.continueBtn.hidden = same;
-  dom.continueText.textContent = 'ادامه از ' + surahTitle(Number(b.surah)) + '، آیه ' + faNum(b.ayah);
-  refreshBookmarkMark();
-}
-
-function refForPos(pos) {
-  const it = S.items[pos];
-  if (!it) return null;
-  if (it.kind === 'bismillah') return { surah: S.surah, ayah: 1, bis: true };
-  return { surah: S.surah, ayah: it.ayah.ayah_number, bis: false };
-}
-
-/* ذخیره جای خواندن از آیه‌ای که دکمه نشانک‌اش را زده‌اید */
-function markPos(pos) {
-  const ref = refForPos(pos);
-  if (!ref) return;
-  const time = (P.loaded && P.loaded.pos === pos && !ref.bis) ? dom.audio.currentTime : 0;
-  if (!saveBookmark(ref, time)) {
-    showToast('حافظه مرورگر در دسترس نیست؛ جای خواندن ذخیره نشد.');
-    return;
+function renderList() {
+  const d = S.data;
+  const html = [];
+  if (!d.hasFa) {
+    html.push('<div class="fa-note">ترجمه فارسی این سوره هنوز اضافه نشده است؛ فعلاً فقط متن عربی نمایش داده می‌شود.</div>');
   }
-  P.markHold = true;
-  updateResumeUI();
-  showToast('جای خواندن ذخیره شد: ' + surahTitle(ref.surah) + '، آیه ' + faNum(ref.ayah));
+  S.items.forEach(function (it, i) {
+    if (it.kind === 'bismillah') {
+      html.push('<div class="bismillah" data-i="' + i + '" role="button" tabindex="-1" lang="ar" dir="rtl" aria-label="بسم الله الرحمن الرحیم (پخش)">' +
+        '<span class="bis-ar">' + esc(d.bismillah) + '</span><span class="translation bis-tr" lang="fa" hidden></span></div>');
+    } else {
+      html.push(ayahHtml(it.ayah, i));
+    }
+  });
+  dom.list.innerHTML = html.join('');
+  S.els = Array.prototype.slice.call(dom.list.querySelectorAll('[data-i]'));
+  S.activeEl = null;
+  if (S.els[0]) S.els[0].tabIndex = 0;
+  applyListClasses();
+  refreshReminderMarks();
+  refreshBookmarkMark();
+  if (settings.translation) fillBismillahTranslation();
 }
 
-/* آیه‌ای که نشانک روی آن است، در فهرست علامت می‌خورد */
-function refreshBookmarkMark() {
-  const b = getBookmark();
+/* ترجمهٔ بسم‌الله همان ترجمهٔ آیه ۱ سورهٔ حمد است */
+function fillBismillahTranslation() {
+  if (!S.data || !S.data.hasBismillah) return;
+  const num = S.surah;
+  const put = function (d) {
+    if (S.surah !== num) return;
+    const el = dom.list.querySelector('.bis-tr');
+    const a = d && d.ayahs[0];
+    if (el && a && a.ayah_number === 1 && a.text_fa) { el.textContent = a.text_fa; el.hidden = false; }
+  };
+  const d = peekSurahData(1);
+  if (d) { put(d); return; }
+  loadSurahData(1).then(put, noop);
+}
+
+function showSkeleton() {
+  let h = '';
+  for (let i = 0; i < 4; i++) h += '<div class="skeleton"><i></i><i></i><i></i></div>';
+  dom.list.innerHTML = h;
+  S.els = [];
+  S.activeEl = null;
+}
+
+function showState(title, message, buttons, hint) {
+  let h = '<div class="state" role="alert"><h2>' + esc(title) + '</h2><p>' + message + '</p>';
+  (buttons || []).forEach(function (b) {
+    h += '<button type="button" class="btn ' + (b.primary ? 'btn-primary' : '') + '" data-act="' + b.act + '">' + esc(b.label) + '</button>';
+  });
+  if (hint) h += '<p class="hint">' + hint + '</p>';
+  h += '</div>';
+  dom.list.innerHTML = h;
+  S.els = [];
+  S.activeEl = null;
+}
+
+function setListLoading(on, num) {
+  dom.list.classList.toggle('is-loading', !!on);
+  dom.spinner.hidden = !on;
+  if (on) dom.spinner.textContent = num ? ('در حال بارگذاری ' + surahTitle(num) + '…') : 'در حال بارگذاری…';
+}
+
+/* نشانگر آیه فعال. تنها جایی که S.pos عوض می‌شود. */
+function setActive(pos, opts) {
+  opts = opts || {};
+  if (S.activeEl) {
+    S.activeEl.classList.remove('active');
+    S.activeEl.removeAttribute('aria-current');
+    S.activeEl.tabIndex = -1;
+  }
+  S.pos = pos;
+  S.activeEl = pos >= 0 ? (S.els[pos] || null) : null;
+  if (S.activeEl) {
+    S.activeEl.classList.add('active');
+    S.activeEl.setAttribute('aria-current', 'true');
+    S.activeEl.tabIndex = 0;
+  } else if (S.els[0]) {
+    S.els[0].tabIndex = 0;
+  }
+  updateNow();
+  updatePlayerInfo();
+  updateResumeUI();
+  if (opts.scroll && S.activeEl) scrollToEl(S.activeEl, opts.scroll);
+  queueFabs();
+}
+
+/* =========================================================
+   REMINDERS (یادآوری با نگه‌داشتن انگشت روی آیه)
+========================================================= */
+let remMemory = null;       // اگر حافظه مرورگر در دسترس نبود، تا پایان همین نشست
+
+function getReminders() {
+  if (remMemory) return remMemory;
+  const list = store.get(KEYS.reminders, []);
+  return Array.isArray(list) ? list.filter(function (r) { return r && Number(r.surah) >= 1 && Number(r.ayah) >= 1; }) : [];
+}
+
+function saveReminders(list) {
+  if (!store.set(KEYS.reminders, list)) {
+    remMemory = list;
+    return false;
+  }
+  remMemory = null;
+  return true;
+}
+
+function remKey(surah, ayah) { return Number(surah) + ':' + Number(ayah); }
+
+function isReminded(surah, ayah) {
+  const k = remKey(surah, ayah);
+  return getReminders().some(function (r) { return r.key === k; });
+}
+
+/* true = اضافه شد، false = برداشته شد */
+function toggleReminder(surah, ayah) {
+  const list = getReminders().slice();
+  const k = remKey(surah, ayah);
+  const idx = list.findIndex(function (r) { return r.key === k; });
+  let added;
+  if (idx >= 0) { list.splice(idx, 1); added = false; }
+  else { list.push({ key: k, surah: Number(surah), ayah: Number(ayah), createdAt: Date.now() }); added = true; }
+  const persisted = saveReminders(list);
+  refreshReminderMarks();
+  if (!persisted) showToast('حافظه مرورگر در دسترس نیست؛ یادآوری فقط تا بستن صفحه می‌ماند.', { ms: 4200 });
+  return added;
+}
+
+function refreshReminderMarks() {
+  const set = {};
+  getReminders().forEach(function (r) { set[r.key] = true; });
   S.els.forEach(function (el) {
     if (!el.classList.contains('ayah')) return;
-    const on = !!b && !b.bis && Number(b.surah) === S.surah && Number(el.getAttribute('data-n')) === Number(b.ayah);
-    el.classList.toggle('bookmarked', on);
-    const btn = el.querySelector('.mark');
-    if (btn) btn.classList.toggle('on', on);
-  });
-}
-
-/* =========================================================
-   صوت: مسیر مستقیم و مسیر گوگل
-========================================================= */
-function chooseRoute() {
-  if (settings.route === 'relay') return 'relay';
-  if (settings.route === 'direct') return 'direct';
-  const t = Number(store.get(KEYS.relay, 0));
-  if (t && Date.now() - t < RELAY_PREF_TTL) return 'relay';
-  return 'direct';
-}
-
-function base64ToBlobUrl(b64, mime) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes], { type: mime || 'audio/mpeg' }));
-}
-
-function trimRelayCache() {
-  const keep = P.loaded && P.loaded.relayKey;
-  while (relayCache.size > RELAY_MAX) {
-    let victim = null;
-    const it = relayCache.keys();
-    for (let n = it.next(); !n.done; n = it.next()) {
-      if (n.value !== keep) { victim = n.value; break; }
+    const on = !!set[remKey(S.surah, el.getAttribute('data-n'))];
+    el.classList.toggle('reminded', on);
+    const bell = el.querySelector('.bell');
+    if (bell) {
+      bell.classList.toggle('rem', on);
+      bell.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
-    if (victim === null) break;
-    try { URL.revokeObjectURL(relayCache.get(victim)); } catch (e) { /* ignore */ }
-    relayCache.delete(victim);
-  }
-}
-
-function dropRelay(key) {
-  if (!relayCache.has(key)) return;
-  try { URL.revokeObjectURL(relayCache.get(key)); } catch (e) { /* ignore */ }
-  relayCache.delete(key);
-}
-
-function relayFetch(surah, ayah) {
-  const key = surah + ':' + ayah;
-  if (relayCache.has(key)) return Promise.resolve(relayCache.get(key));
-  if (relayPending.has(key)) return relayPending.get(key);
-  const p = apiGet('audio', { surah: surah, ayah: ayah }, { timeout: 45000, retries: 1 }).then(function (json) {
-    if (!json.data) throw apiError('server', 'فایل صوتی خالی بود');
-    const url = base64ToBlobUrl(json.data, json.mime);
-    relayCache.set(key, url);
-    trimRelayCache();
-    return url;
   });
-  relayPending.set(key, p);
-  const clear = function () { relayPending.delete(key); };
-  p.then(clear, clear);
-  return p;
+  const count = getReminders().length;
+  dom.remCount.hidden = count === 0;
+  dom.remCount.textContent = faNum(count);
+  if (sheets.open === 'reminders') renderRemindersSheet();
 }
 
-function setAudioSrc(url) {
-  P.switching = true;
-  dom.audio.src = url;
-  updateSeekUI();
+function reminderRowHtml(r, d) {
+  let snip = '';
+  if (d) {
+    const a = d.ayahs.find(function (x) { return x.ayah_number === Number(r.ayah); });
+    if (a) snip = '<span class="snip" lang="ar">' + esc(a.text_ar) + '</span>';
+  }
+  return '<div class="rrow">' +
+    '<button type="button" class="go" data-s="' + Number(r.surah) + '" data-a="' + Number(r.ayah) + '">' +
+      '<strong>' + esc(surahTitle(Number(r.surah))) + '، آیه ' + faNum(r.ayah) + '</strong>' + snip +
+    '</button>' +
+    '<button type="button" class="del" data-s="' + Number(r.surah) + '" data-a="' + Number(r.ayah) + '" aria-label="حذف یادآوری">' + icon('i-trash') + '</button>' +
+  '</div>';
 }
 
-function safePlay() {
-  let p;
-  try { p = dom.audio.play(); } catch (e) { return; }
-  if (p && typeof p.catch === 'function') {
-    p.catch(function (err) {
-      if (!err) return;
-      if (err.name === 'AbortError') return;          // یک بارگذاری تازه جایش را گرفته
-      if (err.name === 'NotAllowedError') {
-        // مرورگر پخش خودکار را نپذیرفت (معمولاً iOS بعد از دریافت از مسیر گوگل)
-        P.wantPlay = false;
-        P.playing = false;
-        setBuffering(false);
-        showToast('برای شروع پخش یک بار دکمه پخش را بزنید.');
-      }
-      // خطاهای دیگر را رویداد error مدیریت می‌کند
+function renderRemindersSheet() {
+  const list = getReminders().slice().sort(function (a, b) { return Number(b.createdAt || 0) - Number(a.createdAt || 0); });
+  if (!list.length) {
+    dom.remRows.innerHTML = '<div class="empty-note">هنوز یادآوری‌ای ثبت نکرده‌اید.<br>روی هر آیه چند لحظه انگشت را نگه دارید تا یادآوری ثبت شود.</div>';
+    return;
+  }
+  dom.remRows.innerHTML = list.map(function (r) { return reminderRowHtml(r, peekSurahData(Number(r.surah))); }).join('');
+
+  // خلاصهٔ آیه‌هایی که متنشان فقط روی دستگاه ذخیره شده (نه در حافظهٔ فعلی)
+  const asked = {};
+  list.forEach(function (r) {
+    const s = Number(r.surah);
+    if (asked[s] || peekSurahData(s)) return;
+    asked[s] = true;
+    localSurahData(s).then(function (d) {
+      if (!d || sheets.open !== 'reminders') return;
+      Array.prototype.forEach.call(dom.remRows.querySelectorAll('.go[data-s="' + s + '"]'), function (go) {
+        if (go.querySelector('.snip')) return;
+        const a = d.ayahs.find(function (x) { return x.ayah_number === Number(go.getAttribute('data-a')); });
+        if (a) go.insertAdjacentHTML('beforeend', '<span class="snip" lang="ar">' + esc(a.text_ar) + '</span>');
+      });
     });
-  }
-}
-
-function armWatchdog(id) {
-  clearTimeout(P.watchdog);
-  P.watchdog = setTimeout(function () {
-    if (!P.loaded || P.loaded.id !== id || !P.wantPlay || P.playing) return;
-    audioFailed(id, new Error('timeout'));
-  }, WATCHDOG_MS);
-}
-
-function rearmWatchdog() {
-  if (P.loaded && P.wantPlay && !P.playing) armWatchdog(P.loaded.id);
-}
-
-function loadSource(id, route) {
-  const L = P.loaded;
-  if (!L || L.id !== id) return;
-  L.route = route;
-  const t = L.track;
-
-  if (route === 'direct') {
-    L.triedDirect = true;
-    setAudioSrc(audioUrl(AUDIO_BASES.ar, t.surah, t.ayah));
-    armWatchdog(id);
-    safePlay();
-    return;
-  }
-
-  L.triedRelay = true;
-  L.relayKey = t.surah + ':' + t.ayah;
-  if (relayCache.has(L.relayKey)) {            // همگام، تا مجوز «پخش با لمس کاربر» از دست نرود
-    setAudioSrc(relayCache.get(L.relayKey));
-    armWatchdog(id);
-    safePlay();
-    return;
-  }
-  dom.pStatus.textContent = 'در حال دریافت صدا از مسیر گوگل…';
-  relayFetch(t.surah, t.ayah).then(function (url) {
-    if (!P.loaded || P.loaded.id !== id || P.userPaused) return;      // در این فاصله کاربر توقف زده
-    setAudioSrc(url);
-    armWatchdog(id);
-    safePlay();
-  }, function (err) {
-    if (!P.loaded || P.loaded.id !== id) return;
-    audioFailed(id, err);
   });
 }
 
-function audioFailed(id, why) {
-  const L = P.loaded;
-  if (!L || L.id !== id) return;
-  clearTimeout(P.watchdog);
-  if (P.userPaused) return;                      // کاربر توقف زده؛ خطای این آهنگ اهمیتی ندارد
-
-  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
-    P.wantPlay = false; P.playing = false; P.buffering = false;
-    P.error = 'اینترنت قطع است';
-    updatePlayUI();
-    showToast('اینترنت قطع است؛ بعد از اتصال دوباره پخش کنید.', { action: 'تلاش دوباره', fn: retryTrack });
+/* =========================================================
+   SURAH SHEET
+========================================================= */
+function renderSurahRows() {
+  if (!S.surahs.length) {
+    dom.surahRows.innerHTML = '<div class="empty-note" id="surahListNote">در حال بارگذاری فهرست سوره‌ها…</div>';
     return;
   }
+  dom.surahRows.innerHTML = S.surahs.map(function (s) {
+    const n = Number(s.number);
+    const type = revelationLabel(s.revelation_type);
+    const subParts = [type, faNum(s.ayah_count) + ' آیه'].filter(Boolean);
+    if (s.name_en) subParts.push('<bdi dir="ltr">' + esc(s.name_en) + '</bdi>');
+    const sub = subParts.join(' · ');
+    const q = normalizeSearch([n, s.name_ar, s.name_fa, s.name_en].join(' '));
+    return '<button type="button" class="srow" data-n="' + n + '" data-q="' + esc(q) + '"' + (n === S.surah ? ' aria-current="true"' : '') + '>' +
+      '<span class="snum" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#rosette" xlink:href="#rosette"/></svg><b>' + faNum(n) + '</b></span>' +
+      '<span class="sname"><strong>' + esc(surahTitle(n)) + '</strong><span>' + sub + '</span></span>' +
+      '<span class="off-dot" aria-hidden="true" title="ذخیره‌شده برای استفادهٔ آفلاین">' + icon('i-check') + '</span>' +
+      '<span class="sar" lang="ar">' + esc(s.name_ar || '') + '</span>' +
+    '</button>';
+  }).join('') + '<div class="empty-note" id="surahNoMatch" hidden>سوره‌ای با این مشخصات پیدا نشد.</div>';
+  refreshSurahBadges();
+}
 
-  if (settings.route === 'auto') {
-    if (L.route === 'direct' && !L.triedRelay) { loadSource(id, 'relay'); return; }
-    if (L.route === 'relay' && !L.triedDirect) {
-      if (L.relayKey) dropRelay(L.relayKey);
-      loadSource(id, 'direct');
-      return;
+/* نشان «ذخیره‌شده برای آفلاین» کنار سوره‌هایی که صوتشان کامل روی دستگاه است */
+function refreshSurahBadges() {
+  Array.prototype.forEach.call(dom.surahRows.querySelectorAll('.srow'), function (row) {
+    const n = Number(row.getAttribute('data-n'));
+    row.classList.toggle('is-saved', typeof offlineComplete === 'function' && offlineComplete(n));
+  });
+}
+
+function filterSurahRows(text) {
+  const q = normalizeSearch(text);
+  let shown = 0;
+  Array.prototype.forEach.call(dom.surahRows.querySelectorAll('.srow'), function (row) {
+    const match = !q || row.getAttribute('data-q').indexOf(q) >= 0;
+    row.hidden = !match;
+    if (match) shown++;
+  });
+  const none = $('surahNoMatch');
+  if (none) none.hidden = shown > 0;
+}
+
+function updateSheetCurrent() {
+  Array.prototype.forEach.call(dom.surahRows.querySelectorAll('.srow'), function (row) {
+    if (Number(row.getAttribute('data-n')) === S.surah) row.setAttribute('aria-current', 'true');
+    else row.removeAttribute('aria-current');
+  });
+}
+
+function prepareSurahSheet() {
+  if (!S.surahs.length) {
+    renderSurahRows();
+    loadSurahList().then(function (list) {
+      setSurahs(list);
+      onSurahsLoaded();
+    }, function (err) {
+      dom.surahRows.innerHTML = '<div class="empty-note">فهرست سوره‌ها بارگذاری نشد.<br>' + esc(describeApiError(err)) +
+        '<br><br><button type="button" class="btn" data-act="retry-surahs">تلاش دوباره</button></div>';
+    });
+  } else if (!dom.surahRows.querySelector('.srow')) {
+    renderSurahRows();
+  } else {
+    refreshSurahBadges();
+  }
+  dom.surahSearch.value = '';
+  filterSurahRows('');
+  updateSheetCurrent();
+  setTimeout(function () {
+    const cur = dom.surahRows.querySelector('.srow[aria-current="true"]');
+    if (cur && sheets.open === 'surahs') {
+      try { cur.scrollIntoView({ block: 'center' }); } catch (e) { /* ignore */ }
     }
-  }
-
-  if (L.relayKey) dropRelay(L.relayKey);
-  P.wantPlay = false; P.playing = false; P.buffering = false;
-  P.error = 'صدا بارگذاری نشد';
-  updatePlayUI();
-  showToast('صدا بارگذاری نشد.', { action: 'تلاش دوباره', fn: retryTrack, ms: 8000 });
-}
-
-function retryTrack() {
-  if (S.pos >= 0) startTrack(S.pos);
-}
-
-/* شروع یک آهنگ تازه (آیتم pos از فهرست فعلی) */
-function startTrack(pos, opts) {
-  opts = opts || {};
-  const track = trackFor(pos);
-  if (!track) return;
-  const id = ++P.trackId;
-  P.loaded = { id: id, surah: S.surah, pos: pos, track: track, route: null, triedRelay: false, triedDirect: false, relayKey: '' };
-  P.error = '';
-  P.wantPlay = true;
-  P.userPaused = false;
-  P.playing = false;
-  P.switching = true;
-  P.pendingSeek = 0;
-  if (opts.resume && P.resume && P.resume.surah === S.surah && P.resume.pos === pos) P.pendingSeek = Number(P.resume.time) || 0;
-  P.resume = null;
-  clearTimeout(P.watchdog);
-  // صدای آهنگ قبلی همین‌جا قطع می‌شود تا هنگام دریافت آهنگ تازه (مثلاً از مسیر گوگل) چیزی از قبلی پخش نشود
-  try { dom.audio.pause(); dom.audio.removeAttribute('src'); dom.audio.load(); } catch (e) { /* ignore */ }
-  setBuffering(true);
-  loadSource(id, chooseRoute());
-}
-
-/* آهنگ فعلی را رها کن، بدون دست‌زدن به «نیت» پخش */
-function detachTrack() {
-  P.trackId++;
-  P.loaded = null;
-  P.playing = false;
-  P.switching = false;
-  P.pendingSeek = 0;
-  clearTimeout(P.watchdog);
-  try {
-    dom.audio.pause();
-    dom.audio.removeAttribute('src');
-    dom.audio.load();
-  } catch (e) { /* ignore */ }
-  updateSeekUI();
-}
-
-function stopAudio() {
-  if (P.playing) savePlayingPosition(true);
-  detachTrack();
-  P.wantPlay = false;
-  P.buffering = false;
-  P.error = '';
-  P.resume = null;
-  updatePlayUI();
+  }, 30);
 }
 
 /* =========================================================
-   کنترل‌ها
+   SETTINGS UI
 ========================================================= */
-/* بارگذاریِ سوره بعدی که خودِ پخش خودکار شروع کرده؛ اگر کاربر در همین سوره کاری کرد لغو می‌شود */
-function cancelPendingAutoplay() {
-  if (!S.loadingNum || !S.autoLoading) return;
-  S.navToken++;
-  S.loadingNum = 0;
-  S.autoLoading = false;
-  setListLoading(false);
-}
+const TR_SAMPLE = 'به نام خداوند رحمتگر مهربان';
 
-function playItem(pos, auto) {
-  if (!S.data || pos < 0 || pos >= S.items.length) return;
-  if (!auto) P.markHold = false;                 // کاربر خودش آیه دیگری را پخش کرد: ذخیره خودکار دوباره آزاد است
-  cancelPendingAutoplay();
-  setActive(pos, { scroll: 'nearest' });
-  startTrack(pos);
-}
-
-function pausePlayback() {
-  P.wantPlay = false;
-  P.userPaused = true;
-  clearTimeout(P.watchdog);
-  try { dom.audio.pause(); } catch (e) { /* ignore */ }
-  P.playing = false;
-  P.buffering = false;
-  savePlayingPosition(true);
-  updatePlayUI();
-}
-
-function resumePlayback() {
-  if (!S.data || !S.items.length) return;
-  if (S.pos < 0) { playItem(0); return; }
-  const L = P.loaded;
-  if (L && L.pos === S.pos && L.surah === S.surah && dom.audio.getAttribute('src') && !dom.audio.error && !dom.audio.ended) {
-    P.wantPlay = true;
-    P.userPaused = false;
-    P.error = '';
-    P.buffering = dom.audio.readyState < 3;
-    updatePlayUI();
-    safePlay();
-    armWatchdog(L.id);
-    return;
-  }
-  startTrack(S.pos, { resume: true });
-}
-
-function togglePlay() {
-  if (!S.data || !S.items.length) return;
-  if (P.wantPlay) pausePlayback();
-  else resumePlayback();
-}
-
-/* آیه بعد/قبل؛ در مرز سوره به سوره بعد/قبل می‌رود و پخش ادامه پیدا می‌کند */
-function stepItem(dir) {
-  if (!S.data) return;
-  const target = S.pos < 0 ? 0 : S.pos + dir;
-  if (target >= 0 && target < S.items.length) { playItem(target); return; }
-
-  const next = S.surah + dir;
-  if (next < 1 || next > 114) {
-    showToast(dir > 0 ? 'به پایان قرآن رسیدید.' : 'این ابتدای قرآن است.');
-    return;
-  }
-  detachTrack();
-  P.wantPlay = true;
-  P.userPaused = false;
-  setBuffering(true);
-  goToSurah(next, { autoplay: true, where: dir > 0 ? 'first' : 'last' });
-}
-
-function onItemTap(i) {
-  if (i === S.pos && P.loaded && P.loaded.pos === i) { togglePlay(); return; }
-  playItem(i);
-}
-
-/* =========================================================
-   رویدادهای عنصر صوتی
-========================================================= */
-function onEnded() {
-  const L = P.loaded;
-  if (!P.wantPlay || !L || L.surah !== S.surah || L.pos !== S.pos) return;
-  P.playing = false;
-  if (S.pos + 1 < S.items.length) { playItem(S.pos + 1, true); return; }
-  if (S.loadingNum) {
-    // کاربر همین حالا سوره دیگری را انتخاب کرده و در حال بارگذاری است؛ پخش خودکار جلوی او را نگیرد
-    P.wantPlay = false;
-    P.buffering = false;
-    updatePlayUI();
-    return;
-  }
-  if (S.surah < 114) {
-    detachTrack();
-    setBuffering(true);
-    goToSurah(S.surah + 1, { autoplay: true, where: 'first' });
-    return;
-  }
-  P.wantPlay = false;
-  P.buffering = false;
-  P.error = '';
-  updatePlayUI();
-  showToast('پایان قرآن. صدقه الله العظیم');
-}
-
-function onPlaying() {
-  const L = P.loaded;
-  if (!L || dom.audio.paused) return;
-  clearTimeout(P.watchdog);
-  P.playing = true;
-  P.wantPlay = true;
-  P.buffering = false;
-  P.error = '';
-  if (settings.route === 'auto') {
-    if (L.route === 'relay' && L.triedDirect) store.set(KEYS.relay, Date.now());      // مسیر مستقیم جواب نداد، گوگل جواب داد: یادت بماند
-    if (L.route === 'direct' && L.triedRelay) store.remove(KEYS.relay);               // برعکس
-  }
-  updatePlayUI();
-  if (P.preloadedFor !== L.id) { P.preloadedFor = L.id; preloadNext(); }
-}
-
-function onPause() {
-  if (P.switching || dom.audio.ended || !P.loaded) return;
-  // پخش از بیرون متوقف شد (قطع هدفون، تماس تلفنی…)؛ دکمه را با واقعیت یکی کن
-  P.playing = false;
-  P.wantPlay = false;
-  P.buffering = false;
-  savePlayingPosition(true);
-  updatePlayUI();
-}
-
-function onWaiting() {
-  if (!P.loaded || !P.wantPlay) return;
-  P.playing = false;
-  setBuffering(true);
-  armWatchdog(P.loaded.id);
-}
-
-function onCanPlay() {
-  if (!P.loaded) return;
-  if (P.buffering) setBuffering(false);
-}
-
-function onMetadata() {
-  updateSeekUI();
-  const d = dom.audio.duration;
-  if (P.pendingSeek > 0 && isFinite(d) && d > P.pendingSeek + 1) {
-    try { dom.audio.currentTime = P.pendingSeek; } catch (e) { /* ignore */ }
-  }
-  P.pendingSeek = 0;
-}
-
-let lastPositionState = 0;
-function onTimeUpdate() {
-  if (!P.seeking) updateSeekUI();
-  savePlayingPosition(false);
-  const now = Date.now();
-  if (now - lastPositionState > 1000 && 'mediaSession' in navigator && navigator.mediaSession.setPositionState) {
-    lastPositionState = now;
-    const d = dom.audio.duration;
-    if (isFinite(d) && d > 0) {
-      try { navigator.mediaSession.setPositionState({ duration: d, playbackRate: 1, position: clamp(dom.audio.currentTime, 0, d) }); } catch (e) { /* ignore */ }
-    }
-  }
-}
-
-function onAudioError() {
-  const L = P.loaded;
-  if (!L || !dom.audio.getAttribute('src')) return;
-  audioFailed(L.id, dom.audio.error);
-}
-
-function bindAudioEvents() {
-  const a = dom.audio;
-  a.addEventListener('loadstart', function () { P.switching = false; });
-  a.addEventListener('loadedmetadata', onMetadata);
-  a.addEventListener('durationchange', updateSeekUI);
-  a.addEventListener('timeupdate', onTimeUpdate);
-  a.addEventListener('progress', rearmWatchdog);
-  a.addEventListener('loadeddata', rearmWatchdog);
-  a.addEventListener('canplay', onCanPlay);
-  a.addEventListener('waiting', onWaiting);
-  a.addEventListener('playing', onPlaying);
-  a.addEventListener('pause', onPause);
-  a.addEventListener('ended', onEnded);
-  a.addEventListener('error', onAudioError);
-}
-
-/* =========================================================
-   پیش‌بارگذاری آهنگ بعدی (یک بار برای هر آهنگ)
-========================================================= */
-function prefetchSurahData(n) {
-  if (n >= 1 && n <= 114) loadSurahData(n).then(noop, noop);
-}
-
-function preloadNext() {
-  const L = P.loaded;
-  if (!L || !S.data) return;
-  if (S.pos >= S.items.length - 3 && S.surah < 114) prefetchSurahData(S.surah + 1);
-
-  const nextPos = L.pos + 1;
-  let t = null;
-  if (nextPos < S.items.length) {
-    t = trackFor(nextPos);
-  } else if (S.surah < 114) {
-    const ns = S.surah + 1;
-    t = surahHasBismillah(ns) ? { surah: 1, ayah: 1 } : { surah: ns, ayah: 1 };
-  }
-  if (!t) return;
-
-  if (L.route === 'relay') {
-    relayFetch(t.surah, t.ayah).then(noop, noop);
-    return;
-  }
-  const url = audioUrl(AUDIO_BASES.ar, t.surah, t.ayah);
-  if (P.preloadUrl === url) return;
-  P.preloadUrl = url;
-  try {
-    if (!P.preloader) P.preloader = new Audio();
-    P.preloader.preload = 'auto';
-    P.preloader.src = url;
-  } catch (e) { /* ignore */ }
-}
-
-/* =========================================================
-   نوار پیشرفت
-========================================================= */
-function seekFromEvent(e) {
-  const rect = dom.seek.getBoundingClientRect();
-  if (!rect.width) return;
-  const frac = clamp((rect.right - e.clientX) / rect.width, 0, 1);     // راست‌به‌چپ: لبه راست = ابتدا
-  const d = dom.audio.duration;
-  if (isFinite(d) && d > 0) {
-    try { dom.audio.currentTime = frac * d; } catch (err) { /* ignore */ }
-    updateSeekUI();
-  }
-}
-
-function bindSeek() {
-  dom.seek.addEventListener('pointerdown', function (e) {
-    P.seeking = true;
-    try { dom.seek.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-    seekFromEvent(e);
-  });
-  dom.seek.addEventListener('pointermove', function (e) { if (P.seeking) seekFromEvent(e); });
-  const end = function () { P.seeking = false; };
-  dom.seek.addEventListener('pointerup', end);
-  dom.seek.addEventListener('pointercancel', end);
-  dom.seek.addEventListener('keydown', function (e) {
-    const d = dom.audio.duration;
-    if (!isFinite(d) || d <= 0) return;
-    let t = dom.audio.currentTime;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') t += 5;         // راست‌به‌چپ: چپ = جلو
-    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') t -= 5;
-    else if (e.key === 'Home') t = 0;
-    else if (e.key === 'End') t = d - 0.1;
-    else return;
-    e.preventDefault();
-    dom.audio.currentTime = clamp(t, 0, d);
-    updateSeekUI();
+function syncSegment(id, value) {
+  Array.prototype.forEach.call($(id).querySelectorAll('button'), function (b) {
+    b.setAttribute('aria-checked', b.getAttribute('data-value') === value ? 'true' : 'false');
   });
 }
 
+function syncSettingsUI() {
+  syncSegment('segTheme', settings.theme);
+  syncSegment('segPalette', settings.palette);
+  syncSegment('segAudio', settings.route);
+  dom.sizeOut.textContent = faNum(settings.size);
+  dom.sizeRange.value = String(settings.size);
+  dom.sizePreview.textContent = BISMILLAH_FALLBACK;
+  $('sizeUp').disabled = settings.size >= SIZE_MAX;
+  $('sizeDown').disabled = settings.size <= SIZE_MIN;
+  dom.trSizeOut.textContent = faNum(settings.trSize);
+  dom.trSizeRange.value = String(settings.trSize);
+  dom.trPreview.textContent = TR_SAMPLE;
+  $('trSizeUp').disabled = settings.trSize >= TR_MAX;
+  $('trSizeDown').disabled = settings.trSize <= TR_MIN;
+}
+
+/* =========================================================
+   COPY
+========================================================= */
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text); });
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+
+function legacyCopy(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+function ayahCopyText(a) {
+  const lines = [a.text_ar];
+  if (settings.translation && a.text_fa) lines.push(a.text_fa);
+  lines.push('[' + surahTitle(S.surah) + '، آیه ' + faNum(a.ayah_number) + ']');
+  return lines.join('\n');
+}

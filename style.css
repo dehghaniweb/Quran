@@ -1,11 +1,14 @@
 /* =========================================================
    TOKENS — لاجورد و زر روی کاغذ عاجی (تذهیب)، یا زمرد
 ========================================================= */
+@font-face{font-family:"KFGQPC Uthmanic";src:url("UthmanicHafs-v22.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Vazirmatn";src:url("Vazirmatn-var.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 :root{
   --font-ui:"Vazirmatn","Vazir","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
-  --font-quran:"Amiri Quran","Amiri","Scheherazade New","Noto Naskh Arabic","Traditional Arabic","Geeza Pro","Al Nile",serif;
+  --font-quran:"KFGQPC Uthmanic","Amiri Quran","Amiri","Scheherazade New","Noto Naskh Arabic","Traditional Arabic","Geeza Pro","Al Nile",serif;
 
-  --ayah-size:30px;
+  --ayah-size:34px;
+  --tr-size:17px;
   --topbar-h:56px;
   --player-h:140px;
 
@@ -184,10 +187,10 @@ svg.i.fill{fill:currentColor;stroke:none}
 .sar-nav small{font-size:11px;line-height:1.3;opacity:.8;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sar-nav:hover{background:rgba(255,255,255,.08)}
 .sar-nav[disabled]{opacity:.28;cursor:default}
-.sar-title{flex:1;min-width:0;border:0;background:transparent;color:inherit;padding:2px 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:0}
+.sar-title{flex:1;min-width:0;border:0;background:transparent;color:inherit;padding:4px 4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .sar-title:hover{background:rgba(255,255,255,.06)}
-.sar-ar{font-family:var(--font-quran);font-size:38px;font-size:clamp(32px,9vw,46px);line-height:1.5;color:#fff3cf}
-.sar-fa{font-size:15px;opacity:.92;margin-top:-4px}
+.sar-ar{display:block;font-family:var(--font-quran);font-size:clamp(30px,8vw,42px);line-height:2;padding:.15em 0 .1em;color:#fff3cf;white-space:nowrap;overflow:visible}
+.sar-fa{display:block;font-size:15px;line-height:1.6;opacity:.92;margin:0;padding:0}
 .sar-meta{position:relative;z-index:1;margin-top:6px;font-size:13px;opacity:.9;display:flex;justify-content:center;flex-wrap:wrap;gap:0}
 .sar-meta span{padding:0 12px}
 .sar-meta span + span{border-right:1px solid rgba(217,178,90,.55)}
@@ -222,23 +225,16 @@ svg.i.fill{fill:currentColor;stroke:none}
 .resume .btn{flex:1 1 160px}
 .resume .btn svg.i{width:20px;height:20px}
 
-.modes{
-  margin:10px 14px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;
-  background:var(--paper-2);border-radius:14px;
-}
-.modes button{
-  min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--ink-2);font-weight:500;font-size:13.5px;line-height:1.3;padding:4px 6px;
-}
-.modes button[aria-checked="true"]{background:var(--field);color:var(--on-field);box-shadow:0 2px 8px rgba(15,22,50,.25)}
 
 /* =========================================================
    AYAH LIST
 ========================================================= */
 .list{margin:16px 14px 0;position:relative;transition:opacity .2s}
 .list.is-loading{opacity:.45;pointer-events:none}
-.list.m-arabic .translation,.list.m-arabic .fa-note{display:none}
-.list.m-translation:not(.no-fa) .arabic{display:none}
-.list.no-fa .translation{display:none}
+.list .translation{display:none}
+.list.tr-on .translation{display:block}
+.list.tr-on.no-fa .translation{display:none}
+.list:not(.tr-on) .fa-note{display:none}
 .fa-note{margin:0 0 12px;padding:10px 14px;border:1px dashed var(--line);border-radius:12px;background:var(--surface);color:var(--ink-2);font-size:13.5px;text-align:center;line-height:1.9}
 .ayah:focus-visible,.bismillah:focus-visible{outline-offset:-3px}
 .list-spinner{
@@ -284,10 +280,10 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
   width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink-3);display:inline-flex;align-items:center;justify-content:center;
 }
 .a-tools button:hover{background:var(--gold-wash);color:var(--ink)}
-.a-tools .rem{color:var(--rose)}
+.a-tools .rem,.a-tools .bell.rem{color:var(--rose)}
 .a-tools .rem svg{fill:currentColor}
-.a-tools .mark.on{color:var(--gold)}
-.a-tools .mark.on svg{fill:currentColor}
+.a-tools .mark.on,.a-tools .mark.bookmarked{color:var(--gold)}
+.a-tools .mark.on svg,.a-tools .mark.bookmarked svg{fill:currentColor}
 .ayah.reminded{box-shadow:inset 3px 0 0 var(--rose)}
 .ayah.reminded.active{box-shadow:inset -3px 0 0 var(--gold),inset 3px 0 0 var(--rose)}
 
@@ -295,7 +291,8 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
   margin:4px 0 0;direction:rtl;text-align:right;font-family:var(--font-quran);overflow-wrap:normal;word-break:normal;
   font-size:var(--ayah-size);line-height:2.35;color:var(--ink);word-spacing:.04em;
 }
-.translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:16px;line-height:2;text-align:right}
+.translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:var(--tr-size);line-height:2;text-align:right}
+.bismillah .bis-tr{border-top:0;padding-top:2px;font-family:var(--font-ui);font-size:var(--tr-size);line-height:1.9;text-align:center}
 .translation.empty{color:var(--ink-3);font-size:13.5px}
 
 .state{margin:28px 0;padding:22px 18px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--ink-2);background:var(--surface)}
@@ -366,6 +363,7 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
 ========================================================= */
 .sheet{position:fixed;top:0;right:0;bottom:0;left:0;z-index:200;display:none}
 .sheet.open{display:block}
+.sheet[aria-hidden="true"]:not(.open){display:none}
 .sheet .backdrop{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(7,11,26,.58);animation:fade .18s ease-out}
 .sheet .panel{
   position:absolute;bottom:0;left:0;right:0;margin:0 auto;max-width:640px;max-height:88vh;display:flex;flex-direction:column;
@@ -414,11 +412,14 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
 .setting p{margin:6px 0 0;font-size:13px;color:var(--ink-3);line-height:1.8}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--paper-2);border-radius:12px}
 .seg button{min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--ink-2);font-size:14px;font-weight:500;padding:4px 6px}
-.seg button[aria-checked="true"]{background:var(--field);color:var(--on-field)}
+.seg button[aria-checked="true"],.seg button[aria-pressed="true"]{background:var(--field);color:var(--on-field)}
 .sizer{display:flex;align-items:center;gap:10px}
 .sizer .btn{min-width:52px;padding:6px 10px;font-size:18px;font-weight:700}
 .sizer output{flex:1;text-align:center;font-weight:600}
+.tr-preview{margin-top:10px;padding:8px 12px;border:1px dashed var(--line);border-radius:12px;font-size:var(--tr-size);line-height:2;color:var(--ink-2)}
 .size-preview{margin-top:10px;padding:8px 12px;border:1px dashed var(--line);border-radius:12px;font-family:var(--font-quran);font-size:var(--ayah-size);line-height:2.1;text-align:center}
+.range{width:100%;margin:10px 0 0;accent-color:var(--field)}
+.setting .btn{margin:4px 4px 0 0}
 
 /* =========================================================
    TOAST
@@ -448,6 +449,55 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
 @media print{
-  .topbar,.player,.tools,.modes,.sheet,.toast,.a-tools{display:none !important}
+  .topbar,.player,.tools,.sheet,.toast,.a-tools,.fabs,.trbar{display:none !important}
   body{padding:0}
 }
+
+/* =========================================================
+   NEW: translation switch, FABs, offline
+========================================================= */
+.trbar{margin:10px 14px 0}
+.trsw{width:100%;min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:14.5px;font-weight:500;text-align:start}
+.trsw .knob{position:relative;flex:none;width:46px;height:26px;border-radius:13px;background:var(--paper-2);border:1px solid var(--line);transition:background-color .2s}
+.trsw .knob::after{content:"";position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:var(--ink-3);transition:transform .2s,background-color .2s}
+.trsw[aria-checked="true"] .knob{background:var(--field);border-color:var(--field)}
+.trsw[aria-checked="true"] .knob::after{transform:translateX(-20px);background:var(--on-field)}
+
+.fabs{position:fixed;z-index:45;top:calc(var(--topbar-h) + 10px + env(safe-area-inset-top));left:10px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.fab{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--gold-2);background:var(--field);color:var(--on-field);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:scale(.85);transition:opacity .18s,transform .18s,visibility 0s .18s}
+.fab.show{opacity:.94;visibility:visible;transform:none;pointer-events:auto;transition-delay:0s}
+.fab svg.i{width:22px;height:22px;stroke-width:2.2}
+.fab-cur{background:var(--gold-2);color:#2a1d00;border-color:var(--field-2)}
+
+.icon-btn .busy-dot{display:none;position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--gold-2);animation:pulse 1.2s ease-in-out infinite}
+.icon-btn.busy .busy-dot{display:block}
+
+.save-surah{position:relative;overflow:hidden;width:100%}
+.save-surah .fillbar{position:absolute;top:0;bottom:0;right:0;width:0;background:var(--gold-wash);transition:width .3s;pointer-events:none}
+.save-surah>*:not(.fillbar){position:relative}
+.save-surah.is-saved{border-color:var(--field);color:var(--field)}
+html[data-theme="dark"] .save-surah.is-saved{color:var(--gold-2);border-color:var(--gold-2)}
+
+.srow .off-dot{width:20px;height:20px;border-radius:50%;background:var(--field);color:var(--on-field);display:none;align-items:center;justify-content:center;flex:none}
+.srow .off-dot svg.i{width:13px;height:13px;stroke-width:3}
+.srow.is-saved .off-dot{display:inline-flex}
+
+.off-intro{margin:4px 0 8px;font-size:14px;color:var(--ink-2);line-height:1.9}
+.off-summary{margin:0 0 10px;font-size:13.5px;color:var(--ink-3)}
+.off-job{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:12px}
+.off-job-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+.off-bar{height:8px;margin:10px 0 6px;border-radius:4px;background:var(--paper-2);overflow:hidden}
+.off-bar i{display:block;height:100%;width:0;background:var(--gold-2);transition:width .3s}
+.off-note{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.8}
+.off-actions{display:grid;gap:8px}
+.off-confirm{margin-top:12px;padding:12px;border:1px solid var(--gold);border-radius:14px;background:var(--gold-wash)}
+.off-confirm p{margin:0 0 10px;font-size:14px;line-height:1.9}
+.off-confirm-btns{display:flex;gap:8px;flex-wrap:wrap}
+.off-h{margin:18px 0 6px;font-size:14.5px;font-weight:600}
+.orow{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:6px 0}
+.oname{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.6}
+.oname span{font-size:12.5px;color:var(--ink-3)}
+.orow .del{width:42px;height:42px;border:0;border-radius:10px;background:transparent;color:var(--ink-3);display:inline-flex;align-items:center;justify-content:center}
+.orow .del:hover{background:var(--gold-wash);color:var(--rose)}
+.off-del-all{margin-top:14px;color:var(--rose);border-color:var(--rose)}
+.footer .credits{display:block;margin-top:6px;font-size:12px;color:var(--ink-3)}
