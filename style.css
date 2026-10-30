@@ -181,10 +181,14 @@ svg.i.fill{fill:currentColor;stroke:none}
 
 .sar-row{position:relative;z-index:1;display:flex;align-items:center;gap:4px}
 .sar-nav{
-  flex:0 0 74px;min-height:56px;border:0;background:transparent;color:var(--on-field);border-radius:10px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 2px;
+  flex:0 0 84px;min-height:60px;border:0;background:transparent;color:var(--on-field);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 2px;
 }
-.sar-nav small{font-size:11px;line-height:1.3;opacity:.8;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* نام سورهٔ قبل و بعد: درشت و بولد (نام دو‌کلمه‌ای مثل «آل عمران» در دو سطر می‌آید) */
+.sar-nav small{
+  font-size:16.5px;font-weight:800;line-height:1.35;opacity:1;max-width:82px;text-align:center;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;
+}
 .sar-nav:hover{background:rgba(255,255,255,.08)}
 .sar-nav[disabled]{opacity:.28;cursor:default}
 .sar-title{flex:1;min-width:0;border:0;background:transparent;color:inherit;padding:4px 4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -290,7 +294,7 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
 .arabic{
   margin:4px 0 0;direction:rtl;text-align:right;font-family:var(--font-quran);overflow-wrap:normal;word-break:normal;
   font-size:var(--ayah-size);line-height:2.35;color:var(--ink);word-spacing:.04em;
-  -webkit-text-stroke:.045em currentColor;paint-order:stroke fill;
+  -webkit-text-stroke:.03em currentColor;paint-order:stroke fill;
 }
 .translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:var(--tr-size);line-height:2;text-align:right}
 .bismillah .bis-tr{border-top:0;padding-top:2px;font-family:var(--font-ui);font-size:var(--tr-size);line-height:1.9;text-align:center}
@@ -438,8 +442,8 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
    SMALL SCREENS / MOTION
 ========================================================= */
 @media (max-width:420px){
-  .sar-nav{flex-basis:58px}
-  .sar-nav small{max-width:56px}
+  .sar-nav{flex-basis:72px}
+  .sar-nav small{max-width:70px;font-size:16px}
   .brand-name{font-size:16.5px}
   .p-controls{gap:7px}
 }
@@ -484,7 +488,10 @@ html[data-theme="dark"] .save-surah.is-saved{color:var(--gold-2);border-color:va
 .srow.is-saved .off-dot{display:inline-flex}
 
 .off-intro{margin:4px 0 8px;font-size:14px;color:var(--ink-2);line-height:1.9}
-.off-summary{margin:0 0 10px;font-size:13.5px;color:var(--ink-3)}
+.off-summary{margin:0 0 10px;font-size:13.5px;color:var(--ink-3);white-space:pre-line;line-height:1.9}
+.off-text{margin:12px 0 4px}
+.off-text .off-job-row{flex-direction:column;align-items:stretch;gap:8px}
+.off-text .off-job-row .btn{white-space:nowrap;align-self:flex-start}
 .off-job{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:12px}
 .off-job-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
 .off-bar{height:8px;margin:10px 0 6px;border-radius:4px;background:var(--paper-2);overflow:hidden}
@@ -503,5 +510,130 @@ html[data-theme="dark"] .save-surah.is-saved{color:var(--gold-2);border-color:va
 .off-del-all{margin-top:14px;color:var(--rose);border-color:var(--rose)}
 .footer .credits{display:block;margin-top:6px;font-size:12px;color:var(--ink-3)}
 
-.bis-ar{-webkit-text-stroke:.045em currentColor;paint-order:stroke fill}
+.bis-ar{-webkit-text-stroke:.03em currentColor;paint-order:stroke fill}
 .bismillah .bis-tr{-webkit-text-stroke:0}
+
+.playmode{display:grid;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.pm-label{font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.playmode .seg button{font-size:13px;min-height:38px}
+
+/* =========================================================
+   رنگ‌دادن به آیه‌ها (MARKS) و حساب
+========================================================= */
+:root{
+  --mk-red:#d83a3a;    --mk-red-w:rgba(216,58,58,.12);
+  --mk-orange:#e8741a; --mk-orange-w:rgba(232,116,26,.15);
+  --mk-yellow:#d9a400; --mk-yellow-w:rgba(240,196,0,.26);
+  --mk-green:#2f9e5b;  --mk-green-w:rgba(47,158,91,.15);
+  --mk-blue:#2f6fdb;   --mk-blue-w:rgba(47,111,219,.12);
+  --mk-purple:#8a4fd1; --mk-purple-w:rgba(138,79,209,.13);
+}
+html[data-theme="dark"]{
+  --mk-red:#ff7676;    --mk-red-w:rgba(255,118,118,.19);
+  --mk-orange:#ffa04d; --mk-orange-w:rgba(255,160,77,.18);
+  --mk-yellow:#ffd84a; --mk-yellow-w:rgba(255,216,74,.17);
+  --mk-green:#52d68f;  --mk-green-w:rgba(82,214,143,.17);
+  --mk-blue:#74aaff;   --mk-blue-w:rgba(116,170,255,.19);
+  --mk-purple:#bd92ff; --mk-purple-w:rgba(189,146,255,.2);
+}
+
+/* آیهٔ رنگی: زمینهٔ کم‌رنگ + حلقهٔ شمارهٔ آیه به رنگ انتخاب‌شده (رنگ تنها نشانه نیست؛ نام رنگ در برچسب دکمه هم آمده است) */
+.ayah[data-mark="red"],.mrow[data-c="red"],.mk-chip[data-c="red"],.sw[data-c="red"]{--mk:var(--mk-red);--mk-w:var(--mk-red-w)}
+.ayah[data-mark="orange"],.mrow[data-c="orange"],.mk-chip[data-c="orange"],.sw[data-c="orange"]{--mk:var(--mk-orange);--mk-w:var(--mk-orange-w)}
+.ayah[data-mark="yellow"],.mrow[data-c="yellow"],.mk-chip[data-c="yellow"],.sw[data-c="yellow"]{--mk:var(--mk-yellow);--mk-w:var(--mk-yellow-w)}
+.ayah[data-mark="green"],.mrow[data-c="green"],.mk-chip[data-c="green"],.sw[data-c="green"]{--mk:var(--mk-green);--mk-w:var(--mk-green-w)}
+.ayah[data-mark="blue"],.mrow[data-c="blue"],.mk-chip[data-c="blue"],.sw[data-c="blue"]{--mk:var(--mk-blue);--mk-w:var(--mk-blue-w)}
+.ayah[data-mark="purple"],.mrow[data-c="purple"],.mk-chip[data-c="purple"],.sw[data-c="purple"]{--mk:var(--mk-purple);--mk-w:var(--mk-purple-w)}
+.ayah[data-mark]{background-color:var(--mk-w)}
+.ayah[data-mark]:hover{background-color:var(--mk-w)}
+.ayah[data-mark] .rosette{color:var(--mk)}
+
+.a-tools .mkb .mk-dot,.mact .mk-dot{display:block;width:18px;height:18px;border-radius:50%;border:2px solid currentColor;background:transparent}
+.ayah[data-mark] .mkb .mk-dot,.mrow .mact .mk-dot{background:var(--mk);border-color:var(--mk)}
+.ayah[data-mark] .a-tools .mkb{color:var(--mk)}
+
+/* نوار بالای صفحه با پنج دکمه: روی گوشی‌های باریک کمی فشرده می‌شود */
+.icon-btn .count.mk-count{background:var(--field);color:var(--on-field)}
+@media (max-width:420px){
+  .topbar{gap:2px;padding:0 8px}
+  .icon-btn{width:42px;height:42px}
+}
+@media (max-width:349px){
+  .brand-name{display:none}
+}
+
+/* ---------- گزارش رنگ‌ها ---------- */
+.acct-bar{
+  width:100%;display:flex;align-items:center;gap:10px;margin:2px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;
+  background:var(--gold-wash);color:var(--ink);text-align:start;font-size:13.5px;line-height:1.8;
+}
+.acct-bar span{flex:1;min-width:0}
+.acct-bar svg.i{width:20px;height:20px;color:var(--gold)}
+.mk-chips{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin:0 0 12px}
+.mk-chips .mk-chip{grid-column:span 3}
+.mk-chips .mk-chip:nth-child(n+5){grid-column:span 4}
+.mk-chip{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:68px;padding:8px 2px;
+  border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:12.5px;line-height:1.5;
+}
+.mk-chip b{font-size:17px;line-height:1.3;font-weight:700}
+.mk-chip-dot{width:16px;height:16px;border-radius:50%;background:var(--mk,transparent);border:2px solid var(--mk,var(--ink-3))}
+.mk-chip[data-c="all"] .mk-chip-dot{border-color:transparent;background:conic-gradient(var(--mk-red),var(--mk-orange),var(--mk-yellow),var(--mk-green),var(--mk-blue),var(--mk-purple),var(--mk-red))}
+.mk-chip[aria-checked="true"]{border-color:var(--field);background:var(--gold-wash);box-shadow:inset 0 0 0 1px var(--field)}
+html[data-theme="dark"] .mk-chip[aria-checked="true"]{border-color:var(--gold-2);box-shadow:inset 0 0 0 1px var(--gold-2)}
+
+.mk-copy{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.mk-copy-label{font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.mk-copy .seg button{font-size:13px;min-height:38px}
+
+.mrow{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line);border-right:4px solid var(--mk,var(--line));background:var(--mk-w,transparent);margin-bottom:2px;border-radius:0 6px 6px 0}
+.mrow .go{flex:1;min-width:0;border:0;background:transparent;text-align:start;padding:9px 8px;border-radius:8px;display:block}
+.mrow .go strong{display:block;font-size:14.5px;font-weight:600}
+.mrow .mname{font-weight:500;color:var(--ink-2)}
+.mrow .snip{display:block;font-family:var(--font-quran);font-size:19px;line-height:2;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:right}
+.mrow .snip:empty{display:none}
+.mrow .snip-fa{display:block;font-size:13px;line-height:1.8;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .snip-fa:empty{display:none}
+.mrow .mact{width:42px;height:42px;flex:none;border:0;border-radius:10px;background:transparent;color:var(--ink-3);display:inline-flex;align-items:center;justify-content:center}
+.mrow .mact:hover{background:var(--gold-wash);color:var(--ink)}
+.mk-more{width:100%;margin-top:10px}
+
+/* ---------- انتخاب رنگ یک آیه ---------- */
+.color-target{margin:2px 0 10px;font-size:14.5px;font-weight:600;color:var(--ink-2)}
+.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}
+.sw{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;padding:10px 4px;
+  border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:500;
+}
+.sw-dot{position:relative;width:34px;height:34px;border-radius:50%;background:var(--mk,#fff);border:2px solid var(--mk,var(--ink-3))}
+.sw[data-c="none"]{grid-column:1/-1;flex-direction:row;min-height:56px;gap:12px}
+.sw[data-c="none"] .sw-dot{width:26px;height:26px;background:#fff;border-color:var(--ink-3)}
+.sw[aria-checked="true"]{border-color:var(--field);background:var(--gold-wash);box-shadow:inset 0 0 0 1px var(--field)}
+html[data-theme="dark"] .sw[aria-checked="true"]{border-color:var(--gold-2);box-shadow:inset 0 0 0 1px var(--gold-2)}
+.sw[aria-checked="true"] .sw-dot::after{
+  content:"";position:absolute;left:50%;top:46%;width:8px;height:14px;margin:-8px 0 0 -4px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg);
+}
+.sw[data-c="none"][aria-checked="true"] .sw-dot::after{border-color:#222;width:6px;height:11px;margin:-7px 0 0 -3px;border-width:0 2.5px 2.5px 0}
+.sw[data-c="yellow"][aria-checked="true"] .sw-dot::after{border-color:#3a2a00}
+
+/* ---------- حساب ---------- */
+.acct-intro{margin:4px 0 12px;font-size:14px;color:var(--ink-2);line-height:1.95}
+.acct-wide{width:100%}
+.acct-input{
+  display:block;width:100%;min-height:48px;margin:6px 0 10px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;letter-spacing:.06em;text-align:center;text-transform:uppercase;
+}
+.acct-input::placeholder{color:var(--ink-3);letter-spacing:.02em;font-size:14px}
+.acct-input:focus{outline:2px solid var(--focus);outline-offset:1px}
+.acct-note,.acct-warn{margin:12px 0 0;font-size:13px;line-height:1.95;color:var(--ink-3)}
+.acct-warn{color:var(--ink-2);padding:10px 12px;border:1px solid var(--gold);border-radius:12px;background:var(--gold-wash)}
+.acct-status{margin:4px 0 12px;font-size:14px;line-height:2;color:var(--ink-2);white-space:pre-line}
+.acct-actions{display:grid;gap:8px}
+.acct-error{margin:10px 0 0;font-size:13.5px;line-height:1.9}
+.code-box{
+  margin:8px 0 14px;padding:16px 10px;border:2px dashed var(--gold);border-radius:14px;background:var(--surface);text-align:center;user-select:all;-webkit-user-select:all;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(15px,5.2vw,22px);font-weight:700;letter-spacing:.08em;overflow-wrap:anywhere;direction:ltr;
+}
+#acctConfirm{margin-top:14px}
+.text-box{display:block;width:100%;margin:6px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.9;resize:vertical}
+@media print{.mk-chips,.acct-bar{display:none !important}}

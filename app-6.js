@@ -1,581 +1,477 @@
 'use strict';
 /* =========================================================
-   NAVIGATION
+   MARKS — رنگ‌دادن به آیه‌ها
+   - هر آیه یکی از ۶ رنگ را می‌گیرد (قرمز، نارنجی، زرد، سبز، آبی، بنفش)؛ «سفید» یعنی بدون رنگ.
+   - رنگ‌ها همان لحظه روی همین دستگاه (localStorage) ذخیره می‌شوند و بدون اینترنت هم کار می‌کنند.
+   - اگر «کد شخصی» ساخته یا وارد شده باشد، همین داده‌ها بین دستگاه‌ها همگام می‌شود (app-7.js).
+   - هر رکورد: { c: رنگ، یا 'none' = نشانهٔ پاک‌شدن برای همگام‌سازی، t: زمان آخرین تغییر (ms)، d: ۱ = هنوز به سرور نرفته }
 ========================================================= */
-function resolvePos(opts) {
-  if (!S.items.length) return -1;
-  if (opts.where === 'last') return S.items.length - 1;
-  if (opts.where === 'first') return 0;
-  if (opts.ayah) return posForAyah(S.items, opts.ayah, opts.preferBismillah !== false);
-  return -1;
-}
+const MK_COLORS = [
+  { id: 'red', fa: 'قرمز', code: 'r' },
+  { id: 'orange', fa: 'نارنجی', code: 'o' },
+  { id: 'yellow', fa: 'زرد', code: 'y' },
+  { id: 'green', fa: 'سبز', code: 'g' },
+  { id: 'blue', fa: 'آبی', code: 'b' },
+  { id: 'purple', fa: 'بنفش', code: 'p' }
+];
+const MK_BY_ID = {};
+MK_COLORS.forEach(function (c) { MK_BY_ID[c.id] = c; });
+const MK_PAGE = 60;                       // تعداد ردیف‌هایی که در هر بار در گزارش نشان داده می‌شود
 
-/* جابه‌جایی داخل همان سوره (بدون پخش). اگر صدایی از آیه دیگری در حال پخش است متوقف می‌شود
-   تا نشانگر و صدا هرگز از هم جدا نشوند. */
-function focusItem(pos, opts) {
-  opts = opts || {};
-  if (pos < 0 || pos >= S.items.length) return;
-  if (P.loaded && P.loaded.pos !== pos) stopAudio();
-  setActive(pos, { scroll: opts.scroll || 'center' });
-  P.resume = opts.resume ? { surah: S.surah, pos: pos, time: Number(opts.resume) } : null;
-}
+const mk = {
+  data: {},                               // "سوره:آیه" ← { c, t, d }
+  saveTimer: null,
+  warned: false,
+  filter: 'all',
+  shown: MK_PAGE,
+  target: null,                           // { s, a, back } آیه‌ای که پنجرهٔ رنگ برایش باز است
+  token: 0
+};
 
-function showLoadError(num, err, opts) {
-  S.retryFn = function () { goToSurah(num, opts); };
-  showState('بارگذاری ' + surahTitle(num) + ' ممکن نشد', esc(describeApiError(err)),
-    [{ act: 'retry', label: 'تلاش دوباره', primary: true }]);
-  dom.surahAr.textContent = '';
-  dom.surahFa.textContent = surahTitle(num);
-  dom.surahMeta.innerHTML = '';
-  dom.nowLine.innerHTML = '';
-}
+function mkName(id) { return MK_BY_ID[id] ? MK_BY_ID[id].fa : 'سفید'; }
+function mkLabel(n, c) { return 'رنگ آیه ' + faNum(n) + (c ? ' (' + mkName(c) + ')' : ' (بدون رنگ)'); }
+function mkKey(s, a) { return Number(s) + ':' + Number(a); }
 
-function showSetupNeeded() {
-  S.retryFn = null;
-  showState('اتصال به گوگل اسکریپت هنوز تنظیم نشده',
-    'در فایل <code>app-1.js</code> مقدار <code>API_URL</code> را با آدرس وب‌اپ Google Apps Script (آدرسی که به <code>/exec</code> ختم می‌شود) جایگزین کنید.',
-    [], 'مراحل کامل در فایل «راهنمای نصب» آمده است.');
-  dom.surahAr.textContent = 'القرآن الكريم';
-  dom.surahFa.textContent = 'قرآن کریم';
-  dom.surahMeta.innerHTML = '';
-}
-
-async function goToSurah(num, opts) {
-  opts = opts || {};
-  num = Number(num);
-  if (!(num >= 1 && num <= 114)) return false;
-
-  // همین سوره روی صفحه است: فقط جابه‌جایی داخل آن
-  if (num === S.surah && S.data && !opts.force) {
-    S.navToken++;
-    S.loadingNum = 0;
-    S.autoLoading = false;
-    setListLoading(false);
-    if (P.wantPlay && !P.loaded) { P.wantPlay = false; P.buffering = false; updatePlayUI(); }   // پخش خودکارِ در انتظار لغو شد
-    const same = resolvePos(opts);
-    if (opts.autoplay && same >= 0) playItem(same);
-    else if (same >= 0) focusItem(same, { scroll: opts.scroll, resume: opts.resume });
-    else window.scrollTo(0, 0);
-    updatePlayerInfo();
-    return true;
+/* =========================================================
+   ذخیره و خواندن
+========================================================= */
+function mkLoad() {
+  const raw = store.get(KEYS.marks, null);
+  const out = {};
+  if (raw && raw.v === 1 && raw.m && typeof raw.m === 'object') {
+    Object.keys(raw.m).forEach(function (k) {
+      const m = /^(\d{1,3}):(\d{1,3})$/.exec(k);
+      const e = raw.m[k];
+      if (!m || !Array.isArray(e)) return;
+      const s = Number(m[1]);
+      const a = Number(m[2]);
+      if (!(s >= 1 && s <= 114 && a >= 1 && a <= 286)) return;
+      const c = e[0] === 'none' ? 'none' : (MK_BY_ID[e[0]] ? e[0] : '');
+      const t = Number(e[1]);
+      if (!c || !(t > 0)) return;
+      out[k] = { c: c, t: t, d: e[2] ? 1 : 0 };
+    });
   }
+  mk.data = out;
+}
 
-  const token = ++S.navToken;
-  S.loadingNum = num;
-  S.autoLoading = !!opts.autoplay;
-  const cached = peekSurahData(num);
-  if (!cached) {
-    if (S.surah === 0) showSkeleton();
-    else setListLoading(true, num);
+function mkFlush() {
+  clearTimeout(mk.saveTimer);
+  mk.saveTimer = null;
+  const m = {};
+  Object.keys(mk.data).forEach(function (k) {
+    const e = mk.data[k];
+    m[k] = e.d ? [e.c, e.t, 1] : [e.c, e.t];
+  });
+  if (!store.set(KEYS.marks, { v: 1, m: m }) && !mk.warned) {
+    mk.warned = true;
+    showToast('حافظهٔ مرورگر در دسترس نیست؛ رنگ‌ها فقط تا بستن صفحه می‌مانند.', { ms: 4200 });
   }
-  updatePlayerInfo();
+}
 
-  let data;
-  try {
-    data = cached || await loadSurahData(num);
-  } catch (err) {
-    if (token !== S.navToken) return false;        // کاربر در این فاصله جای دیگری رفته است
-    S.loadingNum = 0;
-    S.autoLoading = false;
-    setListLoading(false);
-    if (opts.autoplay) { P.wantPlay = false; P.buffering = false; updatePlayUI(); }
-    if (S.surah === 0) {
-      showLoadError(num, err, opts);
-    } else {
-      showToast('بارگذاری ' + surahTitle(num) + ' ممکن نشد. ' + describeApiError(err), {
-        action: 'تلاش دوباره', ms: 9000, fn: function () { goToSurah(num, opts); }
-      });
-    }
-    updatePlayerInfo();
-    return false;
+/* نوشتن با کمی تأخیر (چند تغییر پشت‌سرهم یک بار ذخیره می‌شود)؛ هنگام بستن صفحه فوراً نوشته می‌شود */
+function mkSave() {
+  clearTimeout(mk.saveTimer);
+  mk.saveTimer = setTimeout(mkFlush, 250);
+}
+
+function mkGet(s, a) {
+  const e = mk.data[mkKey(s, a)];
+  return e && e.c !== 'none' ? e.c : '';
+}
+
+function mkCounts() {
+  const c = { total: 0 };
+  MK_COLORS.forEach(function (x) { c[x.id] = 0; });
+  Object.keys(mk.data).forEach(function (k) {
+    const e = mk.data[k];
+    if (e.c !== 'none' && c[e.c] !== undefined) { c[e.c]++; c.total++; }
+  });
+  return c;
+}
+
+/* آیه‌های رنگی به ترتیب مصحف؛ filter: 'all' یا شناسهٔ رنگ */
+function mkEntries(filter) {
+  const out = [];
+  Object.keys(mk.data).forEach(function (k) {
+    const e = mk.data[k];
+    if (e.c === 'none') return;
+    if (filter && filter !== 'all' && e.c !== filter) return;
+    const p = k.split(':');
+    out.push({ s: Number(p[0]), a: Number(p[1]), c: e.c, t: e.t });
+  });
+  out.sort(function (x, y) { return (x.s - y.s) || (x.a - y.a); });
+  return out;
+}
+
+/* true = تغییری ثبت شد. color خالی یا 'none' = برداشتن رنگ */
+function mkSet(s, a, color) {
+  const key = mkKey(s, a);
+  const cur = mk.data[key];
+  const next = MK_BY_ID[color] ? color : 'none';
+  const before = cur ? cur.c : 'none';
+  if (before === next) return false;
+  const attached = typeof acctActive === 'function' && acctActive();
+  if (next === 'none' && !attached) {
+    delete mk.data[key];                                    // بدون حساب، نشانهٔ حذف لازم نیست
+  } else {
+    const nowT = typeof msNow === 'function' ? msNow() : Date.now();           // ساعت دستگاه با ساعت سرور هم‌تراز می‌شود (app-7.js)
+    mk.data[key] = { c: next, t: Math.max(nowT, cur ? cur.t + 1 : 0), d: attached ? 1 : 0 };
   }
-  if (token !== S.navToken) return false;          // پاسخ کهنه: دور بریز
-  S.loadingNum = 0;
-  S.autoLoading = false;
-  if (opts.autoplay && P.userPaused) opts = Object.assign({}, opts, { autoplay: false });   // وسط بارگذاری توقف زده شد
-  commitSurah(num, data, opts);
+  mkSave();
+  mkChanged('local');
   return true;
 }
 
-/* تنها جایی که سوره نمایش‌داده‌شده عوض می‌شود: همه چیز با هم و بدون فاصله.
-   اگر پخش خودکار باشد، صدا پیش از ساختن فهرست روی صفحه شروع می‌شود تا هیچ تأخیری نیفتد. */
-function commitSurah(num, data, opts) {
-  if (!opts.autoplay) stopAudio();
-
-  S.surah = num;
-  S.data = data;
-  S.items = buildItems(num, data.ayahs);
-  S.pos = -1;
-
-  const pos = resolvePos(opts);
-  const start = pos >= 0 ? pos : 0;
-  if (opts.autoplay) startTrack(start);              // اول صدا
-
-  renderHeader();
-  renderList();
-  setListLoading(false);
-  updateSheetCurrent();
-
-  if (opts.autoplay) {
-    setActive(start, { scroll: 'center' });
-  } else if (pos >= 0) {
-    setActive(pos, { scroll: opts.scroll || 'center' });
-    P.resume = opts.resume ? { surah: num, pos: pos, time: Number(opts.resume) } : null;
-  } else {
-    setActive(-1);
-    window.scrollTo(0, 0);
+/* ردیف دریافتی از سرور؛ true = چیزی در این دستگاه عوض شد */
+function mkMergeRemote(s, a, c, t) {
+  const key = mkKey(s, a);
+  const cur = mk.data[key];
+  if (!cur) {
+    if (c === 'none') return false;
+    mk.data[key] = { c: c, t: t, d: 0 };
+    return true;
   }
-  updatePlayUI();
-  ensureSurahList();
-  schedulePrefetch(num);
-  queueFabs();
+  if (t > cur.t) {
+    if (c === 'none') delete mk.data[key];
+    else mk.data[key] = { c: c, t: t, d: 0 };
+    return true;
+  }
+  if (t === cur.t && cur.d && cur.c === c) {              // همان رکوردِ خودمان است که به سرور رسیده
+    if (c === 'none') delete mk.data[key];
+    else cur.d = 0;
+  }
+  return false;
 }
 
-/* سوره‌های کناری کمی بعد در پس‌زمینه گرفته می‌شوند تا رفتن به قبلی/بعدی فوری باشد */
-let prefetchTimer = null;
-function schedulePrefetch(num) {
-  clearTimeout(prefetchTimer);
-  prefetchTimer = setTimeout(function () {
-    if (S.surah !== num || document.hidden) return;
-    prefetchSurahData(num + 1);
-    prefetchSurahData(num - 1);
-  }, 900);
+/* رکوردهای رفته‌به‌سرور: اگر از آن زمان دوباره عوض نشده باشند «تمیز» می‌شوند.
+   serverNow: ساعت سرور؛ سرور زمان‌های بیش از ۱۰ دقیقه در آینده را به «اکنون» برمی‌گرداند، پس همین‌جا هم همان را ثبت می‌کنیم */
+function mkMarkPushed(list, serverNow) {
+  list.forEach(function (it) {
+    const key = mkKey(it.s, it.a);
+    const e = mk.data[key];
+    if (!e || e.t !== it.t) return;
+    if (e.c === 'none') delete mk.data[key];
+    else {
+      e.d = 0;
+      if (serverNow > 0 && e.t > serverNow + 600000) e.t = serverNow;
+    }
+  });
+  mkSave();
 }
 
-function onSurahsLoaded() {
-  renderHeader();
-  renderSurahRows();
-  filterSurahRows(dom.surahSearch.value);
-  updateSheetCurrent();
-  updateResumeUI();
-  updatePlayerInfo();
+/* رکوردهایی که هنوز به سرور نرفته‌اند (قدیمی‌ترین‌ها اول) */
+function mkDirtyList() {
+  const out = [];
+  Object.keys(mk.data).forEach(function (k) {
+    const e = mk.data[k];
+    if (!e.d) return;
+    const p = k.split(':');
+    out.push({ s: Number(p[0]), a: Number(p[1]), c: e.c, t: e.t });
+  });
+  out.sort(function (x, y) { return x.t - y.t; });
+  return out;
 }
 
-/* فهرست سوره‌ها (نام‌ها) جدا از متن سوره گرفته می‌شود. اگر در شروع نیامد، با هر سوره‌ای که
-   با موفقیت باز شود دوباره امتحان می‌شود تا عنوان‌ها برای همیشه «سوره ۱» نمانند. */
-function ensureSurahList() {
-  if (S.surahs.length) return;
-  loadSurahList().then(function (list) {
-    if (S.surahs.length) return;
-    setSurahs(list);
-    onSurahsLoaded();
-  }, noop);
+/* ورود به حساب: هر رنگی که از قبل روی این دستگاه هست باید به سرور برود */
+function mkMarkAllDirty() {
+  Object.keys(mk.data).forEach(function (k) { mk.data[k].d = 1; });
+  mkSave();
 }
 
-function continueFromBookmark() {
-  const b = getBookmark();
-  if (!b) return;
-  goToSurah(Number(b.surah), {
-    ayah: Number(b.ayah),
-    preferBismillah: b.bis === undefined ? true : !!b.bis,
-    scroll: 'center',
-    resume: b.time
+function mkClearAll() {
+  mk.data = {};
+  mkFlush();
+  mkChanged('remote');
+}
+
+/* =========================================================
+   نمایش روی صفحه
+========================================================= */
+function updateMarkBadge() {
+  if (!dom.markCount) return;
+  const total = mkCounts().total;
+  dom.markCount.hidden = total === 0;
+  dom.markCount.textContent = faNum(total);
+}
+
+function refreshMarkViews() {
+  S.els.forEach(function (el) {
+    if (!el.classList.contains('ayah')) return;
+    const n = el.getAttribute('data-n');
+    const c = mkGet(S.surah, n);
+    if (c) el.setAttribute('data-mark', c);
+    else el.removeAttribute('data-mark');
+    const btn = el.querySelector('.mkb');
+    if (btn) {
+      btn.classList.toggle('on', !!c);
+      btn.setAttribute('aria-label', mkLabel(n, c));
+    }
+  });
+}
+
+/* source: 'local' (کاربر) یا 'remote' (همگام‌سازی/تب دیگر) */
+function mkChanged(source) {
+  refreshMarkViews();
+  updateMarkBadge();
+  if (sheets.open === 'marks') renderMarksSheet();
+  if (source === 'local' && typeof msyncSchedule === 'function') msyncSchedule(1500);
+}
+
+/* =========================================================
+   پنجرهٔ انتخاب رنگ برای یک آیه
+========================================================= */
+function openColorPicker(s, a, back, opener) {
+  mk.target = { s: Number(s), a: Number(a), back: back || '' };
+  openSheet('color', opener || document.activeElement);
+}
+
+function prepareColorSheet() {
+  const t = mk.target;
+  const box = $('swatches');
+  if (!box) return;
+  if (!t) { box.innerHTML = ''; return; }
+  $('colorTarget').textContent = surahTitle(t.s) + '، آیهٔ ' + faNum(t.a);
+  const cur = mkGet(t.s, t.a) || 'none';
+  const all = [{ id: 'none', fa: 'سفید (بدون رنگ)' }].concat(MK_COLORS);
+  box.innerHTML = all.map(function (c) {
+    return '<button type="button" class="sw" role="radio" aria-checked="' + (c.id === cur ? 'true' : 'false') + '" data-c="' + c.id + '">' +
+      '<i class="sw-dot" aria-hidden="true"></i><span>' + c.fa + '</span></button>';
+  }).join('');
+}
+
+function onSwatchClick(e) {
+  const b = e.target.closest('.sw');
+  const t = mk.target;
+  if (!b || !t) return;
+  const c = b.getAttribute('data-c');
+  const next = c === 'none' ? '' : c;
+  const prev = mkGet(t.s, t.a);
+  mk.target = null;
+  const changed = mkSet(t.s, t.a, next);
+  if (t.back) openSheet(t.back);
+  else closeSheet();
+  if (!changed) return;
+  const label = surahTitle(t.s) + '، آیهٔ ' + faNum(t.a);
+  showToast(next ? ('رنگ ' + mkName(next) + ' · ' + label) : ('رنگ برداشته شد · ' + label), {
+    action: 'برگرداندن',
+    fn: function () { mkSet(t.s, t.a, prev); }
   });
 }
 
 /* =========================================================
-   رفتن به صفحه مصحف (رقم‌ها همیشه فارسی نمایش داده می‌شوند)
+   گزارش: شمارش هر رنگ، فهرست آیه‌ها و کپی
 ========================================================= */
-const pageCache = new Map();
-let pageBusy = false;
-
-function toAsciiDigits(text) {
-  return String(text || '')
-    .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
-    .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); });
+function mkChipHtml(id, label, count) {
+  return '<button type="button" class="mk-chip" role="radio" aria-checked="' + (mk.filter === id ? 'true' : 'false') + '" data-c="' + id + '">' +
+    '<i class="mk-chip-dot" aria-hidden="true"></i><span class="mk-chip-name">' + label + '</span><b>' + faNum(count) + '</b></button>';
 }
 
-/* هر رقم لاتین یا عربی را فارسی می‌کند */
-function toFaDigits(text) {
-  return String(text || '')
-    .replace(/[0-9]/g, function (d) { return FA_DIGITS[Number(d)]; })
-    .replace(/[٠-٩]/g, function (d) { return FA_DIGITS[d.charCodeAt(0) - 0x0660]; });
+function prepareMarksSheet() {
+  mk.shown = MK_PAGE;
+  renderMarksSheet();
+  if (typeof msyncMaybe === 'function') msyncMaybe();
 }
 
-function onlyFaDigits(text) {
-  return toFaDigits(text).replace(/[^۰-۹]/g, '');
+function renderMarksSheet() {
+  const chips = $('mkChips');
+  if (!chips) return;
+  const counts = mkCounts();
+  if (mk.filter !== 'all' && !MK_BY_ID[mk.filter]) mk.filter = 'all';
+
+  if (typeof acctBarText === 'function') $('acctBarText').textContent = acctBarText();
+
+  let h = mkChipHtml('all', 'همه', counts.total);
+  MK_COLORS.forEach(function (c) { h += mkChipHtml(c.id, c.fa, counts[c.id]); });
+  chips.innerHTML = h;
+
+  syncSegment('segCopy', settings.copyMode);
+  const sel = mk.filter === 'all' ? counts.total : counts[mk.filter];
+  const btn = $('mkCopy');
+  btn.disabled = !sel;
+  btn.textContent = !sel ? 'آیه‌ای برای کپی نیست'
+    : (mk.filter === 'all' ? ('کپی همهٔ آیه‌های رنگی (' + faNum(sel) + ')') : ('کپی آیه‌های ' + mkName(mk.filter) + ' (' + faNum(sel) + ')'));
+
+  renderMarksList();
 }
 
-/* هنگام تایپ، رقم‌ها را فارسی می‌کند و جای نشانگر را نگه می‌دارد */
-function persianizeInput(el, digitsOnly) {
-  const v = el.value;
-  const fix = digitsOnly ? onlyFaDigits : toFaDigits;
-  const nv = fix(v);
-  if (nv === v) return;
-  let caret = null;
-  try { caret = el.selectionStart; } catch (e) { caret = null; }
-  const head = caret === null ? nv.length : fix(v.slice(0, caret)).length;
-  el.value = nv;
-  try { el.setSelectionRange(head, head); } catch (e) { /* ignore */ }
+function mkRowHtml(e, showName) {
+  return '<div class="mrow" data-c="' + e.c + '" data-s="' + e.s + '" data-a="' + e.a + '">' +
+    '<button type="button" class="go" data-act="go">' +
+      '<strong>' + esc(surahTitle(e.s)) + '، آیهٔ ' + faNum(e.a) + (showName ? '<span class="mname"> · ' + mkName(e.c) + '</span>' : '') + '</strong>' +
+      '<span class="snip" lang="ar" dir="rtl"></span><span class="snip-fa" lang="fa"></span>' +
+    '</button>' +
+    '<button type="button" class="mact" data-act="copy" aria-label="کپی این آیه">' + icon('i-copy') + '</button>' +
+    '<button type="button" class="mact" data-act="color" aria-label="تغییر رنگ این آیه"><span class="mk-dot" aria-hidden="true"></span></button>' +
+  '</div>';
 }
 
-async function jumpToPage(raw) {
-  if (pageBusy) return;
-  const text = toAsciiDigits(raw).trim();
-  const page = /^\d{1,3}$/.test(text) ? Number(text) : 0;
-  if (page < 1 || page > 604) {
-    dom.pageError.textContent = 'شماره صفحه باید عددی بین ۱ تا ۶۰۴ باشد.';
+function renderMarksList() {
+  const box = $('mkList');
+  const list = mkEntries(mk.filter);
+  const token = ++mk.token;
+  if (!list.length) {
+    box.innerHTML = '<div class="empty-note">' + (mk.filter === 'all'
+      ? 'هنوز آیه‌ای را رنگ نکرده‌اید.<br>در هر آیه، دکمهٔ دایره‌ای رنگ را لمس کنید و رنگ دلخواه را انتخاب کنید.'
+      : ('آیه‌ای با رنگ «' + mkName(mk.filter) + '» ندارید.')) + '</div>';
     return;
   }
-  dom.pageError.textContent = '';
-  pageBusy = true;
-  dom.pageGo.disabled = true;
-  dom.pageGo.textContent = 'در حال جستجو…';
-  try {
-    let first = pageCache.get(page);
-    if (!first) {
-      const tok = S.navToken;
-      const json = await apiGet('page', { page: page });
-      if (tok !== S.navToken) return;               // کاربر در این فاصله جای دیگری رفته است
-      first = json.first_ayah;
-      if (!first || !first.surah_id) throw apiError('server', 'صفحه پیدا نشد');
-      pageCache.set(page, first);
+  const part = list.slice(0, mk.shown);
+  const rest = list.length - part.length;
+  box.innerHTML = part.map(function (e) { return mkRowHtml(e, mk.filter === 'all'); }).join('') +
+    (rest > 0 ? '<button type="button" class="btn mk-more" id="mkMore">نمایش ' + faNum(Math.min(MK_PAGE, rest)) + ' مورد بعدی (' + faNum(rest) + ' مورد باقی است)</button>' : '');
+  fillMarkSnippets(part, token);
+}
+
+/* خلاصهٔ متن هر ردیف (فقط از روی دستگاه؛ اگر سوره‌ای هنوز ذخیره نشده باشد و اینترنت باشد، گرفته می‌شود) */
+function fillMarkSnippets(part, token) {
+  const need = {};
+  part.forEach(function (e) { need[e.s] = true; });
+  Object.keys(need).forEach(function (sKey) {
+    const s = Number(sKey);
+    localSurahData(s).then(function (d) {
+      if (d || !canPrefetch()) return d;
+      return loadSurahData(s).then(function (x) { return x; }, function () { return null; });
+    }).then(function (d) {
+      if (!d || token !== mk.token || sheets.open !== 'marks') return;
+      Array.prototype.forEach.call($('mkList').querySelectorAll('.mrow[data-s="' + s + '"]'), function (row) {
+        const a = Number(row.getAttribute('data-a'));
+        const ay = d.ayahs.find(function (x) { return Number(x.ayah_number) === a; });
+        if (!ay) return;
+        row.querySelector('.snip').textContent = fixMarks(ay.text_ar);
+        row.querySelector('.snip-fa').textContent = ay.text_fa || '';
+      });
+    });
+  });
+}
+
+/* ---------- کپی ---------- */
+async function mkGatherData(surahs) {
+  const out = {};
+  for (let i = 0; i < surahs.length; i++) {
+    const s = surahs[i];
+    let d = peekSurahData(s) || await localSurahData(s);
+    if (!d && canPrefetch()) {
+      try { d = await loadSurahData(s); } catch (e) { d = null; }
     }
-    dom.pageInput.blur();
-    await goToSurah(Number(first.surah_id), { ayah: Number(first.ayah_number), scroll: 'start' });
-  } catch (err) {
-    dom.pageError.textContent = describeApiError(err);
-  } finally {
-    pageBusy = false;
-    dom.pageGo.disabled = false;
-    dom.pageGo.textContent = 'برو';
+    if (d) out[s] = d;
   }
+  return out;
 }
 
-/* =========================================================
-   UI: یادآوری با نگه‌داشتن انگشت
-========================================================= */
-const LONG_PRESS_MS = 550;
-const MOVE_TOLERANCE = 10;
-let press = null;
-let suppressClick = false;
-let suppressTimer = null;
-let lastPointerType = 'mouse';
-
-function cancelPress() {
-  if (press) { clearTimeout(press.timer); press = null; }
+function mkAyahText(s, a, mode, d) {
+  const ay = d.ayahs.find(function (x) { return Number(x.ayah_number) === Number(a); });
+  if (!ay) return '';
+  const lines = [];
+  if (mode !== 'fa' || !ay.text_fa) lines.push(ay.text_ar);        // «فقط ترجمه» ولی ترجمه نیست: عربی بیاید تا خالی نماند
+  if (mode !== 'ar' && ay.text_fa) lines.push(ay.text_fa);
+  lines.push('[' + surahTitle(s) + '، آیه ' + faNum(a) + ']');
+  return lines.join('\n');
 }
 
-function remindAyah(n) {
-  const surah = S.surah;
-  const added = toggleReminder(surah, n);
-  const label = surahTitle(surah) + '، آیه ' + faNum(n);
-  showToast(added ? ('یادآوری ثبت شد · ' + label) : ('یادآوری برداشته شد · ' + label), {
-    action: 'برگرداندن',
-    fn: function () { toggleReminder(surah, n); }
-  });
-}
-
-function fireLongPress(el) {
-  press = null;
-  suppressClick = true;
-  clearTimeout(suppressTimer);
-  suppressTimer = setTimeout(function () { suppressClick = false; }, 4000);
-  remindAyah(Number(el.getAttribute('data-n')));
-  try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) { /* ignore */ }
-}
-
-function bindLongPress() {
-  dom.list.addEventListener('pointerdown', function (e) {
-    lastPointerType = e.pointerType || 'mouse';
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    if (e.target.closest('button')) return;
-    const el = e.target.closest('.ayah');
-    if (!el) return;
-    cancelPress();
-    press = {
-      id: e.pointerId, x: e.clientX, y: e.clientY,
-      timer: setTimeout(function () { fireLongPress(el); }, LONG_PRESS_MS)
-    };
-  });
-  dom.list.addEventListener('pointermove', function (e) {
-    if (!press || e.pointerId !== press.id) return;
-    if (Math.abs(e.clientX - press.x) > MOVE_TOLERANCE || Math.abs(e.clientY - press.y) > MOVE_TOLERANCE) cancelPress();
-  });
-  const end = function () {
-    cancelPress();
-    if (suppressClick) {
-      clearTimeout(suppressTimer);
-      suppressTimer = setTimeout(function () { suppressClick = false; }, 350);   // کلیکِ پس از رها کردن را بخور
-    }
-  };
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { dom.list.addEventListener(t, end); });
-  // منوی لمسیِ مرورگر هنگام نگه‌داشتن انگشت نباید باز شود (با ماوس، منوی راست‌کلیک سر جایش است)
-  dom.list.addEventListener('contextmenu', function (e) {
-    if (lastPointerType !== 'mouse' && e.target.closest('.ayah')) e.preventDefault();
-  });
-}
-
-/* =========================================================
-   UI: اتصال رویدادها
-========================================================= */
-function setTranslation(on) {
-  on = !!on;
-  if (settings.translation === on) return;
-  withScrollAnchor(function () {
-    settings.translation = on;
-    saveSettings();
-    applyListClasses();
-    if (on) fillBismillahTranslation();
-  });
-  queueFabs();
-}
-
-function bindList() {
-  dom.list.addEventListener('click', function (e) {
-    if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
-    if (e.target.closest('[data-act="retry"]')) { if (S.retryFn) S.retryFn(); return; }
-    const itemEl = e.target.closest('[data-i]');
-    if (!itemEl) return;
-    const i = Number(itemEl.getAttribute('data-i'));
-    const btn = e.target.closest('button[data-act]');
-    if (btn) {
-      const act = btn.getAttribute('data-act');
-      if (act === 'copy') {
-        const it = S.items[i];
-        if (it && it.kind === 'ayah') {
-          copyText(ayahCopyText(it.ayah)).then(function (ok) { showToast(ok ? 'آیه کپی شد.' : 'کپی انجام نشد.'); });
-        }
-      } else if (act === 'remind') {
-        remindAyah(Number(itemEl.getAttribute('data-n')));
-      } else if (act === 'mark') {
-        markPos(i);
-      }
-      return;
-    }
-    onItemTap(i);
-  });
-
-  dom.list.addEventListener('keydown', function (e) {
-    const itemEl = e.target;
-    if (!itemEl || !itemEl.hasAttribute || !itemEl.hasAttribute('data-i')) return;
-    const i = Number(itemEl.getAttribute('data-i'));
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onItemTap(i);
-    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const next = S.els[i + (e.key === 'ArrowDown' ? 1 : -1)];
-      if (next) { next.focus(); scrollToEl(next, 'nearest'); }
-    }
-  });
-
-  bindLongPress();
-}
-
-function bindSheets() {
-  Object.keys(sheetEls).forEach(function (name) {
-    if (!sheetEls[name]) return;
-    sheetEls[name].addEventListener('click', function (e) {
-      if (e.target.closest('[data-close]')) closeSheet();
+/* { text, done, missing } برای رنگ مشخص یا همهٔ رنگ‌ها (با تیتر هر رنگ) */
+async function mkBuildCopy(items, grouped) {
+  const surahs = [];
+  items.forEach(function (e) { if (surahs.indexOf(e.s) < 0) surahs.push(e.s); });
+  const data = await mkGatherData(surahs);
+  const mode = settings.copyMode;
+  const groups = grouped ? MK_COLORS.map(function (c) { return c.id; }) : ['*'];
+  const blocks = [];
+  let done = 0;
+  let missing = 0;
+  groups.forEach(function (cid) {
+    const sub = items.filter(function (e) { return cid === '*' || e.c === cid; });
+    if (!sub.length) return;
+    const parts = [];
+    sub.forEach(function (e) {
+      const t = data[e.s] ? mkAyahText(e.s, e.a, mode, data[e.s]) : '';
+      if (t) { parts.push(t); done++; } else missing++;
     });
+    if (!parts.length) return;
+    blocks.push((cid === '*' ? '' : ('آیه‌های ' + mkName(cid) + ' (' + faNum(sub.length) + ')\n\n')) + parts.join('\n\n'));
   });
-
-  document.addEventListener('keydown', function (e) {
-    if (!sheets.open) return;
-    if (e.key === 'Escape') { closeSheet(); return; }
-    if (e.key !== 'Tab') return;
-    const panel = sheetEls[sheets.open].querySelector('.panel');
-    const f = focusables(panel);
-    if (!f.length) return;
-    const first = f[0];
-    const last = f[f.length - 1];
-    if (!panel.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
-    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  });
-
-  dom.surahSearch.addEventListener('input', function () {
-    persianizeInput(dom.surahSearch, false);
-    filterSurahRows(dom.surahSearch.value);
-  });
-  dom.surahRows.addEventListener('click', function (e) {
-    if (e.target.closest('[data-act="retry-surahs"]')) { prepareSurahSheet(); return; }
-    const row = e.target.closest('.srow');
-    if (!row) return;
-    const n = Number(row.getAttribute('data-n'));
-    closeSheet();
-    goToSurah(n, {});
-  });
-
-  dom.remRows.addEventListener('click', function (e) {
-    const del = e.target.closest('.del');
-    if (del) {
-      toggleReminder(Number(del.getAttribute('data-s')), Number(del.getAttribute('data-a')));
-      return;
-    }
-    const go = e.target.closest('.go');
-    if (go) {
-      const s = Number(go.getAttribute('data-s'));
-      const a = Number(go.getAttribute('data-a'));
-      closeSheet();
-      goToSurah(s, { ayah: a, preferBismillah: false, scroll: 'center' });
-    }
-  });
+  return { text: blocks.join('\n\n———\n\n'), done: done, missing: missing };
 }
 
-function bindSettings() {
-  const seg = function (id, apply) {
-    $(id).addEventListener('click', function (e) {
-      const b = e.target.closest('button[data-value]');
-      if (!b) return;
-      apply(b.getAttribute('data-value'));
-      saveSettings();
-      syncSettingsUI();
-    });
-  };
-  seg('segTheme', function (v) { settings.theme = v; applyTheme(); });
-  seg('segPalette', function (v) { settings.palette = v; applyTheme(); });
-  seg('segAudio', function (v) {
-    settings.route = v;
-    store.remove(KEYS.relay);       // انتخاب تازه، حافظه «مسیر گوگل» را پاک می‌کند
-  });
-
-  const setSize = function (key, min, max, value) {
-    const next = clamp(Math.round(Number(value) || 0), min, max);
-    if (next === settings[key]) return;
-    withScrollAnchor(function () {
-      settings[key] = next;
-      applyTheme();
-    });
-    syncSettingsUI();
-    queueFabs();
-  };
-  dom.sizeRange.addEventListener('input', function () { setSize('size', SIZE_MIN, SIZE_MAX, dom.sizeRange.value); });
-  dom.sizeRange.addEventListener('change', saveSettings);
-  $('sizeUp').addEventListener('click', function () { setSize('size', SIZE_MIN, SIZE_MAX, settings.size + 2); saveSettings(); });
-  $('sizeDown').addEventListener('click', function () { setSize('size', SIZE_MIN, SIZE_MAX, settings.size - 2); saveSettings(); });
-  dom.trSizeRange.addEventListener('input', function () { setSize('trSize', TR_MIN, TR_MAX, dom.trSizeRange.value); });
-  dom.trSizeRange.addEventListener('change', saveSettings);
-  $('trSizeUp').addEventListener('click', function () { setSize('trSize', TR_MIN, TR_MAX, settings.trSize + 1); saveSettings(); });
-  $('trSizeDown').addEventListener('click', function () { setSize('trSize', TR_MIN, TR_MAX, settings.trSize - 1); saveSettings(); });
-
-  $('btnClearCache').addEventListener('click', function () {
-    clearTextCache().then(function () {
-      showToast('حافظهٔ موقت سوره‌ها پاک شد؛ سوره‌های ذخیره‌شده برای آفلاین می‌مانند.');
-    });
-  });
-  $('btnOpenOffline').addEventListener('click', function () { openSheet('offline', $('btnOpenOffline')); });
-
-  if (darkQuery) {
-    const onChange = function () { if (settings.theme === 'auto') applyTheme(); };
-    if (darkQuery.addEventListener) darkQuery.addEventListener('change', onChange);
-    else if (darkQuery.addListener) darkQuery.addListener(onChange);
-  }
-}
-
-function bindUI() {
-  dom.btnSurahs.addEventListener('click', function () { openSheet('surahs', dom.btnSurahs); });
-  $('titleBtn').addEventListener('click', function () { openSheet('surahs', $('titleBtn')); });
-  dom.btnReminders.addEventListener('click', function () { openSheet('reminders', dom.btnReminders); });
-  dom.btnOffline.addEventListener('click', function () { openSheet('offline', dom.btnOffline); });
-  dom.btnSettings.addEventListener('click', function () { openSheet('settings', dom.btnSettings); });
-
-  dom.prevSurah.addEventListener('click', function () { if (S.surah > 1) goToSurah(S.surah - 1, {}); });
-  dom.nextSurah.addEventListener('click', function () { if (S.surah >= 1 && S.surah < 114) goToSurah(S.surah + 1, {}); });
-
-  dom.pageForm.addEventListener('submit', function (e) { e.preventDefault(); jumpToPage(dom.pageInput.value); });
-  dom.pageInput.addEventListener('input', function () {
-    persianizeInput(dom.pageInput, true);
-    dom.pageError.textContent = '';
-  });
-
-  dom.continueBtn.addEventListener('click', continueFromBookmark);
-  dom.trSwitch.addEventListener('click', function () { setTranslation(!settings.translation); });
-  if (dom.faSwitch) dom.faSwitch.addEventListener('click', function () {
-    settings.faAudio = !settings.faAudio;
-    saveSettings();
-    applyListClasses();
-    if (settings.faAudio && S.data && !S.data.hasFa) showToast('ترجمهٔ فارسی این سوره هنوز در پایگاه داده نیست.');
-    else showToast(settings.faAudio ? 'بعد از هر آیه، ترجمهٔ فارسی هم خوانده می‌شود.' : 'صدای ترجمه خاموش شد.');
-    if (P.loaded && P.wantPlay) { P.preloadedFor = 0; preloadNext(); }
-  });
-
-  dom.btnPlay.addEventListener('click', togglePlay);
-  dom.btnPrev.addEventListener('click', function () { stepItem(-1); });
-  dom.btnNext.addEventListener('click', function () { stepItem(1); });
-  dom.btnStart.addEventListener('click', function () { playItem(0); });
-  dom.btnMin.addEventListener('click', function () {
-    settings.minPlayer = !settings.minPlayer;
-    saveSettings();
-    applyPlayerMin();
-  });
-
-  document.addEventListener('keydown', function (e) {
-    if (e.code !== 'Space' || e.defaultPrevented || sheets.open) return;
-    if (e.target !== document.body && e.target !== document.documentElement) return;
-    e.preventDefault();
-    togglePlay();
-  });
-
-  const flush = function () { if (P.playing) savePlayingPosition(true); };
-  document.addEventListener('visibilitychange', function () { if (document.hidden) flush(); });
-  window.addEventListener('pagehide', flush);
-
-  window.addEventListener('resize', updatePlayerHeightVar);
-  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(updatePlayerHeightVar).observe(dom.player);
-
-  bindList();
-  bindSheets();
-  bindSettings();
-  bindSeek();
-  bindAudioEvents();
-  bindFabs();
-  bindOffline();
-  setupMediaSession();
-}
-
-/* =========================================================
-   Service Worker: باز شدن برنامه بدون اینترنت
-========================================================= */
-function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  if (!window.isSecureContext) return;
-  const go = function () {
-    try {
-      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(noop, noop);
-    } catch (e) { /* ignore */ }
-  };
-  if (document.readyState === 'complete') go();
-  else window.addEventListener('load', go);
-}
-
-/* =========================================================
-   BOOT
-========================================================= */
-function boot() {
-  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) { /* ignore */ }
-  purgeOldCaches();
-  applyTheme();
-  bindUI();
-  applyPlayerMin();
-  applyListClasses();
-  updateSurahNav();          // تا سوره‌ای باز نشده، دکمه‌های قبلی/بعدی غیرفعال‌اند
-  refreshReminderMarks();
-  updateSeekUI();
-  updatePlayUI();
-  updateResumeUI();
-  syncSettingsUI();
-  queueFabs();
-  offlineInit();
-  registerServiceWorker();
-
-  if (!API_READY) { showSetupNeeded(); return; }
-
-  ensureSurahList();
-
-  const b = getBookmark();
-  if (b) {
-    goToSurah(Number(b.surah), {
-      ayah: Number(b.ayah),
-      preferBismillah: b.bis === undefined ? true : !!b.bis,
-      scroll: 'center',
-      resume: b.time
-    });
+async function mkCopyItems(items, grouped) {
+  if (!items.length) { showToast('آیه‌ای برای کپی نیست.'); return; }
+  const r = await mkBuildCopy(items, grouped);
+  if (!r.text) { showToast('متن این آیه‌ها روی دستگاه نیست؛ برای گرفتن آن اینترنت لازم است.', { ms: 4200 }); return; }
+  const ok = await copyText(r.text);
+  if (ok) {
+    showToast(faNum(r.done) + ' آیه کپی شد.' + (r.missing ? ' (متن ' + faNum(r.missing) + ' آیه در دسترس نبود)' : ''), { ms: 3200 });
   } else {
-    goToSurah(1, {});
+    showTextFallback(r.text);
   }
 }
 
-boot();
-window.__quranBooted = true;
+/* اگر مرورگر اجازهٔ کپی خودکار ندهد، متن در یک کادر نشان داده می‌شود تا دستی کپی شود */
+function showTextFallback(text) {
+  const ta = $('textBox');
+  ta.value = text;
+  const had = sheets.open;
+  openSheet('text', had ? null : document.activeElement);
+  setTimeout(function () { try { ta.focus(); ta.select(); ta.setSelectionRange(0, text.length); } catch (e) { /* ignore */ } }, 60);
+}
+
+function onMarksListClick(e) {
+  const more = e.target.closest('#mkMore');
+  if (more) { mk.shown += MK_PAGE; renderMarksList(); return; }
+  const btn = e.target.closest('button[data-act]');
+  const row = e.target.closest('.mrow');
+  if (!btn || !row) return;
+  const s = Number(row.getAttribute('data-s'));
+  const a = Number(row.getAttribute('data-a'));
+  const act = btn.getAttribute('data-act');
+  if (act === 'go') {
+    closeSheet();
+    goToSurah(s, { ayah: a, preferBismillah: false, scroll: 'center' });
+  } else if (act === 'copy') {
+    mkCopyItems([{ s: s, a: a, c: row.getAttribute('data-c') }], false);
+  } else if (act === 'color') {
+    openColorPicker(s, a, 'marks', btn);
+  }
+}
+
+function bindMarks() {
+  // هر بار که گزارش از دکمهٔ بالای صفحه باز می‌شود از «همه» شروع می‌کند (برگشت از پنجرهٔ رنگ، فیلتر را نگه می‌دارد)
+  dom.btnMarks.addEventListener('click', function () { mk.filter = 'all'; openSheet('marks', dom.btnMarks); });
+  $('swatches').addEventListener('click', onSwatchClick);
+
+  $('mkChips').addEventListener('click', function (e) {
+    const b = e.target.closest('.mk-chip');
+    if (!b) return;
+    mk.filter = b.getAttribute('data-c');
+    mk.shown = MK_PAGE;
+    renderMarksSheet();
+  });
+  $('segCopy').addEventListener('click', function (e) {
+    const b = e.target.closest('button[data-value]');
+    if (!b) return;
+    settings.copyMode = b.getAttribute('data-value');
+    saveSettings();
+    syncSegment('segCopy', settings.copyMode);
+  });
+  $('mkCopy').addEventListener('click', function () {
+    const items = mkEntries(mk.filter);
+    mkCopyItems(items, mk.filter === 'all');
+  });
+  $('mkList').addEventListener('click', onMarksListClick);
+  $('acctBar').addEventListener('click', function () { openSheet('account', $('acctBar')); });
+  $('textSelect').addEventListener('click', function () {
+    const ta = $('textBox');
+    try { ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); } catch (e) { /* ignore */ }
+    if (legacyCopy(ta.value)) showToast('کپی شد.');
+  });
+
+  // تب یا پنجرهٔ دیگری رنگی داده است
+  window.addEventListener('storage', function (e) {
+    if (e.key !== KEYS.marks) return;
+    mkLoad();
+    mkChanged('remote');
+  });
+  window.addEventListener('pagehide', function () { if (mk.saveTimer) mkFlush(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden && mk.saveTimer) mkFlush(); });
+}
+
+mkLoad();

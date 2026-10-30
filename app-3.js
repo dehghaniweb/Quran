@@ -15,12 +15,12 @@ const dom = {
   continueBtn: $('continueBtn'), continueText: $('continueText'),
   saveSurah: $('btnSaveSurah'), saveSurahText: $('saveSurahText'), saveSurahBar: $('saveSurahBar'),
   trSwitch: $('trSwitch'),
-  faSwitch: $('faSwitch'),
   player: $('player'), seek: $('seek'), seekFill: $('seekFill'), pStatus: $('pStatus'), tCur: $('tCur'), tDur: $('tDur'),
   btnStart: $('btnStart'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'), btnMin: $('btnMin'),
   toast: $('toast'), toastText: $('toastText'), toastAction: $('toastAction'),
   audio: $('audio'), audio2: $('audio2'),
   btnSurahs: $('btnSurahs'), btnReminders: $('btnReminders'), btnSettings: $('btnSettings'), btnOffline: $('btnOffline'), remCount: $('remCount'),
+  btnMarks: $('btnMarks'), markCount: $('markCount'),
   surahSearch: $('surahSearch'), surahRows: $('surahRows'), remRows: $('remRows'),
   sizeOut: $('sizeOut'), sizeRange: $('sizeRange'), sizePreview: $('sizePreview'),
   trSizeOut: $('trSizeOut'), trSizeRange: $('trSizeRange'), trPreview: $('trPreview'),
@@ -187,7 +187,10 @@ function bindFabs() {
 /* =========================================================
    SHEETS (پنجره‌های پایین‌صفحه) + دکمه برگشت مرورگر
 ========================================================= */
-const sheetEls = { surahs: $('sheetSurahs'), reminders: $('sheetReminders'), settings: $('sheetSettings'), offline: $('sheetOffline') };
+const sheetEls = {
+  surahs: $('sheetSurahs'), reminders: $('sheetReminders'), settings: $('sheetSettings'), offline: $('sheetOffline'),
+  marks: $('sheetMarks'), color: $('sheetColor'), account: $('sheetAccount'), text: $('sheetText')
+};
 const sheets = { open: null, opener: null, ignorePop: 0 };
 
 function focusables(container) {
@@ -231,6 +234,9 @@ function openSheet(name, opener) {
   if (name === 'reminders') renderRemindersSheet();
   if (name === 'settings') syncSettingsUI();
   if (name === 'offline' && typeof prepareOfflineSheet === 'function') prepareOfflineSheet();
+  if (name === 'marks' && typeof prepareMarksSheet === 'function') prepareMarksSheet();
+  if (name === 'color' && typeof prepareColorSheet === 'function') prepareColorSheet();
+  if (name === 'account' && typeof prepareAccountSheet === 'function') prepareAccountSheet();
   showSheetUI(name);
   try {
     if (had) history.replaceState({ sheet: name }, '');
@@ -308,27 +314,34 @@ function updateNow() {
 /* =========================================================
    LIST
 ========================================================= */
+/* فونت مجمع ملک فهد علامتِ «صفر مدور» (U+06DF) را به‌صورت یک نقطهٔ سیاه درشت با حلقهٔ خط‌چین می‌کشد؛
+   همان علامت با کد U+06E0 در این فونت به شکل درست (دایرهٔ کوچک بالای الف) رسم می‌شود. فقط برای نمایش؛ متن کپی‌شده دست‌نخورده است. */
+const MARK_FROM = new RegExp(String.fromCharCode(0x06DF), 'g');
+const MARK_TO = String.fromCharCode(0x06E0);
+function fixMarks(s) { return String(s === null || s === undefined ? '' : s).replace(MARK_FROM, MARK_TO); }
+
 function applyListClasses() {
   const L = dom.list.classList;
   L.toggle('tr-on', !!settings.translation);
   L.toggle('no-fa', !!(S.data && !S.data.hasFa));
   dom.trSwitch.setAttribute('aria-checked', settings.translation ? 'true' : 'false');
-  if (dom.faSwitch) dom.faSwitch.setAttribute('aria-checked', settings.faAudio ? 'true' : 'false');
 }
 
 function ayahHtml(a, i) {
   const n = a.ayah_number;
-  return '<article class="ayah" data-i="' + i + '" data-n="' + n + '" tabindex="-1">' +
+  const mc = mkGet(a.surah_id, n);
+  return '<article class="ayah" data-i="' + i + '" data-n="' + n + '"' + (mc ? ' data-mark="' + mc + '"' : '') + ' tabindex="-1">' +
     '<div class="a-head">' +
       '<span class="rosette" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#rosette" xlink:href="#rosette"/></svg><b>' + faNum(n) + '</b></span>' +
       '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
       '<span class="a-tools">' +
         '<button type="button" data-act="mark" class="mark" aria-label="ذخیره جای خواندن از آیه ' + faNum(n) + '" title="ذخیره جای خواندن">' + icon('i-bookmark') + '</button>' +
         '<button type="button" data-act="remind" class="bell" aria-pressed="false" aria-label="یادآوری برای آیه ' + faNum(n) + '" title="یادآوری">' + icon('i-bell') + '</button>' +
+        '<button type="button" data-act="color" class="mkb' + (mc ? ' on' : '') + '" aria-label="' + esc(mkLabel(n, mc)) + '" title="رنگ‌دادن به آیه"><span class="mk-dot" aria-hidden="true"></span></button>' +
         '<button type="button" data-act="copy" aria-label="کپی آیه ' + faNum(n) + '" title="کپی">' + icon('i-copy') + '</button>' +
       '</span>' +
     '</div>' +
-    '<p class="arabic" lang="ar" dir="rtl">' + esc(a.text_ar) + '</p>' +
+    '<p class="arabic" lang="ar" dir="rtl">' + esc(fixMarks(a.text_ar)) + '</p>' +
     (a.text_fa ? '<p class="translation" lang="fa">' + esc(a.text_fa) + '</p>' : '') +
   '</article>';
 }
@@ -342,7 +355,7 @@ function renderList() {
   S.items.forEach(function (it, i) {
     if (it.kind === 'bismillah') {
       html.push('<div class="bismillah" data-i="' + i + '" role="button" tabindex="-1" lang="ar" dir="rtl" aria-label="بسم الله الرحمن الرحیم (پخش)">' +
-        '<span class="bis-ar">' + esc(d.bismillah) + '</span><span class="translation bis-tr" lang="fa" hidden></span></div>');
+        '<span class="bis-ar">' + esc(fixMarks(d.bismillah)) + '</span><span class="translation bis-tr" lang="fa" hidden></span></div>');
     } else {
       html.push(ayahHtml(it.ayah, i));
     }
@@ -486,7 +499,7 @@ function reminderRowHtml(r, d) {
   let snip = '';
   if (d) {
     const a = d.ayahs.find(function (x) { return x.ayah_number === Number(r.ayah); });
-    if (a) snip = '<span class="snip" lang="ar">' + esc(a.text_ar) + '</span>';
+    if (a) snip = '<span class="snip" lang="ar">' + esc(fixMarks(a.text_ar)) + '</span>';
   }
   return '<div class="rrow">' +
     '<button type="button" class="go" data-s="' + Number(r.surah) + '" data-a="' + Number(r.ayah) + '">' +
@@ -515,7 +528,7 @@ function renderRemindersSheet() {
       Array.prototype.forEach.call(dom.remRows.querySelectorAll('.go[data-s="' + s + '"]'), function (go) {
         if (go.querySelector('.snip')) return;
         const a = d.ayahs.find(function (x) { return x.ayah_number === Number(go.getAttribute('data-a')); });
-        if (a) go.insertAdjacentHTML('beforeend', '<span class="snip" lang="ar">' + esc(a.text_ar) + '</span>');
+        if (a) go.insertAdjacentHTML('beforeend', '<span class="snip" lang="ar">' + esc(fixMarks(a.text_ar)) + '</span>');
       });
     });
   });
@@ -614,6 +627,7 @@ function syncSettingsUI() {
   syncSegment('segTheme', settings.theme);
   syncSegment('segPalette', settings.palette);
   syncSegment('segAudio', settings.route);
+  syncSegment('segPlay', settings.audioMode);
   dom.sizeOut.textContent = faNum(settings.size);
   dom.sizeRange.value = String(settings.size);
   dom.sizePreview.textContent = BISMILLAH_FALLBACK;

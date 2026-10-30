@@ -94,15 +94,65 @@ function trackFor(pos, fa) {
 /* آیه‌هایی که صدای ترجمهٔ فارسیِ منبع خراب است (با شنیدن و بررسی طول فایل پیدا شده‌اند)؛ برایشان صدای ترجمه پخش نمی‌شود */
 const FA_SKIP = ['17:22', '26:48', '28:34', '50:25', '57:10', '75:5', '75:20', '75:33'];
 
-function faAudioFor(track) {
-  return !!(settings.faAudio && S.data && S.data.hasFa && track && FA_SKIP.indexOf(track.surah + ':' + track.ayah) < 0);
+function faTrackOk(track) {
+  return !!track && FA_SKIP.indexOf(track.surah + ':' + track.ayah) < 0;
 }
 
-/* آهنگِ بعد از این آهنگ در همین سوره: (عربی ← ترجمه) ← آیهٔ بعد؛ null = پایان سوره */
+/* صوت ترجمه برای این آیه ممکن است؟ (حالت پخش + متن ترجمه + سالم‌بودن فایل منبع)
+   بسم‌الله‌ی که جدا از آیهٔ اول نمایش داده می‌شود صوتِ ترجمهٔ جداگانه ندارد: ترجمهٔ آن
+   از همان ابتدای فایل ترجمهٔ آیهٔ اول (همهٔ سوره‌ها جز حمد و توبه) خوانده می‌شود. */
+function faAudioFor(track) {
+  return !!(track && !track.bismillah && settings.audioMode !== 'ar' && S.data && S.data.hasFa && faTrackOk(track));
+}
+
+/* اولین آهنگِ هر آیتم: در حالت «فقط ترجمه» خودِ ترجمه است (مگر فایل منبعش خراب باشد: آن‌جا عربی) */
+function firstIsFa(pos) {
+  return settings.audioMode === 'fa' && faAudioFor(trackFor(pos));
+}
+
+/* در حالت «فقط ترجمه» آیتم بسم‌الله پخش نمی‌شود (صوتش عربی است و ترجمه‌اش اول فایل آیهٔ اول است)؛
+   هر جا قرار است از آن شروع شود، از آیهٔ اول شروع می‌شود. بقیهٔ جاها و حالت‌ها بدون تغییر. */
+function effectivePos(pos) {
+  const it = S.items[pos];
+  if (settings.audioMode === 'fa' && it && it.kind === 'bismillah' && faAudioFor(trackFor(pos + 1))) return pos + 1;
+  return pos;
+}
+
+/* اولین آهنگِ یک سوره در حالت فعلی (برای آماده‌سازی از قبل) */
+function firstTrackMode(surah) {
+  const t = firstTrackOf(surah);
+  if (settings.audioMode === 'fa') {
+    if (t.bismillah) { t.surah = Number(surah); t.ayah = 1; t.bismillah = false; }   // از آیهٔ اول (که ترجمهٔ بسم‌الله را هم دارد)
+    t.fa = true;
+  }
+  return t;
+}
+
+/* آهنگِ بعد از این آهنگ در همین سوره؛ null = پایان سوره */
 function afterTrack(pos, fa) {
-  if (!fa && faAudioFor(trackFor(pos))) return { pos: pos, fa: true };
-  if (pos + 1 < S.items.length) return { pos: pos + 1, fa: false };
+  if (!fa && settings.audioMode === 'both' && faAudioFor(trackFor(pos))) return { pos: pos, fa: true };
+  if (pos + 1 < S.items.length) return { pos: pos + 1, fa: firstIsFa(pos + 1) };
   return null;
+}
+
+/* همهٔ آهنگ‌های یک سوره در یک حالت (برای ذخیرهٔ آفلاین) */
+function tracksForMode(n, count, mode) {
+  const ar = tracksForSurah(n, count);
+  if (mode === 'ar') return ar;
+  const out = [];
+  ar.forEach(function (t) {
+    if (t.bismillah) {
+      // صوت ترجمهٔ جدا برای بسم‌الله نداریم (ترجمه‌اش اول فایل آیهٔ اول است): «ترجمه و عربی» همان بسم‌الله عربی؛
+      // «فقط ترجمه» اصلاً بسم‌الله ندارد (مگر فایل آیهٔ اول سالم نباشد که همان عربی می‌ماند)
+      if (mode === 'both' || !faTrackOk({ surah: n, ayah: 1 })) out.push(t);
+      return;
+    }
+    const ok = faTrackOk(t);
+    const fa = Object.assign({ fa: true }, t);
+    if (mode === 'both') { out.push(t); if (ok) out.push(fa); }
+    else out.push(ok ? fa : t);
+  });
+  return out;
 }
 
 function itemLabel(pos) {
@@ -145,6 +195,14 @@ function updatePlayUI() {
   updatePlayerInfo();
 }
 
+/* وقتی صدای ترجمه پخش می‌شود: آیهٔ اولِ سوره‌هایی که بسم‌الله جدا دارند، ترجمهٔ بسم‌الله را هم در ابتدای خود دارد */
+function faLabel() {
+  const L = P.loaded;
+  if (!L || !L.fa || L.pos !== S.pos) return '';
+  const first = S.items[0];
+  return (S.pos === 1 && first && first.kind === 'bismillah') ? ' · ترجمهٔ بسم‌الله و آیه' : ' · ترجمه';
+}
+
 function updatePlayerInfo() {
   let text;
   if (P.error) {
@@ -156,7 +214,7 @@ function updatePlayerInfo() {
   } else if (S.pos < 0) {
     text = 'آماده پخش · ' + surahTitle(S.surah);
   } else {
-    const where = surahTitle(S.surah) + '، ' + itemLabel(S.pos) + (P.loaded && P.loaded.fa && P.loaded.pos === S.pos ? ' · ترجمه' : '');
+    const where = surahTitle(S.surah) + '، ' + itemLabel(S.pos) + faLabel();
     if (P.wantPlay && P.buffering) text = 'در حال دریافت صدا · ' + where;
     else if (P.playing) text = 'در حال پخش · ' + where;
     else text = where;
@@ -242,6 +300,14 @@ function saveBookmark(ref, time) {
   });
 }
 
+/* زمانی که برای «ادامه» ذخیره می‌شود: فقط وقتی آهنگ در حال پخش همان آهنگی است که «ادامه» از اول آن شروع می‌کند
+   (در حالت «عربی و ترجمه» ادامه از صدای عربیِ آیه شروع می‌شود؛ زمانِ صدای ترجمه آن‌جا معنایی ندارد) */
+function resumeTime(pos) {
+  const L = P.loaded;
+  if (!L || L.surah !== S.surah || L.pos !== pos || !!L.fa !== firstIsFa(pos)) return 0;
+  return curEl().currentTime;
+}
+
 function savePlayingPosition(force) {
   if (P.markHold) return;                        // کاربر جای خواندن را دستی علامت زده؛ پخش آن را پاک نمی‌کند
   if (!force && !P.wantPlay) return;
@@ -251,7 +317,7 @@ function savePlayingPosition(force) {
   const ref = currentRef();
   if (!ref || !L || L.pos !== S.pos || L.surah !== S.surah) return;
   P.lastSave = now;
-  saveBookmark(ref, ref.bis ? 0 : curEl().currentTime);
+  saveBookmark(ref, ref.bis ? 0 : resumeTime(S.pos));
   updateResumeUI();
 }
 
@@ -276,7 +342,7 @@ function refForPos(pos) {
 function markPos(pos) {
   const ref = refForPos(pos);
   if (!ref) return;
-  const time = (P.loaded && P.loaded.pos === pos && !ref.bis) ? curEl().currentTime : 0;
+  const time = ref.bis ? 0 : resumeTime(pos);
   if (!saveBookmark(ref, time)) {
     showToast('حافظه مرورگر در دسترس نیست؛ جای خواندن ذخیره نشد.');
     return;
@@ -324,8 +390,8 @@ function base64ToBlob(b64, mime) {
 }
 
 /* دریافت از مسیر گوگل (بدون حافظهٔ مشترک؛ برای ذخیره آفلاین هم همین استفاده می‌شود) */
-async function relayFetchRaw(surah, ayah, signal) {
-  const json = await apiGet('audio', { surah: surah, ayah: ayah }, { timeout: 45000, retries: 1, signal: signal });
+async function relayFetchRaw(surah, ayah, signal, fa) {
+  const json = await apiGet('audio', fa ? { surah: surah, ayah: ayah, lang: 'fa' } : { surah: surah, ayah: ayah }, { timeout: 45000, retries: 1, signal: signal });
   if (!json.data) throw apiError('server', 'فایل صوتی خالی بود');
   return base64ToBlob(json.data, json.mime);
 }
@@ -334,11 +400,11 @@ const relayBlobs = new Map();
 const relayPending = new Map();
 
 /* برای پخش: چند فایل اخیر در حافظه می‌ماند و درخواست تکراری ساخته نمی‌شود */
-function relayBlob(surah, ayah) {
-  const key = surah + ':' + ayah;
+function relayBlob(surah, ayah, fa) {
+  const key = (fa ? 'fa:' : '') + surah + ':' + ayah;
   if (relayBlobs.has(key)) return Promise.resolve(relayBlobs.get(key));
   if (relayPending.has(key)) return relayPending.get(key);
-  const p = relayFetchRaw(surah, ayah).then(function (blob) {
+  const p = relayFetchRaw(surah, ayah, undefined, fa).then(function (blob) {
     relayBlobs.set(key, blob);
     while (relayBlobs.size > BLOB_KEEP) relayBlobs.delete(relayBlobs.keys().next().value);
     return blob;
@@ -383,13 +449,13 @@ async function fetchTrackBlob(t, signal) {
     if (saved) return saved;
   }
   const first = chooseRoute();
-  const order = t.fa ? ['direct'] : (settings.route === 'auto' ? (first === 'relay' ? ['relay', 'direct'] : ['direct', 'relay']) : [first]);
+  const order = settings.route === 'auto' ? (first === 'relay' ? ['relay', 'direct'] : ['direct', 'relay']) : [first];
   let lastErr = null;
   for (let i = 0; i < order.length; i++) {
     try {
       const blob = order[i] === 'direct'
         ? await directBlob(url, signal)
-        : (signal ? await relayFetchRaw(t.surah, t.ayah, signal) : await relayBlob(t.surah, t.ayah));
+        : (signal ? await relayFetchRaw(t.surah, t.ayah, signal, t.fa) : await relayBlob(t.surah, t.ayah, t.fa));
       if (settings.route === 'auto') noteRoute(order[i], i > 0);
       return blob;
     } catch (err) {
@@ -455,7 +521,6 @@ function loadSource(id, route) {
   if (!L || L.id !== id) return;
   const t = L.track;
   const direct = audioUrl(t.fa ? AUDIO_BASES.fa : AUDIO_BASES.ar, t.surah, t.ayah);
-  if (t.fa) route = 'direct';                  // صدای ترجمه از مسیر گوگل پشتیبانی نمی‌شود
 
   // ۰) ذخیره‌شده روی دستگاه (بدون اینترنت هم پخش می‌شود)
   if (!L.cacheFailed && typeof offlineHas === 'function' && offlineHas(direct)) {
@@ -489,7 +554,7 @@ function loadSource(id, route) {
     return;
   }
   dom.pStatus.textContent = 'در حال دریافت صدا از مسیر گوگل…';
-  relayBlob(t.surah, t.ayah).then(function (blob) {
+  relayBlob(t.surah, t.ayah, t.fa).then(function (blob) {
     if (!P.loaded || P.loaded.id !== id || P.userPaused) return;      // در این فاصله کاربر توقف زده
     setAudioSrc(URL.createObjectURL(blob), true);
     armWatchdog(id);
@@ -512,12 +577,7 @@ function audioFailed(id, why) {
     return;
   }
 
-  if (L.track.fa) {                              // صدای ترجمه نیامد: بی‌صدا رد شو و ادامه بده (متن ترجمه سر جایش است)
-    advanceFrom(L);
-    return;
-  }
-
-  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+  if (typeof navigator.onLine === 'boolean' && !navigator.onLine && !L.track.fa) {
     P.wantPlay = false; P.playing = false; P.buffering = false;
     P.error = 'اینترنت قطع است';
     updatePlayUI();
@@ -533,6 +593,11 @@ function audioFailed(id, why) {
     }
   }
 
+  if (L.track.fa) {                              // صدای ترجمه با هیچ مسیری نیامد: رد شو و ادامه بده (متن ترجمه سر جایش است)
+    advanceFrom(L);
+    return;
+  }
+
   P.wantPlay = false; P.playing = false; P.buffering = false;
   P.error = 'صدا بارگذاری نشد';
   updatePlayUI();
@@ -540,7 +605,7 @@ function audioFailed(id, why) {
 }
 
 function retryTrack() {
-  if (S.pos >= 0) startTrack(S.pos);
+  if (S.pos >= 0) playItem(S.pos, true);
 }
 
 /* =========================================================
@@ -549,11 +614,12 @@ function retryTrack() {
 /* شروع یک آهنگ تازه (آیتم pos از فهرست فعلی) */
 function startTrack(pos, opts) {
   opts = opts || {};
-  const track = trackFor(pos, !!opts.fa);
+  const wantFa = opts.fa === undefined ? firstIsFa(pos) : !!opts.fa;
+  const track = trackFor(pos, wantFa);
   if (!track) return;
   const key = trackKey(track);
   const id = ++P.trackId;
-  P.loaded = { id: id, fa: !!opts.fa, surah: S.surah, pos: pos, track: track, key: key, route: null, triedRelay: false, triedDirect: false, relayKey: '', cacheFailed: false };
+  P.loaded = { id: id, fa: wantFa, surah: S.surah, pos: pos, track: track, key: key, route: null, triedRelay: false, triedDirect: false, relayKey: '', cacheFailed: false };
   P.error = '';
   P.wantPlay = true;
   P.userPaused = false;
@@ -631,6 +697,7 @@ function cancelPendingAutoplay() {
 
 function playItem(pos, auto) {
   if (!S.data || pos < 0 || pos >= S.items.length) return;
+  pos = effectivePos(pos);                       // «فقط ترجمه»: بسم‌الله جدا پخش نمی‌شود، از آیهٔ اول شروع می‌کنیم
   if (!auto) P.markHold = false;                 // کاربر خودش آیه دیگری را پخش کرد: ذخیره خودکار دوباره آزاد است
   cancelPendingAutoplay();
   startTrack(pos);                               // اول صدا، بعد نمایش
@@ -651,6 +718,7 @@ function pausePlayback() {
 function resumePlayback() {
   if (!S.data || !S.items.length) return;
   if (S.pos < 0) { playItem(0); return; }
+  if (effectivePos(S.pos) !== S.pos) { playItem(S.pos); return; }     // روی بسم‌الله ایستاده و حالت «فقط ترجمه» است
   const L = P.loaded;
   const el = curEl();
   if (L && L.pos === S.pos && L.surah === S.surah && el.getAttribute('src') && !el.error && !el.ended) {
@@ -682,7 +750,7 @@ function playAdjacentSurah(dir) {
   const next = S.surah + dir;
   if (next < 1 || next > 114) return;
   const nd = peekSurahData(next);
-  if (dir > 0 && nd && spareReadyFor(firstTrackOf(next))) {
+  if (dir > 0 && nd && spareReadyFor(firstTrackMode(next))) {
     S.navToken++;
     S.loadingNum = 0;
     S.autoLoading = false;
@@ -701,7 +769,9 @@ function playAdjacentSurah(dir) {
 function stepItem(dir) {
   if (!S.data) return;
   const target = S.pos < 0 ? 0 : S.pos + dir;
-  if (target >= 0 && target < S.items.length) { playItem(target); return; }
+  // «فقط ترجمه»: از آیهٔ اول به عقب، بسم‌الله جدا نیست و یک سوره به عقب می‌رویم
+  const inSurah = target >= 0 && target < S.items.length && !(dir < 0 && effectivePos(target) === S.pos);
+  if (inSurah) { playItem(target); return; }
 
   const next = S.surah + dir;
   if (next < 1 || next > 114) {
@@ -730,8 +800,8 @@ function advanceFrom(L) {
   P.playing = false;
   const nx = afterTrack(L.pos, !!L.fa);
   if (nx) {
-    if (nx.fa) startTrack(nx.pos, { fa: true });
-    else playItem(nx.pos, true);
+    if (nx.pos === L.pos) startTrack(nx.pos, { fa: nx.fa });      // ترجمهٔ همین آیه
+    else playItem(nx.pos, true);                                    // آیهٔ بعد (آهنگ اولش را حالت پخش تعیین می‌کند)
     return;
   }
   if (S.loadingNum) {
@@ -864,7 +934,7 @@ function upcomingTracks(pos, n, fa) {
     out.push(trackFor(nx.pos, nx.fa));
     cur = nx;
   }
-  if (!more && out.length < n && S.surah < 114) out.push(firstTrackOf(S.surah + 1));
+  if (!more && out.length < n && S.surah < 114) out.push(firstTrackMode(S.surah + 1));
   return out;
 }
 

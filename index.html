@@ -11,7 +11,7 @@
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(s.v===3){if(typeof s.size==='number'&&s.size>=24&&s.size<=72)d.style.setProperty('--ayah-size',s.size+'px');if(typeof s.trSize==='number'&&s.trSize>=13&&s.trSize<=30)d.style.setProperty('--tr-size',s.trSize+'px')}}catch(e){}})();</script>
 <link rel="preload" href="UthmanicHafs-v22.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="Vazirmatn-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=81efe3d5">
+<link rel="stylesheet" href="style.css?v=4dd826ee">
 </head>
 <body>
 <noscript><p style="padding:24px;text-align:center">برای استفاده از این برنامه، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
@@ -44,6 +44,8 @@
     <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.3"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.3"/></symbol>
     <symbol id="i-prev" viewBox="0 0 24 24"><rect x="17.4" y="5.5" width="2.6" height="13" rx="1"/><path d="M4.6 6.4v11.2a.9.9 0 0 0 1.4.74l9.4-5.6a.9.9 0 0 0 0-1.48L6 5.66a.9.9 0 0 0-1.4.74z"/></symbol>
     <symbol id="i-next" viewBox="0 0 24 24"><rect x="4" y="5.5" width="2.6" height="13" rx="1"/><path d="M19.4 6.4v11.2a.9.9 0 0 1-1.4.74l-9.4-5.6a.9.9 0 0 1 0-1.48L18 5.66a.9.9 0 0 1 1.4.74z"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 2-.9 2-1.9 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3a3.7 3.7 0 0 0 3.7-3.7C21 6.6 17 3.5 12 3.5z"/><circle cx="7.6" cy="11.2" r=".7"/><circle cx="10.4" cy="7.4" r=".7"/><circle cx="15" cy="7.4" r=".7"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5a4.2 4.2 0 0 1-.6-8.36A5.6 5.6 0 0 1 17.3 9.2 4.7 4.7 0 0 1 17.5 18.5z"/></symbol>
     <symbol id="i-star" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="7" y="7" width="18" height="18"/><rect x="7" y="7" width="18" height="18" transform="rotate(45 16 16)"/><circle cx="16" cy="16" r="3.2" fill="currentColor" stroke="none"/></g></symbol>
   </defs>
 </svg>
@@ -61,6 +63,10 @@
     <button class="icon-btn" id="btnReminders" type="button" aria-label="یادآوری‌ها" title="یادآوری‌ها">
       <svg class="i"><use href="#i-bell" xlink:href="#i-bell"/></svg>
       <span class="count" id="remCount" hidden>0</span>
+    </button>
+    <button class="icon-btn" id="btnMarks" type="button" aria-label="رنگ‌های من" title="رنگ‌های من">
+      <svg class="i"><use href="#i-palette" xlink:href="#i-palette"/></svg>
+      <span class="count mk-count" id="markCount" hidden>0</span>
     </button>
     <button class="icon-btn" id="btnOffline" type="button" aria-label="ذخیره برای آفلاین" title="ذخیره برای آفلاین">
       <svg class="i"><use href="#i-download" xlink:href="#i-download"/></svg>
@@ -122,10 +128,14 @@
         <span class="trsw-label">نمایش ترجمهٔ فارسی زیر هر آیه</span>
         <span class="knob" aria-hidden="true"></span>
       </button>
-      <button type="button" class="trsw" id="faSwitch" role="switch" aria-checked="false">
-        <span class="trsw-label">پخش صوت ترجمهٔ فارسی بعد از هر آیه</span>
-        <span class="knob" aria-hidden="true"></span>
-      </button>
+      <div class="playmode">
+        <span class="pm-label">صوت پخش</span>
+        <div class="seg" id="segPlay" role="radiogroup" aria-label="صوت پخش">
+          <button type="button" role="radio" data-value="ar">فقط عربی</button>
+          <button type="button" role="radio" data-value="both">عربی و ترجمه</button>
+          <button type="button" role="radio" data-value="fa">فقط ترجمه</button>
+        </div>
+      </div>
     </div>
 
     <div class="list-spinner" id="listSpinner" hidden role="status">در حال بارگذاری سوره…</div>
@@ -210,7 +220,13 @@
       <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
     </div>
     <div class="panel-body">
-      <p class="off-intro">با ذخیرهٔ صوت و متن روی همین دستگاه، بدون اینترنت هم می‌توانید بخوانید و بشنوید.</p>
+      <p class="off-intro">متن و ترجمهٔ همهٔ سوره‌ها خودکار روی همین دستگاه ذخیره می‌شود تا بدون اینترنت هم کار کند. صوت را هر وقت خواستید جداگانه ذخیره کنید.</p>
+      <div class="off-job off-text" id="offText">
+        <div class="off-job-row"><span id="offTextLine"></span><button type="button" class="btn" id="offTextGo" hidden>ادامهٔ ذخیره</button></div>
+        <div class="off-bar"><i id="offTextFill"></i></div>
+        <p class="off-note" id="offTextNote"></p>
+      </div>
+      <h3 class="off-h">صوت برای آفلاین</h3>
       <p class="off-summary" id="offSummary"></p>
       <div class="off-job" id="offJob" hidden>
         <div class="off-job-row"><span id="offJobText"></span><button type="button" class="btn" id="offPause" data-act="pause">توقف</button></div>
@@ -219,16 +235,123 @@
       </div>
       <div class="off-actions">
         <button type="button" class="btn btn-primary" id="offSaveCur"></button>
-        <button type="button" class="btn" id="offSaveText">ذخیرهٔ متن و ترجمهٔ همهٔ سوره‌ها (کم‌حجم)</button>
-        <button type="button" class="btn" id="offSaveAll">ذخیرهٔ صوت و متن همهٔ قرآن</button>
+        <button type="button" class="btn" id="offSaveAll">ذخیرهٔ صوت همهٔ قرآن</button>
       </div>
       <div class="off-confirm" id="offConfirm" hidden>
         <p id="offConfirmText"></p>
         <div class="off-confirm-btns"><button type="button" class="btn btn-primary" id="offConfirmYes">بله، ادامه</button><button type="button" class="btn" id="offConfirmNo">انصراف</button></div>
       </div>
-      <h3 class="off-h">سوره‌های ذخیره‌شده</h3>
+      <h3 class="off-h">صوت‌های ذخیره‌شده</h3>
       <div id="offList"></div>
-      <button type="button" class="btn off-del-all" id="offDeleteAll" hidden>حذف همهٔ ذخیره‌ها</button>
+      <button type="button" class="btn off-del-all" id="offDeleteAll" hidden>حذف همهٔ صوت‌های ذخیره‌شده</button>
+    </div>
+  </div>
+</div>
+
+<!-- رنگ‌های من (گزارش و کپی) -->
+<div class="sheet" id="sheetMarks" role="dialog" aria-modal="true" aria-labelledby="hMarks" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hMarks">رنگ‌های من</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body" id="marksBody">
+      <button type="button" class="acct-bar" id="acctBar">
+        <svg class="i"><use href="#i-cloud" xlink:href="#i-cloud"/></svg>
+        <span id="acctBarText"></span>
+        <svg class="i chev"><use href="#i-chev-l" xlink:href="#i-chev-l"/></svg>
+      </button>
+      <div class="mk-chips" id="mkChips" role="radiogroup" aria-label="فیلتر بر اساس رنگ"></div>
+      <div class="mk-copy">
+        <div class="mk-copy-label">متنی که کپی می‌شود</div>
+        <div class="seg" id="segCopy" role="radiogroup" aria-label="متن کپی">
+          <button type="button" role="radio" data-value="ar">فقط عربی</button>
+          <button type="button" role="radio" data-value="both">عربی و ترجمه</button>
+          <button type="button" role="radio" data-value="fa">فقط ترجمه</button>
+        </div>
+        <button type="button" class="btn btn-primary" id="mkCopy">کپی</button>
+      </div>
+      <div id="mkList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- انتخاب رنگ یک آیه -->
+<div class="sheet" id="sheetColor" role="dialog" aria-modal="true" aria-labelledby="hColor" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hColor">رنگ آیه</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body">
+      <p class="color-target" id="colorTarget"></p>
+      <div class="swatches" id="swatches" role="radiogroup" aria-label="رنگ آیه"></div>
+    </div>
+  </div>
+</div>
+
+<!-- حساب و همگام‌سازی رنگ‌ها -->
+<div class="sheet" id="sheetAccount" role="dialog" aria-modal="true" aria-labelledby="hAcct" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hAcct">حساب و همگام‌سازی</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body">
+      <section id="acctOff">
+        <p class="acct-intro">رنگ‌هایی که می‌دهید همین حالا روی همین دستگاه ذخیره می‌شود. برای داشتن آن‌ها در گوشی، تبلت یا رایانهٔ دیگر، یک «کد شخصی» بسازید و در دستگاه‌های دیگر با همان کد وارد شوید.</p>
+        <button type="button" class="btn btn-primary acct-wide" id="acctCreate">ساخت کد شخصی جدید</button>
+        <h3 class="off-h">ورود با کد شخصی</h3>
+        <input class="acct-input" id="acctCodeInput" type="text" dir="ltr" lang="en" inputmode="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="40" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" aria-label="کد شخصی">
+        <button type="button" class="btn acct-wide" id="acctLogin">ورود</button>
+        <p class="acct-note">نام، ایمیل یا شمارهٔ شما هرگز گرفته نمی‌شود؛ فقط شمارهٔ آیه‌ها و رنگ‌شان با یک شناسهٔ رمزشده ذخیره می‌شود. کد را به کسی ندهید: هر کس کد را داشته باشد می‌تواند رنگ‌های شما را ببیند و تغییر دهد.</p>
+      </section>
+      <section id="acctOn" hidden>
+        <p class="acct-status" id="acctStatus"></p>
+        <div class="acct-actions">
+          <button type="button" class="btn btn-primary" id="acctSyncNow">همگام‌سازی همین حالا</button>
+          <button type="button" class="btn" id="acctShow">نمایش کد شخصی</button>
+          <button type="button" class="btn" id="acctLogout">خروج از حساب در این دستگاه</button>
+          <button type="button" class="btn off-del-all" id="acctWipe">پاک‌کردن اطلاعات من از سرور</button>
+        </div>
+      </section>
+      <section id="acctCode" hidden>
+        <p class="acct-intro">کد شخصی شما این است. در هر دستگاه دیگر با همین کد وارد شوید تا رنگ‌ها را ببینید.</p>
+        <div class="code-box" id="acctCodeText" dir="ltr" lang="en"></div>
+        <div class="acct-actions">
+          <button type="button" class="btn btn-primary" id="acctCopyCode">کپی کد</button>
+          <button type="button" class="btn" id="acctCodeDone">کد را جای امن نگه داشتم</button>
+        </div>
+        <p class="acct-warn">این کد را همین حالا جایی امن نگه دارید (مثلاً در «Saved Messages» تلگرام). اگر کد را گم کنید و در هیچ دستگاهی وارد نباشید، بازیابی آن ممکن نیست. کد را به کسی ندهید.</p>
+      </section>
+      <p class="pj-error acct-error" id="acctError" role="alert" hidden></p>
+      <div class="off-confirm" id="acctConfirm" hidden>
+        <p id="acctConfirmText"></p>
+        <div class="off-confirm-btns">
+          <button type="button" class="btn btn-primary" id="acctConfirmYes"></button>
+          <button type="button" class="btn" id="acctConfirmAlt" hidden></button>
+          <button type="button" class="btn" id="acctConfirmNo"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- متن برای کپی دستی (اگر مرورگر کپی خودکار را نپذیرد) -->
+<div class="sheet" id="sheetText" role="dialog" aria-modal="true" aria-labelledby="hText" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hText">متن آمادهٔ کپی</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="i"><use href="#i-close" xlink:href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body">
+      <p class="acct-intro">کپی خودکار انجام نشد. متن زیر را انتخاب و کپی کنید.</p>
+      <textarea class="text-box" id="textBox" readonly dir="auto" rows="10" aria-label="متن آمادهٔ کپی"></textarea>
+      <button type="button" class="btn btn-primary acct-wide" id="textSelect">انتخاب و کپی همه</button>
     </div>
   </div>
 </div>
@@ -290,6 +413,7 @@
       <div class="setting">
         <h3>داده‌های روی این دستگاه</h3>
         <button class="btn" id="btnOpenOffline" type="button">مدیریت ذخیره‌های آفلاین</button>
+        <button class="btn" id="btnOpenAccount" type="button">حساب و همگام‌سازی رنگ‌ها</button>
         <button class="btn" id="btnClearCache" type="button">پاک‌کردن حافظهٔ موقت سوره‌ها</button>
         <p>سوره‌های ذخیره‌شده برای آفلاین، یادآوری‌ها و جای آخرین خواندن با پاک‌کردن حافظهٔ موقت حذف نمی‌شوند.</p>
       </div>
@@ -312,15 +436,17 @@ setTimeout(function(){
   var h=document.createElement('h2');h.textContent='صفحه درست شروع نشد';box.appendChild(h);
   var p=document.createElement('p');p.setAttribute('dir','ltr');p.style.textAlign='left';
   p.textContent=(window.__qerr.join(' | ')||'no error captured')+' || '+navigator.userAgent;box.appendChild(p);
-  var n=document.createElement('p');n.textContent='ممکن است یکی از فایل‌های برنامه کامل آپلود نشده باشد. همهٔ فایل‌ها (index.html، style.css، sw.js، app-1.js تا app-6.js و دو فایل فونت) باید کنار هم در GitHub باشند. اگر باز هم درست نشد، این متن را بفرستید.';box.appendChild(n);
+  var n=document.createElement('p');n.textContent='ممکن است یکی از فایل‌های برنامه کامل آپلود نشده باشد. همهٔ فایل‌ها (index.html، style.css، sw.js، app-1.js تا app-8.js و دو فایل فونت) باید کنار هم در GitHub باشند. اگر باز هم درست نشد، این متن را بفرستید.';box.appendChild(n);
   l.innerHTML='';l.appendChild(box);
 },6000);
 </script>
-<script src="app-1.js?v=485670ae"></script>
-<script src="app-2.js?v=8c684716"></script>
-<script src="app-3.js?v=2b7aa699"></script>
-<script src="app-4.js?v=362a2e44"></script>
-<script src="app-5.js?v=bca97806"></script>
-<script src="app-6.js?v=8f2ba903"></script>
+<script src="app-1.js?v=411aad46"></script>
+<script src="app-2.js?v=5b3ed29b"></script>
+<script src="app-3.js?v=8b996424"></script>
+<script src="app-4.js?v=78770b3c"></script>
+<script src="app-5.js?v=59e6e79a"></script>
+<script src="app-6.js?v=644481fd"></script>
+<script src="app-7.js?v=871e9c5f"></script>
+<script src="app-8.js?v=b01be6a3"></script>
 </body>
 </html>

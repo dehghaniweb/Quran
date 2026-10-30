@@ -157,7 +157,9 @@ async function dataGet(num) {
 }
 
 async function dataPut(num, payload, saved) {
-  const entry = { n: num, v: CACHE_VERSION, at: Date.now(), saved: !!saved, payload: payload };
+  /* سوره‌ای که برای آفلاین ذخیره شده با یک دریافت معمولی از حالت «ذخیره‌شده» خارج نمی‌شود */
+  const keep = !!saved || (typeof off !== 'undefined' && off.textSaved && off.textSaved.has(num));
+  const entry = { n: num, v: CACHE_VERSION, at: Date.now(), saved: keep, payload: payload };
   const ok = await idbPut('surahs', entry);
   if (ok) { store.remove(lsSurahKey(num)); return true; }
   return lsPutSurah(entry);
@@ -192,7 +194,9 @@ function validSurahList(list) {
 async function fetchSurahList(opts) {
   const json = await apiGet('surahs', null, opts);
   if (!validSurahList(json.surahs)) throw apiError('server', 'فهرست سوره‌ها نامعتبر است');
-  store.set(KEYS.cachePrefix + 'surahs', { v: CACHE_VERSION, at: Date.now(), data: json.surahs });
+  const entry = { v: CACHE_VERSION, at: Date.now(), data: json.surahs };
+  store.set(KEYS.cachePrefix + 'surahs', entry);
+  kvSet('surahs', entry).then(noop, noop);          // نسخهٔ دوم در IndexedDB؛ با پاک‌کردن حافظهٔ موقت از بین نمی‌رود
   mem.surahs = json.surahs;
   return json.surahs;
 }
@@ -202,7 +206,10 @@ function loadSurahList() {
   if (mem.listInflight) return mem.listInflight;
 
   mem.listInflight = (async function () {
-    const entry = store.get(KEYS.cachePrefix + 'surahs', null);
+    let entry = store.get(KEYS.cachePrefix + 'surahs', null);
+    if (!(entry && entry.v === CACHE_VERSION && validSurahList(entry.data))) {
+      try { entry = await kvGet('surahs'); } catch (e) { entry = null; }
+    }
     if (entry && entry.v === CACHE_VERSION && validSurahList(entry.data)) {
       mem.surahs = entry.data;
       if (Date.now() - Number(entry.at || 0) > STALE_MS && navigator.onLine !== false) {

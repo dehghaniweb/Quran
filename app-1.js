@@ -250,7 +250,10 @@ const KEYS = {
   settings: 'quran_settings_v2',
   cachePrefix: 'quran_cache_v3:',
   oldCachePrefix: 'quran_cache_v2:',
-  relay: 'quran_audio_relay_v1'
+  relay: 'quran_audio_relay_v1',
+  textToast: 'quran_text_saved_toast_v1',
+  marks: 'quran_ayah_marks_v1',          // رنگ آیه‌ها
+  acct: 'quran_account_v1'               // کد شخصی و وضعیت همگام‌سازی
 };
 
 const CACHE_VERSION = 3;
@@ -311,7 +314,8 @@ const SETTING_DEFAULTS = {
   size: 34,             // اندازه متن عربی (px)
   trSize: 17,           // اندازه ترجمه (px)
   translation: false,   // نمایش ترجمه فارسی زیر آیه‌ها
-  faAudio: false,       // پخش صوت ترجمهٔ فارسی بعد از هر آیه
+  audioMode: 'ar',      // ar = فقط عربی | both = عربی و بعد ترجمه | fa = فقط ترجمه
+  copyMode: 'both',     // متن کپیِ آیه‌های رنگی: ar = فقط عربی | both = عربی و ترجمه | fa = فقط ترجمه
   route: 'auto',        // auto | direct | relay  (مسیر دریافت صوت)
   minPlayer: false
 };
@@ -329,7 +333,9 @@ const settings = (function () {
     if (['meadow', 'lapis', 'emerald'].indexOf(saved.palette) >= 0) s.palette = saved.palette;
     if (['auto', 'direct', 'relay'].indexOf(saved.route) >= 0) s.route = saved.route;
     s.minPlayer = !!saved.minPlayer;
-    s.faAudio = !!saved.faAudio;
+    if (['ar', 'both', 'fa'].indexOf(saved.audioMode) >= 0) s.audioMode = saved.audioMode;
+    else if (saved.faAudio) s.audioMode = 'both';
+    if (['ar', 'both', 'fa'].indexOf(saved.copyMode) >= 0) s.copyMode = saved.copyMode;
     if (saved.v === SETTINGS_VERSION) {
       if (typeof saved.size === 'number' && saved.size >= SIZE_MIN && saved.size <= SIZE_MAX) s.size = Math.round(saved.size);
       if (typeof saved.trSize === 'number' && saved.trSize >= TR_MIN && saved.trSize <= TR_MAX) s.trSize = Math.round(saved.trSize);

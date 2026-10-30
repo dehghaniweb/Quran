@@ -1,8 +1,8 @@
 /* Service Worker — conservative: only same-origin static files. API/audio (cross-origin) are never touched. */
 'use strict';
-var VERSION = 'db546034';
+var VERSION = 'b716a9ae';
 var CACHE = 'quran-static-' + VERSION;
-var FILES = ["./", "index.html", "style.css?v=81efe3d5", "app-1.js?v=485670ae", "app-2.js?v=8c684716", "app-3.js?v=2b7aa699", "app-4.js?v=362a2e44", "app-5.js?v=bca97806", "app-6.js?v=8f2ba903", "UthmanicHafs-v22.woff2", "Vazirmatn-var.woff2"];
+var FILES = ["./", "index.html", "style.css?v=4dd826ee", "app-1.js?v=411aad46", "app-2.js?v=5b3ed29b", "app-3.js?v=8b996424", "app-4.js?v=78770b3c", "app-5.js?v=59e6e79a", "app-6.js?v=644481fd", "app-7.js?v=871e9c5f", "app-8.js?v=b01be6a3", "UthmanicHafs-v22.woff2", "Vazirmatn-var.woff2"];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) {
