@@ -296,7 +296,7 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
   font-size:var(--ayah-size);line-height:2.35;color:var(--ink);word-spacing:.04em;
   -webkit-text-stroke:.03em currentColor;paint-order:stroke fill;
 }
-.translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:var(--tr-size);line-height:2;text-align:right}
+.translation{margin:8px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--ink-2);font-size:var(--tr-size);line-height:2;text-align:justify;text-align-last:right}
 .bismillah .bis-tr{border-top:0;padding-top:2px;font-family:var(--font-ui);font-size:var(--tr-size);line-height:1.9;text-align:center}
 .translation.empty{color:var(--ink-3);font-size:13.5px}
 
@@ -468,10 +468,10 @@ html[data-theme="dark"] .toast button{color:#7a5a12}
 .trsw[aria-checked="true"] .knob{background:var(--field);border-color:var(--field)}
 .trsw[aria-checked="true"] .knob::after{transform:translateX(-20px);background:var(--on-field)}
 
-.fabs{position:fixed;z-index:45;top:calc(var(--topbar-h) + 10px + env(safe-area-inset-top));left:10px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.fab{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--gold-2);background:var(--field);color:var(--on-field);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:scale(.85);transition:opacity .18s,transform .18s,visibility 0s .18s}
-.fab.show{opacity:.94;visibility:visible;transform:none;pointer-events:auto;transition-delay:0s}
-.fab svg.i{width:22px;height:22px;stroke-width:2.2}
+.fabs{position:fixed;z-index:45;bottom:calc(var(--player-h, 0px) + 12px + env(safe-area-inset-bottom));right:6px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.fab{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--gold-2);background:var(--field);color:var(--on-field);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);opacity:0;visibility:hidden;transform:scale(.85);transition:opacity .18s,transform .18s,visibility 0s .18s}
+.fab.show{opacity:.8;visibility:visible;transform:none;pointer-events:auto;transition-delay:0s}
+.fab svg.i{width:17px;height:17px;stroke-width:2.2}
 .fab-cur{background:var(--gold-2);color:#2a1d00;border-color:var(--field-2)}
 
 .icon-btn .busy-dot{display:none;position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--gold-2);animation:pulse 1.2s ease-in-out infinite}
