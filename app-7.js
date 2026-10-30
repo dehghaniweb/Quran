@@ -81,41 +81,13 @@ function acctNormalize(text) {
   return String(text || '')
     .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
     .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
-    .toUpperCase()
-    .replace(/[^0-9A-Z]/g, '')
-    .replace(/O/g, '0')
-    .replace(/[IL]/g, '1');
+    .replace(/[^0-9]/g, '');
 }
 
-/* دو نویسهٔ کنترل: اولی مجموع وزن‌دار (هر اشتباه یک‌نویسه‌ای را می‌گیرد)، دومی از روی SHA-256 (جابه‌جایی نویسه‌ها را هم می‌گیرد) */
-function acctCheckChars(payload) {
-  let sum = 0;
-  for (let i = 0; i < payload.length; i++) sum += ACCT_ALPHABET.indexOf(payload.charAt(i)) * (2 * i + 1);
-  const c1 = ACCT_ALPHABET.charAt(sum % 32);
-  const c2 = ACCT_ALPHABET.charAt(parseInt(sha256Hex('qm1c|' + payload).slice(0, 2), 16) & 31);
-  return c1 + c2;
-}
+/* کد شخصی: فقط ارقام، ۶ تا ۱۲ رقم؛ درستی‌اش را سرور (فقط صاحب برنامه) بررسی می‌کند */
+function acctValid(code) { return /^[0-9]{6,12}$/.test(code); }
 
-function acctValid(code) {
-  if (!/^[0-9A-HJKMNP-TV-Z]{20}$/.test(code)) return false;
-  return acctCheckChars(code.slice(0, ACCT_PAYLOAD)) === code.slice(ACCT_PAYLOAD);
-}
-
-function acctGenerate() {
-  const bytes = new Uint8Array(ACCT_PAYLOAD);
-  let strong = false;
-  try {
-    if (window.crypto && window.crypto.getRandomValues) { window.crypto.getRandomValues(bytes); strong = true; }
-  } catch (e) { strong = false; }
-  if (!strong) for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
-  let payload = '';
-  for (let i = 0; i < bytes.length; i++) payload += ACCT_ALPHABET.charAt(bytes[i] & 31);   // ۲۵۶ بر ۳۲ بخش‌پذیر است؛ توزیع یکنواخت
-  return payload + acctCheckChars(payload);
-}
-
-function acctFormat(code) {
-  return String(code).replace(/(.{4})(?=.)/g, '$1-');
-}
+function acctFormat(code) { return String(code); }
 
 function acctOwnerOf(code) {
   return sha256Hex('qm1|' + code);
@@ -155,7 +127,7 @@ function msPendingCount() { return mkDirtyList().length; }
 
 /* خلاصهٔ یک‌خطی برای نوار بالای گزارش رنگ‌ها */
 function acctBarText() {
-  if (!acctActive()) return 'رنگ‌ها فقط روی همین دستگاه ذخیره می‌شود. برای داشتن آن‌ها در دستگاه‌های دیگر، کد شخصی بسازید یا وارد شوید.';
+  if (!acctActive()) return 'رنگ‌ها فقط روی همین دستگاه ذخیره می‌شود. ';
   if (msync.status === 'running') return 'متصل به حساب شخصی · در حال همگام‌سازی…';
   if (msync.status === 'error') return 'متصل به حساب شخصی · همگام‌سازی انجام نشد (بعداً دوباره امتحان می‌شود)';
   if (msync.status === 'offline') return 'متصل به حساب شخصی · اینترنت قطع است؛ بعداً خودکار همگام می‌شود';
@@ -174,7 +146,15 @@ function acctStatusText() {
   return lines.join('\n');
 }
 
+/* بخش ورود فقط برای صاحب برنامه است: تا وقتی وارد نشده، نوار و دکمه‌اش دیده نمی‌شود (راه ورود: ۵ بار لمس عنوان «رنگ‌های من») */
+function acctApplyVisibility() {
+  const on = acctActive();
+  const bar = $('acctBar'); if (bar) bar.hidden = !on;
+  const btn = $('btnOpenAccount'); if (btn) btn.hidden = !on;
+}
+
 function updateAcctUI() {
+  acctApplyVisibility();
   if (sheets.open === 'account') renderAccountSheet();
   else if (sheets.open === 'marks' && typeof acctBarText === 'function' && $('acctBarText')) $('acctBarText').textContent = acctBarText();
 }
@@ -184,6 +164,8 @@ function updateAcctUI() {
 ========================================================= */
 function msErrorText(err) {
   const m = String(err && err.message || '');
+  if (/not_allowed/.test(m)) return 'این کد درست نیست.';
+  if (/sync_off/.test(m)) return 'همگام‌سازی روی سرور فعال نشده است.';
   if (/marks_limit/.test(m)) return 'سقف تعداد رنگ‌های این کد پر شده است.';
   if (/Unknown action/i.test(m)) return 'نسخهٔ گوگل اسکریپت قدیمی است؛ نسخهٔ جدید Code.gs باید Deploy شود.';
   if (/marks_not_ready/.test(m)) return 'جدول رنگ‌ها در Supabase هنوز ساخته نشده است.';
@@ -347,23 +329,11 @@ function acctSetState(code) {
   msync.fails = 0;
 }
 
-function acctCreate() {
-  if (acctActive()) return;
-  if (!API_READY) { acct.note = 'اتصال به سرور تنظیم نشده است.'; renderAccountSheet(); return; }
-  acctSetState(acctGenerate());
-  acct.view = 'code';
-  acct.note = '';
-  renderAccountSheet();
-  msyncSchedule(300);
-  updateMarkBadge();
-}
-
 async function acctLogin() {
   if (acct.busy) return;
   const input = $('acctCodeInput');
   const code = acctNormalize(input.value);
-  if (code.length !== 20) { acct.note = 'کد باید ۲۰ نویسه (حرف انگلیسی و عدد) باشد؛ نشانهٔ «-» اهمیتی ندارد.'; renderAccountSheet(); return; }
-  if (!acctValid(code)) { acct.note = 'این کد درست نیست؛ یکی از نویسه‌ها را اشتباه وارد کرده‌اید. دوباره با دقت بخوانید.'; renderAccountSheet(); return; }
+  if (!acctValid(code)) { acct.note = 'کد باید فقط رقم باشد (۶ تا ۱۲ رقم).'; renderAccountSheet(); return; }
   if (!API_READY) { acct.note = 'اتصال به سرور تنظیم نشده است.'; renderAccountSheet(); return; }
   if (typeof navigator.onLine === 'boolean' && !navigator.onLine) { acct.note = 'برای ورود، اینترنت لازم است.'; renderAccountSheet(); return; }
   acct.busy = true;
@@ -488,6 +458,7 @@ function prepareAccountSheet() {
 }
 
 function renderAccountSheet() {
+  acctApplyVisibility();
   if (!$('acctOff')) return;
   const active = acctActive();
   if (!active && acct.view !== 'off') acct.view = 'off';
@@ -499,7 +470,6 @@ function renderAccountSheet() {
   err.textContent = acct.note;
   err.hidden = !acct.note;
   $('acctLogin').disabled = acct.busy;
-  $('acctCreate').disabled = acct.busy;
   if (acct.view === 'on' && active) {
     $('acctStatus').textContent = acctStatusText();
     $('acctSyncNow').disabled = msync.running || acct.busy;
@@ -518,7 +488,6 @@ function renderAccountSheet() {
 }
 
 function bindAccount() {
-  $('acctCreate').addEventListener('click', acctCreate);
   $('acctLogin').addEventListener('click', acctLogin);
   $('acctCodeInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); acctLogin(); }

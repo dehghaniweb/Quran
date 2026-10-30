@@ -280,6 +280,7 @@ function renderMarksSheet() {
   if (mk.filter !== 'all' && !MK_BY_ID[mk.filter]) mk.filter = 'all';
 
   if (typeof acctBarText === 'function') $('acctBarText').textContent = acctBarText();
+  if (typeof acctApplyVisibility === 'function') acctApplyVisibility();
 
   let h = mkChipHtml('all', 'همه', counts.total);
   MK_COLORS.forEach(function (c) { h += mkChipHtml(c.id, c.fa, counts[c.id]); });
@@ -458,6 +459,14 @@ function bindMarks() {
   });
   $('mkList').addEventListener('click', onMarksListClick);
   $('acctBar').addEventListener('click', function () { openSheet('account', $('acctBar')); });
+  // ورود صاحب برنامه: ۵ بار پشت‌سرهم لمس عنوان «رنگ‌های من»
+  let taps = 0, tapT = 0;
+  $('hMarks').addEventListener('click', function () {
+    const now = Date.now();
+    taps = now - tapT < 1500 ? taps + 1 : 1; tapT = now;
+    if (taps >= 5) { taps = 0; openSheet('account', $('hMarks')); }
+  });
+  if (typeof acctApplyVisibility === 'function') acctApplyVisibility();
   $('textSelect').addEventListener('click', function () {
     const ta = $('textBox');
     try { ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); } catch (e) { /* ignore */ }
