@@ -379,6 +379,9 @@ body.is-playing .ayah.active .eq i:nth-child(3){animation-delay:-600ms}
   background:var(--paper);color:var(--ink);border-radius:22px 22px 0 0;box-shadow:var(--shadow);
   padding-bottom:env(safe-area-inset-bottom);animation:rise .22s ease-out;
 }
+/* فهرست سوره‌ها از بالا باز می‌شود تا کیبورد نتیجه‌ها را نپوشاند */
+#sheetSurahs .panel{top:0;bottom:auto;max-height:min(88vh,calc(100dvh - 8px));border-radius:0 0 22px 22px;padding-bottom:0;padding-top:env(safe-area-inset-top);animation:drop .22s ease-out}
+@keyframes drop{from{transform:translateY(-40px);opacity:.4}}
 @keyframes fade{from{opacity:0}}
 @keyframes rise{from{transform:translateY(40px);opacity:.4}}
 .panel-head{display:flex;align-items:center;gap:8px;padding:14px 16px 8px}
