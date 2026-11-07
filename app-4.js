@@ -92,7 +92,7 @@ function trackFor(pos, fa) {
 }
 
 /* آیه‌هایی که صدای ترجمهٔ فارسیِ منبع خراب است (با شنیدن و بررسی طول فایل پیدا شده‌اند)؛ برایشان صدای ترجمه پخش نمی‌شود */
-const FA_SKIP = ['17:22', '26:48', '28:34', '50:25', '57:10', '75:5', '75:20', '75:33'];
+const FA_SKIP = [];
 
 function faTrackOk(track) {
   return !!track && FA_SKIP.indexOf(track.surah + ':' + track.ayah) < 0;

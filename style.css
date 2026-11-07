@@ -225,6 +225,10 @@ svg.i.fill{fill:currentColor;stroke:none}
 .pj-field .btn{min-width:64px}
 .pj-error{flex:1 0 100%;margin:0;color:var(--rose);font-size:13px;min-height:0}
 .pj-error:empty{display:none}
+.ayahjump .pj-field input{width:118px}
+.ayah.flash,.bismillah.flash{animation:ayflash 1.6s ease-out}
+@keyframes ayflash{0%,35%{box-shadow:0 0 0 3px var(--focus)}100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.ayah.flash{animation:none}}
 .resume{display:flex;flex-wrap:wrap;gap:8px}
 .resume .btn{flex:1 1 160px}
 .resume .btn svg.i{width:20px;height:20px}

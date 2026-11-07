@@ -41,6 +41,7 @@ function showSetupNeeded() {
 }
 
 async function goToSurah(num, opts) {
+  try { dom.ayahInput.value = ''; dom.ayahError.textContent = ''; } catch (e) { /* ignore */ }
   opts = opts || {};
   num = Number(num);
   if (!(num >= 1 && num <= 114)) return false;
@@ -207,6 +208,45 @@ function persianizeInput(el, digitsOnly) {
   const head = caret === null ? nv.length : fix(v.slice(0, caret)).length;
   el.value = nv;
   try { el.setSelectionRange(head, head); } catch (e) { /* ignore */ }
+}
+
+/* رفتن به آیه در همین سوره: با تایپ خودکار می‌رود، با «برو» یا Enter آیه را فعال هم می‌کند */
+let ayahTimer = 0;
+function ayahPosOf(n) {
+  for (let i = 0; i < S.items.length; i++) {
+    const it = S.items[i];
+    if (it.kind === 'ayah' && Number(it.ayah.ayah_number) === n) return i;
+  }
+  return -1;
+}
+function ayahCount() {
+  let c = 0;
+  for (let i = 0; i < S.items.length; i++) if (S.items[i].kind === 'ayah') c++;
+  return c;
+}
+function jumpToAyahNum(raw, commit) {
+  const text = toAsciiDigits(raw).trim();
+  if (!text) { dom.ayahError.textContent = ''; return; }
+  const n = /^\d{1,3}$/.test(text) ? Number(text) : 0;
+  const pos = n >= 1 ? ayahPosOf(n) : -1;
+  if (pos < 0) {
+    if (commit) dom.ayahError.textContent = S.items.length ? ('در این سوره آیه‌ای با این شماره نیست (۱ تا ' + faNum(ayahCount()) + ').') : 'اول یک سوره باز کنید.';
+    return;
+  }
+  dom.ayahError.textContent = '';
+  const el = S.els[pos];
+  if (commit) {
+    focusItem(pos, { scroll: 'start' });
+    try { dom.ayahInput.blur(); } catch (e) { /* ignore */ }
+  } else if (el) {
+    scrollToEl(el, 'start');
+  }
+  if (el) {
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    setTimeout(function () { el.classList.remove('flash'); }, 1600);
+  }
 }
 
 async function jumpToPage(raw) {
@@ -493,6 +533,20 @@ function bindUI() {
   dom.pageInput.addEventListener('input', function () {
     persianizeInput(dom.pageInput, true);
     dom.pageError.textContent = '';
+  });
+
+  dom.ayahForm.addEventListener('submit', function (e) { e.preventDefault(); clearTimeout(ayahTimer); jumpToAyahNum(dom.ayahInput.value, true); });
+  dom.ayahInput.addEventListener('input', function () {
+    persianizeInput(dom.ayahInput, true);
+    dom.ayahError.textContent = '';
+    clearTimeout(ayahTimer);
+    ayahTimer = setTimeout(function () { jumpToAyahNum(dom.ayahInput.value, false); }, 400);
+  });
+  dom.ayahClear.addEventListener('click', function () {
+    clearTimeout(ayahTimer);
+    dom.ayahInput.value = '';
+    dom.ayahError.textContent = '';
+    try { dom.ayahInput.focus(); } catch (e) { /* ignore */ }
   });
 
   dom.continueBtn.addEventListener('click', continueFromBookmark);

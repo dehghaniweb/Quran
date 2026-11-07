@@ -11,6 +11,7 @@ const dom = {
   surahAr: $('surahAr'), surahFa: $('surahFa'), surahMeta: $('surahMeta'),
   prevSurah: $('prevSurah'), nextSurah: $('nextSurah'), prevName: $('prevName'), nextName: $('nextName'),
   nowLine: $('nowLine'),
+  ayahForm: $('ayahForm'), ayahInput: $('ayahInput'), ayahError: $('ayahError'), ayahClear: $('ayahClear'),
   pageForm: $('pageForm'), pageInput: $('pageInput'), pageError: $('pageError'), pageGo: $('pageGo'),
   continueBtn: $('continueBtn'), continueText: $('continueText'),
   saveSurah: $('btnSaveSurah'), saveSurahText: $('saveSurahText'), saveSurahBar: $('saveSurahBar'),

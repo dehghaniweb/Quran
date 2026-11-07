@@ -11,7 +11,7 @@
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(s.v===3){if(typeof s.size==='number'&&s.size>=24&&s.size<=72)d.style.setProperty('--ayah-size',s.size+'px');if(typeof s.trSize==='number'&&s.trSize>=13&&s.trSize<=30)d.style.setProperty('--tr-size',s.trSize+'px')}}catch(e){}})();</script>
 <link rel="preload" href="UthmanicHafs-v22.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="Vazirmatn-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=a08e4e51">
+<link rel="stylesheet" href="style.css?v=b8e65696">
 </head>
 <body>
 <noscript><p style="padding:24px;text-align:center">برای استفاده از این برنامه، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
@@ -108,6 +108,15 @@
           <button class="btn btn-primary" id="pageGo" type="submit">برو</button>
         </div>
         <p class="pj-error" id="pageError" aria-live="polite"></p>
+      </form>
+      <form class="pagejump ayahjump" id="ayahForm" novalidate>
+        <label for="ayahInput">رفتن به آیه</label>
+        <div class="pj-field">
+          <input id="ayahInput" type="text" inputmode="numeric" lang="fa" dir="rtl" maxlength="3" placeholder="شمارهٔ آیه" autocomplete="off" enterkeyhint="go" aria-label="شمارهٔ آیه در همین سوره" aria-describedby="ayahError">
+          <button class="btn btn-primary" id="ayahGo" type="submit">برو</button>
+          <button class="btn" id="ayahClear" type="button" aria-label="پاک‌کردن شمارهٔ آیه">پاک</button>
+        </div>
+        <p class="pj-error" id="ayahError" aria-live="polite"></p>
       </form>
       <div class="resume">
         <button class="btn btn-primary" id="btnStart" type="button">
@@ -441,11 +450,11 @@ setTimeout(function(){
 </script>
 <script src="app-1.js?v=411aad46"></script>
 <script src="app-2.js?v=5b3ed29b"></script>
-<script src="app-3.js?v=8b996424"></script>
-<script src="app-4.js?v=78770b3c"></script>
+<script src="app-3.js?v=b48c9a06"></script>
+<script src="app-4.js?v=ed1afb87"></script>
 <script src="app-5.js?v=59e6e79a"></script>
 <script src="app-6.js?v=89662ad1"></script>
 <script src="app-7.js?v=5a822cec"></script>
-<script src="app-8.js?v=b01be6a3"></script>
+<script src="app-8.js?v=5ffb3a9e"></script>
 </body>
 </html>
