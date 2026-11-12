@@ -389,8 +389,84 @@ function base64ToBlob(b64, mime) {
   return new Blob([bytes], { type: mime || 'audio/mpeg' });
 }
 
-/* دریافت از مسیر گوگل (بدون حافظهٔ مشترک؛ برای ذخیره آفلاین هم همین استفاده می‌شود) */
+/* ---------- بستهٔ صوتی تلگرام (از راه گوگل) ----------
+   اسکریپت چند آیهٔ پشت‌سرهم را یک‌جا می‌دهد: { data(base64), offsets:[[آیه, شروع, طول],…] }.
+   هر آیه را با Blob.slice جدا می‌کنیم؛ آیه‌های بعدی بدون درخواست تازه آماده‌اند. */
+const PACK_KEEP = 4;                 // چند بسته در حافظه بماند
+const PACK_BUDGET = 700000;          // برای پخش: فقط حدود این‌همه بایت از آیهٔ فعلی به بعد (شروع سریع روی اینترنت کند)
+const PACK_BAD_MS = 30 * 60 * 1000;  // اگر اسکریپت بستهٔ تلگرام را ندارد/خاموش است، این مدت امتحان نکن
+const packs = new Map();             // کلید → { key, lang, surah, blob, ay: Map(آیه → [شروع، طول]) }
+const packChain = new Map();         // 'fa:2' → درخواست در حال انجام (هر سوره یکی‌یکی)
+let packBadUntil = 0;
+
+function packLookup(lang, surah, ayah) {
+  const all = Array.from(packs.values());
+  for (let i = 0; i < all.length; i++) {
+    const p = all[i];
+    if (p.lang !== lang || p.surah !== surah) continue;
+    const o = p.ay.get(ayah);
+    if (!o) continue;
+    packs.delete(p.key); packs.set(p.key, p);                 // تازه‌ترین استفاده
+    return p.blob.slice(o[0], o[0] + o[1], 'audio/mpeg');
+  }
+  return null;
+}
+
+function packStore(lang, surah, json) {
+  const blob = base64ToBlob(json.data, 'audio/mpeg');
+  if (blob.size !== Number(json.size)) throw apiError('server', 'بستهٔ صوتی ناقص بود');
+  const ay = new Map();
+  (json.offsets || []).forEach(function (o) {
+    const a = Number(o[0]), st = Number(o[1]), len = Number(o[2]);
+    if (st >= 0 && len > 200 && st + len <= blob.size) ay.set(a, [st, len]);
+  });
+  if (!ay.size) throw apiError('server', 'فهرست بستهٔ صوتی خالی بود');
+  const key = lang + ':' + surah + ':' + Number(json.ayah_from) + ':' + Date.now();
+  packs.set(key, { key: key, lang: lang, surah: surah, blob: blob, ay: ay });
+  while (packs.size > PACK_KEEP) packs.delete(packs.keys().next().value);
+}
+
+async function packBlobFor(surah, ayah, fa, signal) {
+  if (Date.now() < packBadUntil) return null;
+  const lang = fa ? 'fa' : 'ar';
+  const hit = packLookup(lang, surah, ayah);
+  if (hit) return hit;
+  const ck = lang + ':' + surah;
+  const prev = packChain.get(ck) || Promise.resolve();
+  const run = prev.catch(function () { /* خطای درخواست قبلی به این ربطی ندارد */ }).then(async function () {
+    const again = packLookup(lang, surah, ayah);
+    if (again) return again;
+    if (signal && signal.aborted) throw apiError('aborted', 'aborted');
+    const params = { lang: lang, surah: surah, ayah: ayah };
+    if (!signal) params.budget = PACK_BUDGET;                   // ذخیرهٔ آفلاین (با signal) بستهٔ کامل می‌گیرد
+    let json;
+    try {
+      json = await apiGet('audiopack', params, { timeout: 60000, retries: 1, signal: signal });
+    } catch (err) {
+      const m = String(err && err.message || '');
+      if (/Unknown action|tg_off|lang must/.test(m)) packBadUntil = Date.now() + PACK_BAD_MS;
+      throw err;
+    }
+    if (!json.data) throw apiError('server', 'بستهٔ صوتی خالی بود');
+    packStore(lang, surah, json);
+    const got = packLookup(lang, surah, ayah);
+    if (!got) throw apiError('server', 'آیه در بسته نبود');
+    return got;
+  });
+  packChain.set(ck, run);
+  const clear = function () { if (packChain.get(ck) === run) packChain.delete(ck); };
+  run.then(clear, clear);
+  return run;
+}
+
+/* دریافت از مسیر گوگل: اول بستهٔ تلگرام، اگر نشد همان روش قدیمی (تک‌فایل از Supabase) */
 async function relayFetchRaw(surah, ayah, signal, fa) {
+  try {
+    const b = await packBlobFor(surah, ayah, fa, signal);
+    if (b) return b;
+  } catch (err) {
+    if (err && err.kind === 'aborted') throw err;
+  }
   const json = await apiGet('audio', fa ? { surah: surah, ayah: ayah, lang: 'fa' } : { surah: surah, ayah: ayah }, { timeout: 45000, retries: 1, signal: signal });
   if (!json.data) throw apiError('server', 'فایل صوتی خالی بود');
   return base64ToBlob(json.data, json.mime);

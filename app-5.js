@@ -683,6 +683,7 @@ function renderOfflineSheet() {
   curBtn.textContent = cur ? ('ذخیرهٔ صوت ' + surahTitle(cur)) : '';
   curBtn.disabled = running || !offlineSupported() || (cur ? offlineComplete(cur) : true);
   $('offSaveAll').disabled = running || !offlineSupported();
+  renderDownloadButtons();
 
   const conf = $('offConfirm');
   if (off.confirm) {
@@ -729,6 +730,12 @@ function bindOffline() {
       txt.retries = 0;
       txt.error = '';
       startTextSync(true);
+    } else if (id === 'dlText') {
+      downloadSurahText();
+    } else if (id === 'dlAudio') {
+      downloadSurahAudio();
+    } else if (id === 'dlShare') {
+      shareLastDownload();
     } else if (id === 'offSaveCur') {
       if (S.surah) startOfflineJob('audio', [S.surah]);
     } else if (id === 'offSaveAll') {
@@ -753,4 +760,115 @@ function bindOffline() {
       askConfirm('delete', [], 'همهٔ صوت‌های ذخیره‌شده برای آفلاین پاک می‌شود؛ متن و ترجمهٔ سوره‌ها می‌ماند. ادامه می‌دهید؟');
     }
   });
+}
+
+
+/* =========================================================
+   دانلود فایل: متن سوره (txt) و صوت سوره (یک mp3 پشت‌سرهم)
+========================================================= */
+const dl = { busy: false, last: null, token: 0 };
+
+function dlSetNote(text) {
+  const el = $('dlNote');
+  if (el) el.textContent = text || '';
+}
+
+function renderDownloadButtons() {
+  const t = $('dlText'), a = $('dlAudio'), sh = $('dlShare');
+  if (!t || !a) return;
+  const cur = S.surah;
+  t.textContent = cur ? ('دانلود متن ' + surahTitle(cur)) : 'دانلود متن';
+  a.textContent = cur ? ('دانلود صوت ' + surahTitle(cur)) : 'دانلود صوت';
+  t.disabled = !cur || !S.data || dl.busy;
+  a.disabled = !cur || !S.data || dl.busy;
+  let canShare = false;
+  try { canShare = !!(dl.last && navigator.canShare && navigator.canShare({ files: [dl.last] })); } catch (e) { canShare = false; }
+  if (sh) sh.hidden = !canShare;
+}
+
+/* فایل را به کاربر می‌دهد (لینک دانلود)؛ اگر مرورگر اجازه نداد، دکمهٔ اشتراک‌گذاری می‌ماند */
+function deliverFile(blob, name, mime) {
+  let file = null;
+  try { file = new File([blob], name, { type: mime }); } catch (e) { file = null; }
+  dl.last = file;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
+  renderDownloadButtons();
+}
+
+function shareLastDownload() {
+  if (!dl.last || !navigator.share) return;
+  navigator.share({ files: [dl.last], title: dl.last.name }).catch(function () { /* کاربر بست */ });
+}
+
+function surahTextFile(n, data) {
+  const lines = [];
+  lines.push('سورهٔ ' + surahTitle(n));
+  lines.push('');
+  if (data.has_bismillah && data.bismillah) { lines.push(data.bismillah); lines.push(''); }
+  data.ayahs.forEach(function (a) {
+    lines.push(faNum(a.ayah_number) + '. ' + (a.text_ar || ''));
+    if (a.text_fa) lines.push('   ' + a.text_fa);
+    lines.push('');
+  });
+  return '﻿' + lines.join('\r\n');
+}
+
+function downloadSurahText() {
+  const n = S.surah;
+  if (!n || !S.data || dl.busy) return;
+  try {
+    const blob = new Blob([surahTextFile(n, S.data)], { type: 'text/plain;charset=utf-8' });
+    deliverFile(blob, 'quran-' + pad3(n) + '-text.txt', 'text/plain');
+    dlSetNote('متن ' + surahTitle(n) + ' آماده شد. اگر دانلود شروع نشد، دکمهٔ اشتراک‌گذاری را بزنید.');
+  } catch (err) {
+    dlSetNote('ساختن فایل متن ممکن نشد.');
+  }
+}
+
+async function downloadSurahAudio() {
+  const n = S.surah;
+  if (!n || !S.data || dl.busy) return;
+  const tracks = offlineTracksOf(n);
+  if (!tracks.length) return;
+  dl.busy = true;
+  const token = ++dl.token;
+  renderDownloadButtons();
+  const parts = new Array(tracks.length);
+  let done = 0, next = 0, failed = null;
+  const total = tracks.length;
+  dlSetNote('در حال دریافت صوت… ۰ از ' + faNum(total));
+  const worker = async function () {
+    while (!failed) {
+      const i = next++;
+      if (i >= total) return;
+      try {
+        parts[i] = await fetchTrackBlob(tracks[i]);
+        done++;
+        dlSetNote('در حال دریافت صوت… ' + faNum(done) + ' از ' + faNum(total));
+      } catch (err) { failed = err || new Error('failed'); }
+    }
+  };
+  try {
+    await Promise.all([worker(), worker(), worker()]);
+    if (failed) {
+      dlSetNote('دریافت صوت کامل نشد (' + (describeApiError ? describeApiError(failed) : 'خطا') + '). دوباره امتحان کنید.');
+      return;
+    }
+    const mode = settings.audioMode === 'fa' ? 'fa' : (settings.audioMode === 'both' ? 'both' : 'ar');
+    const blob = new Blob(parts, { type: 'audio/mpeg' });
+    deliverFile(blob, 'quran-' + pad3(n) + '-' + mode + '.mp3', 'audio/mpeg');
+    dlSetNote('صوت ' + surahTitle(n) + ' آماده شد (' + formatBytes(blob.size) + '). اگر دانلود شروع نشد، دکمهٔ اشتراک‌گذاری را بزنید.');
+  } catch (err) {
+    dlSetNote('ساختن فایل صوت ممکن نشد.');
+  } finally {
+    if (token === dl.token) { dl.busy = false; renderDownloadButtons(); }
+  }
 }
