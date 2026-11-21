@@ -384,3 +384,106 @@ function ayahCount(n) {
   const c = s ? Number(s.ayah_count) : 0;
   return c > 0 ? c : (AYAH_COUNTS[n - 1] || 0);
 }
+
+
+/* =========================================================
+   آمار ناشناس استفاده
+   فقط شمارنده می‌فرستد: یک شناسهٔ تصادفی برای این نصب + تعداد آیه‌های دریافت‌شده از هر مسیر.
+   نام، شماره، ایمیل یا اینکه چه چیزی خوانده شده هرگز ثبت نمی‌شود. هر چند دقیقه حداکثر یک درخواست کوچک می‌رود.
+========================================================= */
+const USAGE_FIRST_MS = 60000;          // اولین ارسال: یک دقیقه بعد از باز شدن
+const USAGE_EVERY_MS = 20 * 60000;     // بعد از آن: هر ۲۰ دقیقه (اگر چیزی جمع شده باشد)
+const USAGE_HIDE_MIN_MS = 5 * 60000;   // موقع بسته‌شدن صفحه: اگر ۵ دقیقه از ارسال قبلی گذشته بود
+const usage = { pending: {}, last: 0, busy: false, timer: 0, loaded: false };
+
+function usageUid() {
+  let id = '';
+  try { id = String(store.get(KEYS.uid, '') || ''); } catch (e) { id = ''; }
+  if (!/^[0-9a-f]{16}$/.test(id)) {
+    id = '';
+    try {
+      const a = new Uint8Array(8);
+      crypto.getRandomValues(a);
+      a.forEach(function (b) { id += ('0' + b.toString(16)).slice(-2); });
+    } catch (e) {
+      for (let i = 0; i < 16; i++) id += Math.floor(Math.random() * 16).toString(16);
+    }
+    try { store.set(KEYS.uid, id); } catch (e) { /* ignore */ }
+  }
+  return id;
+}
+
+function usageLoad() {
+  if (usage.loaded) return;
+  usage.loaded = true;
+  try {
+    const raw = store.get(KEYS.usage, null);
+    if (raw && typeof raw === 'object') {
+      Object.keys(raw).forEach(function (k) { const n = Number(raw[k]); if (n > 0 && /^[a-z_]{3,16}$/.test(k)) usage.pending[k] = Math.min(n, 100000); });
+    }
+  } catch (e) { /* ignore */ }
+}
+
+function usageSave() {
+  try {
+    if (Object.keys(usage.pending).length) store.set(KEYS.usage, usage.pending);
+    else store.remove(KEYS.usage);
+  } catch (e) { /* ignore */ }
+}
+
+function usageHit(key, n) {
+  try {
+    usageLoad();
+    usage.pending[key] = Math.min((usage.pending[key] || 0) + (n || 1), 100000);
+    usageSave();
+    if (!usage.timer) usage.timer = setTimeout(usageTick, usage.last ? USAGE_EVERY_MS : USAGE_FIRST_MS);
+  } catch (e) { /* آمار هرگز نباید برنامه را خراب کند */ }
+}
+
+function usageTick() {
+  usage.timer = 0;
+  usageFlush(false);
+}
+
+/* هر بار حداکثر ۲۰ شمارنده؛ آنچه با موفقیت رفت از صف کم می‌شود */
+async function usageFlush(onHide) {
+  let mine = false;
+  try {
+    usageLoad();
+    if (!API_READY || usage.busy) return;
+    const keys = Object.keys(usage.pending);
+    if (!keys.length) return;
+    if (onHide && usage.last && Date.now() - usage.last < USAGE_HIDE_MIN_MS) return;
+    if (typeof navigator.onLine === 'boolean' && !navigator.onLine) { usage.timer = setTimeout(usageTick, USAGE_EVERY_MS); return; }
+    const snap = {};
+    keys.slice(0, 20).forEach(function (k) { snap[k] = Math.min(usage.pending[k], 500); });
+    usage.busy = true;
+    mine = true;
+    usage.last = Date.now();
+    const c = Object.keys(snap).map(function (k) { return k + '.' + snap[k]; }).join(',');
+    let okSent = false;
+    try {
+      const res = await fetch(apiUrl('usage_hit', { uid: usageUid(), c: c }), { keepalive: true });
+      const json = await res.json();
+      okSent = !!(json && json.ok);
+      if (json && json.ok === false && /usage_not_ready|Unknown action|Invalid/.test(String(json.error || ''))) {
+        usage.pending = {};                       // سرور آمار را ندارد: صف را خالی کن تا انباشته نشود
+        usageSave();
+        return;
+      }
+    } catch (e) { okSent = false; }
+    if (okSent) {
+      Object.keys(snap).forEach(function (k) {
+        usage.pending[k] -= snap[k];
+        if (usage.pending[k] <= 0) delete usage.pending[k];
+      });
+      usageSave();
+    }
+  } finally {
+    if (mine) usage.busy = false;
+    if (Object.keys(usage.pending).length && !usage.timer) usage.timer = setTimeout(usageTick, USAGE_EVERY_MS);
+  }
+}
+
+window.addEventListener('load', function () { usageHit('open'); });
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') usageFlush(true); });

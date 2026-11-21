@@ -253,7 +253,9 @@ const KEYS = {
   relay: 'quran_audio_relay_v1',
   textToast: 'quran_text_saved_toast_v1',
   marks: 'quran_ayah_marks_v1',          // رنگ آیه‌ها
-  acct: 'quran_account_v1'               // کد شخصی و وضعیت همگام‌سازی
+  acct: 'quran_account_v1',              // کد شخصی و وضعیت همگام‌سازی
+  uid: 'quran_anon_id_v1',               // شناسهٔ تصادفی و ناشناس این نصب (فقط برای شمارش کاربران)
+  usage: 'quran_usage_pending_v1'        // شمارنده‌های آمار که هنوز فرستاده نشده
 };
 
 const CACHE_VERSION = 3;

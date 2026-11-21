@@ -11,7 +11,7 @@
 <script>(function(){try{var s=JSON.parse(localStorage.getItem('quran_settings_v2')||'{}');var d=document.documentElement;var t=s.theme||'auto';if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-palette',(s.palette==='emerald'||s.palette==='lapis')?s.palette:'meadow');if(s.v===3){if(typeof s.size==='number'&&s.size>=24&&s.size<=72)d.style.setProperty('--ayah-size',s.size+'px');if(typeof s.trSize==='number'&&s.trSize>=13&&s.trSize<=30)d.style.setProperty('--tr-size',s.trSize+'px')}}catch(e){}})();</script>
 <link rel="preload" href="UthmanicHafs-v22.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="Vazirmatn-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=8724e168">
+<link rel="stylesheet" href="style.css?v=a2117ce6">
 </head>
 <body>
 <noscript><p style="padding:24px;text-align:center">برای استفاده از این برنامه، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
@@ -329,9 +329,19 @@
         <p class="acct-status" id="acctStatus"></p>
         <div class="acct-actions">
           <button type="button" class="btn btn-primary" id="acctSyncNow">همگام‌سازی همین حالا</button>
+          <button type="button" class="btn" id="statsOpen">آمار استفاده از برنامه</button>
           <button type="button" class="btn" id="acctShow">نمایش کد شخصی</button>
           <button type="button" class="btn" id="acctLogout">خروج از حساب در این دستگاه</button>
           <button type="button" class="btn off-del-all" id="acctWipe">پاک‌کردن اطلاعات من از سرور</button>
+        </div>
+      </section>
+      <section id="acctStats" hidden>
+        <h3 class="off-h">آمار استفاده</h3>
+        <p class="off-note" id="statsNote"></p>
+        <div class="stats-box" id="statsBox"></div>
+        <div class="acct-actions">
+          <button type="button" class="btn" id="statsRefresh">تازه‌سازی</button>
+          <button type="button" class="btn" id="statsBack">بازگشت</button>
         </div>
       </section>
       <section id="acctCode" hidden>
@@ -432,6 +442,7 @@
         <button class="btn" id="btnOpenAccount" type="button">حساب و همگام‌سازی رنگ‌ها</button>
         <button class="btn" id="btnClearCache" type="button">پاک‌کردن حافظهٔ موقت سوره‌ها</button>
         <p>سوره‌های ذخیره‌شده برای آفلاین، یادآوری‌ها و جای آخرین خواندن با پاک‌کردن حافظهٔ موقت حذف نمی‌شوند.</p>
+        <p>برنامه فقط شمارندهٔ ناشناس استفاده می‌فرستد (چند آیه از کدام مسیر آمده)، با یک شناسهٔ تصادفی؛ نام، شماره و اینکه چه چیزی خوانده‌اید ثبت نمی‌شود.</p>
       </div>
     </div>
   </div>
@@ -456,13 +467,13 @@ setTimeout(function(){
   l.innerHTML='';l.appendChild(box);
 },6000);
 </script>
-<script src="app-1.js?v=411aad46"></script>
-<script src="app-2.js?v=5b3ed29b"></script>
+<script src="app-1.js?v=bdca3097"></script>
+<script src="app-2.js?v=836997a9"></script>
 <script src="app-3.js?v=b48c9a06"></script>
-<script src="app-4.js?v=0269f42d"></script>
-<script src="app-5.js?v=9d302582"></script>
+<script src="app-4.js?v=a56daec3"></script>
+<script src="app-5.js?v=ad3df07b"></script>
 <script src="app-6.js?v=89662ad1"></script>
-<script src="app-7.js?v=5a822cec"></script>
+<script src="app-7.js?v=5a804360"></script>
 <script src="app-8.js?v=5ffb3a9e"></script>
 </body>
 </html>

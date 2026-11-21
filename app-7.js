@@ -466,6 +466,7 @@ function renderAccountSheet() {
   $('acctOff').hidden = acct.view !== 'off';
   $('acctOn').hidden = acct.view !== 'on';
   $('acctCode').hidden = acct.view !== 'code';
+  if ($('acctStats')) $('acctStats').hidden = acct.view !== 'stats';
   const err = $('acctError');
   err.textContent = acct.note;
   err.hidden = !acct.note;
@@ -495,6 +496,9 @@ function bindAccount() {
   $('acctCodeInput').addEventListener('input', function () {
     if (acct.note) { acct.note = ''; $('acctError').textContent = ''; $('acctError').hidden = true; }
   });
+  $('statsOpen').addEventListener('click', function () { acct.view = 'stats'; acct.confirm = null; renderAccountSheet(); statsLoad(); });
+  $('statsRefresh').addEventListener('click', statsLoad);
+  $('statsBack').addEventListener('click', function () { acct.view = 'on'; renderAccountSheet(); });
   $('acctShow').addEventListener('click', function () { acct.view = 'code'; acct.confirm = null; renderAccountSheet(); });
   $('acctCodeDone').addEventListener('click', function () { acct.view = acctActive() ? 'on' : 'off'; renderAccountSheet(); });
   $('acctCopyCode').addEventListener('click', function () {
@@ -536,3 +540,73 @@ function bindAccount() {
 }
 
 acctLoad();
+
+
+/* =========================================================
+   آمار استفاده (فقط صاحب برنامه، با همان کد شخصی)
+========================================================= */
+const STATS_ROUTES = [
+  ['play_direct', 'سوپابیس (مستقیم)'],
+  ['play_pack', 'تلگرام (از راه گوگل)'],
+  ['play_relay', 'مسیر قدیمی گوگل'],
+  ['play_cache', 'ذخیرهٔ آفلاین روی گوشی'],
+  ['play_fail', 'ناموفق (صدا نیامد)']
+];
+
+function statsErrorText(err) {
+  const m = String(err && err.message || '');
+  if (/usage_not_ready/.test(m)) return 'جدول آمار در Supabase هنوز ساخته نشده است (فایل usage.sql).';
+  if (/Unknown action/i.test(m)) return 'نسخهٔ گوگل اسکریپت قدیمی است؛ Code.gs نسخهٔ ۲٫۳٫۰ باید Deploy شود.';
+  return msErrorText(err);
+}
+
+function statsDayLabel(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso));
+  if (!m) return String(iso);
+  try {
+    return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { month: 'numeric', day: 'numeric' }).format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 12)));
+  } catch (e) { return m[2] + '/' + m[3]; }
+}
+
+function renderStats(rep) {
+  const box = $('statsBox');
+  const t = rep.totals || {};
+  const served = (t.play_direct || 0) + (t.play_pack || 0) + (t.play_relay || 0) + (t.play_cache || 0);
+  const pct = function (n) { return served ? faNum(Math.round(n * 100 / served)) + '٪' : '—'; };
+  let html = '<div class="stats-cards">' +
+    '<div class="stats-card"><b>' + faNum(rep.users_today || 0) + '</b><span>کاربر امروز</span></div>' +
+    '<div class="stats-card"><b>' + faNum(rep.users_7 || 0) + '</b><span>۷ روز اخیر</span></div>' +
+    '<div class="stats-card"><b>' + faNum(rep.users_30 || 0) + '</b><span>۳۰ روز اخیر</span></div></div>';
+  html += '<h3 class="off-h">آیه‌های صوتی از هر مسیر (۳۰ روز اخیر)</h3>';
+  STATS_ROUTES.forEach(function (r) {
+    const n = t[r[0]] || 0;
+    html += '<div class="stats-route"><span>' + r[1] + '</span><span>' + faNum(n) + (r[0] === 'play_fail' ? '' : ' (' + pct(n) + ')') + '</span></div>';
+  });
+  html += '<div class="stats-route"><span>فایل‌های ذخیره برای آفلاین</span><span>' + faNum(t.save_file || 0) + '</span></div>';
+  html += '<div class="stats-route"><span>دانلود متن / صوت</span><span>' + faNum(t.dl_text || 0) + ' / ' + faNum(t.dl_audio || 0) + '</span></div>';
+  html += '<div class="stats-route"><span>دفعات باز کردن برنامه</span><span>' + faNum(t.open || 0) + '</span></div>';
+  const days = (rep.days || []).slice(0, 14);
+  if (days.length) {
+    html += '<h3 class="off-h">روزهای اخیر</h3><table class="stats-table"><thead><tr><th>روز</th><th>کاربر</th><th>سوپابیس</th><th>تلگرام</th><th>گوگل</th><th>آفلاین</th></tr></thead><tbody>';
+    days.forEach(function (d) {
+      const c = d.c || {};
+      html += '<tr><td>' + esc(statsDayLabel(d.day)) + '</td><td>' + faNum(d.users) + '</td><td>' + faNum(c.play_direct || 0) + '</td><td>' + faNum(c.play_pack || 0) + '</td><td>' + faNum(c.play_relay || 0) + '</td><td>' + faNum(c.play_cache || 0) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+  box.innerHTML = html;
+}
+
+async function statsLoad() {
+  if (!acctActive()) return;
+  const note = $('statsNote');
+  note.textContent = 'در حال گرفتن آمار…';
+  $('statsBox').innerHTML = '';
+  try {
+    const json = await apiGet('usage_report', { owner: acct.state.owner, days: 30 }, { timeout: 30000, retries: 1 });
+    renderStats(json.report || {});
+    note.textContent = 'هر عدد «تعداد آیه‌های دریافت‌شده» است، نه تعداد افراد. آمار ناشناس است و هر ۲۰ دقیقه به‌روز می‌شود. کاربران روزانه با شناسهٔ تصادفی هر نصب شمرده می‌شوند، پس کسی که برنامه را پاک و دوباره نصب کند دوباره شمرده می‌شود.';
+  } catch (err) {
+    note.textContent = 'آمار گرفته نشد: ' + statsErrorText(err);
+  }
+}

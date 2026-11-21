@@ -463,12 +463,13 @@ async function packBlobFor(surah, ayah, fa, signal) {
 async function relayFetchRaw(surah, ayah, signal, fa) {
   try {
     const b = await packBlobFor(surah, ayah, fa, signal);
-    if (b) return b;
+    if (b) { usageHit(signal ? 'save_file' : 'play_pack'); return b; }
   } catch (err) {
     if (err && err.kind === 'aborted') throw err;
   }
   const json = await apiGet('audio', fa ? { surah: surah, ayah: ayah, lang: 'fa' } : { surah: surah, ayah: ayah }, { timeout: 45000, retries: 1, signal: signal });
   if (!json.data) throw apiError('server', 'فایل صوتی خالی بود');
+  usageHit(signal ? 'save_file' : 'play_relay');
   return base64ToBlob(json.data, json.mime);
 }
 
@@ -522,7 +523,7 @@ async function fetchTrackBlob(t, signal) {
   const url = audioUrl(t.fa ? AUDIO_BASES.fa : AUDIO_BASES.ar, t.surah, t.ayah);
   if (typeof offlineHas === 'function' && offlineHas(url)) {
     const saved = await offlineBlob(url);
-    if (saved) return saved;
+    if (saved) { if (!signal) usageHit('play_cache'); return saved; }
   }
   const first = chooseRoute();
   const order = settings.route === 'auto' ? (first === 'relay' ? ['relay', 'direct'] : ['direct', 'relay']) : [first];
@@ -533,6 +534,7 @@ async function fetchTrackBlob(t, signal) {
         ? await directBlob(url, signal)
         : (signal ? await relayFetchRaw(t.surah, t.ayah, signal, t.fa) : await relayBlob(t.surah, t.ayah, t.fa));
       if (settings.route === 'auto') noteRoute(order[i], i > 0);
+      if (order[i] === 'direct') usageHit(signal ? 'save_file' : 'play_direct');
       return blob;
     } catch (err) {
       lastErr = err;
@@ -669,6 +671,7 @@ function audioFailed(id, why) {
     }
   }
 
+  usageHit('play_fail');
   if (L.track.fa) {                              // صدای ترجمه با هیچ مسیری نیامد: رد شو و ادامه بده (متن ترجمه سر جایش است)
     advanceFrom(L);
     return;
@@ -906,6 +909,11 @@ function onPlaying() {
   P.wantPlay = true;
   P.buffering = false;
   P.error = '';
+  if (!L.counted) {                                  // آمار: فقط پخش‌های مستقیم از اینترنت یا ذخیرهٔ دستگاه (بقیه هنگام دریافت شمرده شده‌اند)
+    L.counted = true;
+    if (L.route === 'direct') usageHit('play_direct');
+    else if (L.route === 'cache') usageHit('play_cache');
+  }
   if (settings.route === 'auto') {
     if (L.route === 'relay' && L.triedDirect) store.set(KEYS.relay, Date.now());      // مسیر مستقیم جواب نداد، گوگل جواب داد: یادت بماند
     if (L.route === 'direct' && L.triedRelay) store.remove(KEYS.relay);               // برعکس

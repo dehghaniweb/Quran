@@ -827,6 +827,7 @@ function downloadSurahText() {
   try {
     const blob = new Blob([surahTextFile(n, S.data)], { type: 'text/plain;charset=utf-8' });
     deliverFile(blob, 'quran-' + pad3(n) + '-text.txt', 'text/plain');
+    usageHit('dl_text');
     dlSetNote('متن ' + surahTitle(n) + ' آماده شد. اگر دانلود شروع نشد، دکمهٔ اشتراک‌گذاری را بزنید.');
   } catch (err) {
     dlSetNote('ساختن فایل متن ممکن نشد.');
@@ -841,6 +842,7 @@ async function downloadSurahAudio() {
   dl.busy = true;
   const token = ++dl.token;
   renderDownloadButtons();
+  const dlCtl = (typeof AbortController !== 'undefined') ? new AbortController() : { signal: undefined };
   const parts = new Array(tracks.length);
   let done = 0, next = 0, failed = null;
   const total = tracks.length;
@@ -850,7 +852,7 @@ async function downloadSurahAudio() {
       const i = next++;
       if (i >= total) return;
       try {
-        parts[i] = await fetchTrackBlob(tracks[i]);
+        parts[i] = await fetchTrackBlob(tracks[i], dlCtl.signal);
         done++;
         dlSetNote('در حال دریافت صوت… ' + faNum(done) + ' از ' + faNum(total));
       } catch (err) { failed = err || new Error('failed'); }
@@ -865,6 +867,7 @@ async function downloadSurahAudio() {
     const mode = settings.audioMode === 'fa' ? 'fa' : (settings.audioMode === 'both' ? 'both' : 'ar');
     const blob = new Blob(parts, { type: 'audio/mpeg' });
     deliverFile(blob, 'quran-' + pad3(n) + '-' + mode + '.mp3', 'audio/mpeg');
+    usageHit('dl_audio');
     dlSetNote('صوت ' + surahTitle(n) + ' آماده شد (' + formatBytes(blob.size) + '). اگر دانلود شروع نشد، دکمهٔ اشتراک‌گذاری را بزنید.');
   } catch (err) {
     dlSetNote('ساختن فایل صوت ممکن نشد.');
